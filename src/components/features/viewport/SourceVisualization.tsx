@@ -5,6 +5,7 @@ import { useThree, type ThreeEvent } from "@react-three/fiber";
 import type { RootState } from "@/store";
 import type { Source } from "@/types/simulation";
 import { updateSource, selectSource, setIsTransforming } from "@/store/sourceReceiverSlice";
+import { setActiveTab } from "@/store/tabSlice";
 import { useSourceReceiverApi } from "@/hooks/useSourceReceiverApi";
 import {
   OrbitControls as OrbitControlsType,
@@ -16,12 +17,14 @@ function SourcePoint({
   source,
   isSelected,
   onSourceClick,
+  onSourceDoubleClick,
   onTransformEnd,
   orbitControlsRef,
 }: {
   source: Source;
   isSelected: boolean;
   onSourceClick: (sourceId: string, event: ThreeEvent<MouseEvent>) => void;
+  onSourceDoubleClick: (sourceId: string, event: ThreeEvent<MouseEvent>) => void;
   onTransformEnd: (sourceId: string, position: THREE.Vector3) => void;
   orbitControlsRef: React.RefObject<OrbitControlsType | null>;
 }) {
@@ -45,6 +48,10 @@ function SourcePoint({
           if (!isSelected) {
             onSourceClick(source.id, e);
           }
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          onSourceDoubleClick(source.id, e);
         }}
         onPointerOver={(e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
@@ -126,6 +133,12 @@ export function SourceVisualization({ orbitControlsRef }: SourceVisualizationPro
     dispatch(selectSource(selectedSource === sourceId ? null : sourceId));
   };
 
+  const handleSourceDoubleClick = (sourceId: string, event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    dispatch(selectSource(sourceId));
+    dispatch(setActiveTab("sources"));
+  };
+
   const handleTransformEnd = (sourceId: string, position: THREE.Vector3) => {
     dispatch(updateSource({ id: sourceId, field: "x", value: Number(position.x.toFixed(2)) }));
     dispatch(updateSource({ id: sourceId, field: "y", value: Number(position.y.toFixed(2)) }));
@@ -152,6 +165,7 @@ export function SourceVisualization({ orbitControlsRef }: SourceVisualizationPro
           source={source}
           isSelected={selectedSource === source.id}
           onSourceClick={handleSourceClick}
+          onSourceDoubleClick={handleSourceDoubleClick}
           onTransformEnd={handleTransformEnd}
           orbitControlsRef={orbitControlsRef}
         />

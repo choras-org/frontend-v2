@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useSurfaces } from "./useSurfaces";
 import { useGetSimulationByIdQuery } from "@/store/simulationApi";
+import { validateSourceOrReceiver, getModelBounds } from "@/helpers/sourceReceiverValidation";
 
 export interface ValidationError {
   type: "sources" | "receivers" | "materials" | "sourceValidity" | "receiverValidity";
@@ -13,6 +14,13 @@ export interface ValidationError {
 export function useSimulationValidation() {
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const surfaces = useSurfaces();
+
+  // Get the current model's Object3D for raycaster validation
+  const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
+  const currentModel = useSelector((state: RootState) =>
+    currentModelId ? state.model.rhinoFiles[currentModelId] : null,
+  );
+  const modelObject3D = currentModel?.object3D || null;
 
   const { data: simulation, isLoading: simulationLoading } = useGetSimulationByIdQuery(
     activeSimulation?.id ?? 0,
@@ -49,22 +57,56 @@ export function useSimulationValidation() {
       });
     }
 
-    if (simulation.sources?.some((source) => source.isValid === false)) {
-      errors.push({
-        type: "sourceValidity",
-        message: "Some sources have validation errors",
-        navigationTarget: "sources",
-        highlightTarget: "add-source-button",
+    // Validate sources using raycaster
+    if (simulation.sources && simulation.sources.length > 0) {
+      const modelBounds = getModelBounds(surfaces);
+      const hasInvalidSource = simulation.sources.some((source) => {
+        const validation = validateSourceOrReceiver(
+          { x: source.x, y: source.y, z: source.z },
+          modelBounds,
+          simulation.receivers || [],
+          surfaces,
+          source.id,
+          "source",
+          modelObject3D,
+        );
+        return !validation.isValid;
       });
+
+      if (hasInvalidSource) {
+        errors.push({
+          type: "sourceValidity",
+          message: "Some sources have validation errors",
+          navigationTarget: "sources",
+          highlightTarget: "add-source-button",
+        });
+      }
     }
 
-    if (simulation.receivers?.some((receiver) => receiver.isValid === false)) {
-      errors.push({
-        type: "receiverValidity",
-        message: "Some receivers have validation errors",
-        navigationTarget: "sources",
-        highlightTarget: "add-receiver-button",
+    // Validate receivers using raycaster
+    if (simulation.receivers && simulation.receivers.length > 0) {
+      const modelBounds = getModelBounds(surfaces);
+      const hasInvalidReceiver = simulation.receivers.some((receiver) => {
+        const validation = validateSourceOrReceiver(
+          { x: receiver.x, y: receiver.y, z: receiver.z },
+          modelBounds,
+          simulation.sources || [],
+          surfaces,
+          receiver.id,
+          "receiver",
+          modelObject3D,
+        );
+        return !validation.isValid;
       });
+
+      if (hasInvalidReceiver) {
+        errors.push({
+          type: "receiverValidity",
+          message: "Some receivers have validation errors",
+          navigationTarget: "sources",
+          highlightTarget: "add-receiver-button",
+        });
+      }
     }
 
     if (surfaces.length > 0) {

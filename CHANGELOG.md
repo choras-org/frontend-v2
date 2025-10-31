@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.48](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.47...v0.0.48) (2025-10-31)
+
+### Bug Fixes
+
+- change sources and receivers input autosave to when user not focus on ([a0199ba](https://github.com/ajatdarojat45/frontend-v2/commit/a0199ba1c36e03647ac9d08e6fd743cd34108623))
+- change validation inside/outside model method to use Raycaster instead of manual bounding box ([3be9b82](https://github.com/ajatdarojat45/frontend-v2/commit/3be9b821d7390d409ebf651ef9b4ab69d4d36b95))
+- double click on sources/receivers make active tab to source and receiver tab ([3084fd5](https://github.com/ajatdarojat45/frontend-v2/commit/3084fd5e6b7c7ceecf2e1f517ee67e970457e707))
+- sources and receivers disappear when changing tab ([097bca0](https://github.com/ajatdarojat45/frontend-v2/commit/097bca0e008670cf01b1b20f194a6ade7e739813))
+- sources and receivers styling and disable add multiple sources ([b4bc01d](https://github.com/ajatdarojat45/frontend-v2/commit/b4bc01d81a4a77e82ef881a64b3d1fbcb3e1c0dd))
+- validation on runSimulationButton ([2aa4350](https://github.com/ajatdarojat45/frontend-v2/commit/2aa43504b2680f15ad280a82d110de55e253436e))
+
 ### [0.0.47](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.46...v0.0.47) (2025-10-31)
 
 ### Bug Fixes

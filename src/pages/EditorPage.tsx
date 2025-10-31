@@ -2,6 +2,7 @@ import { EmptySimulation } from "@/components/features/EmptySimulation";
 import { AppLayout } from "@/components/ui/app-layout";
 import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
 import { setActiveSimulation } from "@/store/simulationSlice";
+import { removeAllSources, removeAllReceivers } from "@/store/sourceReceiverSlice";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router";
@@ -37,6 +38,14 @@ export function EditorPage() {
       navigate(`/editor/${modelId}/${firstSimulationId}`, { replace: true });
     }
   }, [simulations, simulationId, modelId, navigate, dispatch]);
+
+  // cleanup sources and receiver when changing model
+  useEffect(() => {
+    if (modelId) {
+      dispatch(removeAllSources());
+      dispatch(removeAllReceivers());
+    }
+  }, [modelId, dispatch]);
 
   return (
     <AppLayout

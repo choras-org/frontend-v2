@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import type { Source } from "@/types/simulation";
 import type { SurfaceInfo } from "@/types/material";
 
@@ -18,6 +19,36 @@ export interface ValidationResult {
 }
 
 const INVISIBLE_SPHERE_RADIUS = 0.2;
+const RAY_DIRECTION = new THREE.Vector3(0.7, 0.5, 0.3).normalize();
+
+export function isPointInsideMesh(point: Point3D, meshes: THREE.Mesh[]): boolean {
+  if (meshes.length === 0) {
+    return false;
+  }
+
+  const pointVector = new THREE.Vector3(point.x, point.y, point.z);
+  const raycaster = new THREE.Raycaster(pointVector, RAY_DIRECTION);
+
+  const intersects = raycaster.intersectObjects(meshes, false);
+
+  const isInside = intersects.length % 2 === 1;
+
+  return isInside;
+}
+
+export function getMeshesFromObject3D(object3D: THREE.Object3D | null): THREE.Mesh[] {
+  if (!object3D) return [];
+
+  const meshes: THREE.Mesh[] = [];
+
+  object3D.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      meshes.push(child);
+    }
+  });
+
+  return meshes;
+}
 
 export function validateSourceOrReceiver(
   point: Point3D,
@@ -26,20 +57,30 @@ export function validateSourceOrReceiver(
   surfaces: SurfaceInfo[],
   excludeId?: string,
   pointType?: "source" | "receiver",
+  modelObject3D?: THREE.Object3D | null,
 ): ValidationResult {
-  // Check if point is outside the model bounds (x <= 0 case)
-  if (
-    point.x <= modelBounds.min.x ||
-    point.x >= modelBounds.max.x ||
-    point.y <= modelBounds.min.y ||
-    point.y >= modelBounds.max.y ||
-    point.z <= modelBounds.min.z ||
-    point.z >= modelBounds.max.z
-  ) {
-    return {
-      isValid: false,
-      validationError: "outside the model bounds",
-    };
+  if (modelObject3D) {
+    const meshes = getMeshesFromObject3D(modelObject3D);
+    if (!isPointInsideMesh(point, meshes)) {
+      return {
+        isValid: false,
+        validationError: "outside the model bounds",
+      };
+    }
+  } else {
+    if (
+      point.x <= modelBounds.min.x ||
+      point.x >= modelBounds.max.x ||
+      point.y <= modelBounds.min.y ||
+      point.y >= modelBounds.max.y ||
+      point.z <= modelBounds.min.z ||
+      point.z >= modelBounds.max.z
+    ) {
+      return {
+        isValid: false,
+        validationError: "outside the model bounds",
+      };
+    }
   }
 
   for (const surface of surfaces) {
@@ -57,7 +98,6 @@ export function validateSourceOrReceiver(
     }
 
     if (isPointTooCloseToPoint(point, otherPoint)) {
-      // Determine the appropriate error message based on what we're validating against
       const errorMessage =
         pointType === "source" ? "Too close to a receiver" : "Too close to a source";
       return {

@@ -5,6 +5,7 @@ import { useThree, type ThreeEvent } from "@react-three/fiber";
 import type { RootState } from "@/store";
 import type { Receiver } from "@/types/simulation";
 import { updateReceiver, selectReceiver, setIsTransforming } from "@/store/sourceReceiverSlice";
+import { setActiveTab } from "@/store/tabSlice";
 import { useSourceReceiverApi } from "@/hooks/useSourceReceiverApi";
 import {
   OrbitControls as OrbitControlsType,
@@ -16,12 +17,14 @@ function ReceiverPoint({
   receiver,
   isSelected,
   onReceiverClick,
+  onReceiverDoubleClick,
   onTransformEnd,
   orbitControlsRef,
 }: {
   receiver: Receiver;
   isSelected: boolean;
   onReceiverClick: (receiverId: string, event: ThreeEvent<MouseEvent>) => void;
+  onReceiverDoubleClick: (receiverId: string, event: ThreeEvent<MouseEvent>) => void;
   onTransformEnd: (receiverId: string, position: THREE.Vector3) => void;
   orbitControlsRef: React.RefObject<OrbitControlsType | null>;
 }) {
@@ -45,6 +48,10 @@ function ReceiverPoint({
           if (!isSelected) {
             onReceiverClick(receiver.id, e);
           }
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          onReceiverDoubleClick(receiver.id, e);
         }}
         onPointerOver={(e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
@@ -126,6 +133,12 @@ export function ReceiverVisualization({ orbitControlsRef }: ReceiverVisualizatio
     dispatch(selectReceiver(selectedReceiver === receiverId ? null : receiverId));
   };
 
+  const handleReceiverDoubleClick = (receiverId: string, event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    dispatch(selectReceiver(receiverId));
+    dispatch(setActiveTab("sources"));
+  };
+
   const handleTransformEnd = (receiverId: string, position: THREE.Vector3) => {
     dispatch(updateReceiver({ id: receiverId, field: "x", value: Number(position.x.toFixed(2)) }));
     dispatch(updateReceiver({ id: receiverId, field: "y", value: Number(position.y.toFixed(2)) }));
@@ -152,6 +165,7 @@ export function ReceiverVisualization({ orbitControlsRef }: ReceiverVisualizatio
           receiver={receiver}
           isSelected={selectedReceiver === receiver.id}
           onReceiverClick={handleReceiverClick}
+          onReceiverDoubleClick={handleReceiverDoubleClick}
           onTransformEnd={handleTransformEnd}
           orbitControlsRef={orbitControlsRef}
         />
