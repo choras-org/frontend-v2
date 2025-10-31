@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.47](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.46...v0.0.47) (2025-10-31)
+
+### Bug Fixes
+
+- remove unused TabsTrigger for auralizations in ResultPage ([8b2e1cd](https://github.com/ajatdarojat45/frontend-v2/commit/8b2e1cdc43db35e2634b30e00d33c57de83f2662))
+- wrap SidebarTabs and EditorNav in a fragment for proper rendering ([4b16d42](https://github.com/ajatdarojat45/frontend-v2/commit/4b16d420aa35ea100d20634b170e78ae4dc689e8))
+
+### [0.0.46](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.45...v0.0.46) (2025-10-30)
+
+### Features
+
+- add color adjustment for frequency variations in compare results plots ([314ff4e](https://github.com/ajatdarojat45/frontend-v2/commit/314ff4e4dd1da4b9d3594c4fa4356b1d7d7d7026))
+- update TrapezoidOutlineTab height and change default tab to auralizations in ResultPage ([d755936](https://github.com/ajatdarojat45/frontend-v2/commit/d755936878f8ceabacad63533eb8bc170332dd70))
+
+### Bug Fixes
+
+- adjust card width in GeometrySelectionInfo component ([16d4def](https://github.com/ajatdarojat45/frontend-v2/commit/16d4def21c3f155d45394283028163b1362526d9))
+- Result Sidebar Tabs height & dropdown stay open ([8976c18](https://github.com/ajatdarojat45/frontend-v2/commit/8976c18deb0730c53fa20c0bbe61cc7cb3a0c15d))
+- update EditorNav to conditionally display results tab based on simulation status ([fed40b2](https://github.com/ajatdarojat45/frontend-v2/commit/fed40b24f542877c3beb3ea1260fd0a85a7337fa))
+- update simulation filter to check for completedAt instead of status ([f0bf823](https://github.com/ajatdarojat45/frontend-v2/commit/f0bf823582275b084cae0a1e67d553321445c800))
+
 ### [0.0.45](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.44...v0.0.45) (2025-10-30)
 
 ### Bug Fixes

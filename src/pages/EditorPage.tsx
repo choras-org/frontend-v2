@@ -74,14 +74,16 @@ export function EditorPage() {
         </div>
       }
     >
-      <SidebarTabs />
       {simulationId && (
-        <EditorNav
-          key={`editor-nav-${modelId}-${simulationId}`}
-          active="geometry"
-          modelId={+modelId}
-          simulationId={+simulationId}
-        />
+        <>
+          <SidebarTabs />
+          <EditorNav
+            key={`editor-nav-${modelId}-${simulationId}`}
+            active="geometry"
+            modelId={+modelId}
+            simulationId={+simulationId}
+          />
+        </>
       )}
       <div className="h-full w-full">
         <ModelViewer modelId={modelId} />

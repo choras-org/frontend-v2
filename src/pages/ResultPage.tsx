@@ -84,9 +84,6 @@ export function ResultPage() {
           <TabsTrigger value="plots" asChild>
             <TrapezoidOutlineTab value="plots">Plots</TrapezoidOutlineTab>
           </TabsTrigger>
-          <TabsTrigger value="auralizations" asChild>
-            <TrapezoidOutlineTab value="auralizations">Auralizations</TrapezoidOutlineTab>
-          </TabsTrigger>
         </TabsList>
         <TabsContent value="parameters" className="pl-4">
           <ResultParameters simulationId={+simulationId} />
