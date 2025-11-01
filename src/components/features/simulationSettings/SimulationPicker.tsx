@@ -33,6 +33,12 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { useDuplicateSimulation } from "@/hooks/useDuplicateSimulation";
 import { useInitializeSimulationSettings } from "@/hooks/useInitializeSimulationSettings";
+import {
+  addReceiver,
+  addSource,
+  removeAllReceivers,
+  removeAllSources,
+} from "@/store/sourceReceiverSlice";
 
 type SimulationPickerProps = {
   modelId: number;
@@ -100,6 +106,22 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
 
         if (currentSimulation.taskType && currentSimulation.taskType !== selectedMethodType) {
           dispatch(setSelectedMethodType(currentSimulation.taskType));
+        }
+
+        if (currentSimulation.sources.length > 0) {
+          currentSimulation.sources.forEach((source) => {
+            dispatch(addSource(source));
+          });
+        } else {
+          dispatch(removeAllSources());
+        }
+
+        if (currentSimulation.receivers.length > 0) {
+          currentSimulation.receivers.forEach((receiver) => {
+            dispatch(addReceiver(receiver));
+          });
+        } else {
+          dispatch(removeAllReceivers());
         }
       }
     }

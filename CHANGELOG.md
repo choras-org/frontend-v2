@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.49](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.48...v0.0.49) (2025-10-31)
+
+### Bug Fixes
+
+- add taskType to duplicateSimulation body ([8c943d9](https://github.com/ajatdarojat45/frontend-v2/commit/8c943d962d0b60e2fd4f66f4b55cf2956db71311))
+- change cleanup source and receiver logic, refetch when going from result ([ecb35e5](https://github.com/ajatdarojat45/frontend-v2/commit/ecb35e5bf7d0263d3944b4b72947e03364e3a3fc))
+
 ### [0.0.48](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.47...v0.0.48) (2025-10-31)
 
 ### Bug Fixes

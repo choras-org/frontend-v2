@@ -15,6 +15,7 @@ import { SortPicker } from "@/components/features/SortPicker";
 import { useEffect, useState } from "react";
 import type { Model } from "@/types/model";
 import { useDispatch } from "react-redux";
+import { removeAllReceivers, removeAllSources } from "@/store/sourceReceiverSlice";
 
 export function ProjectDetailPage() {
   const { id } = useParams() as { id: string };
@@ -64,6 +65,14 @@ export function ProjectDetailPage() {
       setSort(savedSortOption);
     }
   }, []);
+
+  // cleanup sources and receiver when changing model
+  useEffect(() => {
+    if (id) {
+      dispatch(removeAllSources());
+      dispatch(removeAllReceivers());
+    }
+  }, [id, dispatch]);
 
   const handleSetSort = (value: string) => {
     setSort(value);
