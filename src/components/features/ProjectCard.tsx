@@ -62,19 +62,15 @@ export function ProjectCard(props: ProjectCardProps) {
                 <EllipsisVerticalIcon className="text-black/50" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <ConfirmDialog
-                  title="Delete Project"
-                  description="Are you sure you want to delete this project? This action cannot be undone."
-                  onConfirm={handleDeleteProject}
-                  confirmVariant="destructive"
-                  confirmLabel="Delete Project"
+                <ProjectForm
+                  defaultValues={project}
+                  id={project.id}
                   trigger={
                     <DropdownMenuItem
                       onSelect={(e) => e.preventDefault()}
                       onClick={(e) => e.stopPropagation()}
-                      className="text-red-600"
                     >
-                      Delete Project
+                      Edit project
                     </DropdownMenuItem>
                   }
                 />
@@ -87,19 +83,23 @@ export function ProjectCard(props: ProjectCardProps) {
                       onSelect={(e) => e.preventDefault()}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      Change Group
+                      Change group
                     </DropdownMenuItem>
                   }
                 />
-                <ProjectForm
-                  defaultValues={project}
-                  id={project.id}
+                <ConfirmDialog
+                  title="Delete Project"
+                  description="Are you sure you want to delete this project? This action cannot be undone."
+                  onConfirm={handleDeleteProject}
+                  confirmVariant="destructive"
+                  confirmLabel="Delete Project"
                   trigger={
                     <DropdownMenuItem
                       onSelect={(e) => e.preventDefault()}
                       onClick={(e) => e.stopPropagation()}
+                      className="text-red-600"
                     >
-                      Edit Project
+                      Delete project
                     </DropdownMenuItem>
                   }
                 />
