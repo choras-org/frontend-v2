@@ -91,6 +91,18 @@ export function ProjectCard(props: ProjectCardProps) {
                     </DropdownMenuItem>
                   }
                 />
+                <ProjectForm
+                  defaultValues={project}
+                  id={project.id}
+                  trigger={
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Edit Project
+                    </DropdownMenuItem>
+                  }
+                />
               </DropdownMenuContent>
             </DropdownMenu>
           </CardAction>
