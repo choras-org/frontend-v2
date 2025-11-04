@@ -16,6 +16,7 @@ import { useSimulationRunnerContext } from "@/contexts/SimulationRunnerContext";
 export function useSimulationRunner() {
   const { isRunning, setIsRunning, progress, setProgress } = useSimulationRunnerContext();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasCheckedForRunningSimulation = useRef(false);
   const lastCheckedSimulationId = useRef<number | null>(null);
 
@@ -37,6 +38,13 @@ export function useSimulationRunner() {
     }
   }, []);
 
+  const clearResetTimeout = useCallback(() => {
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+      resetTimeoutRef.current = null;
+    }
+  }, []);
+
   const cancelAndStop = useCallback(async () => {
     if (!activeSimulation?.id) {
       return;
@@ -51,6 +59,7 @@ export function useSimulationRunner() {
     }
 
     setIsRunning(false);
+    clearResetTimeout();
     setProgress(0);
     stopPolling();
   }, [activeSimulation?.id, cancelSimulation, stopPolling]);
@@ -76,6 +85,12 @@ export function useSimulationRunner() {
             getSimulationResult(activeSimulation.id);
             getSimulationsByModelId(activeSimulation.modelId);
             getImpulseResponseBySimulationId(activeSimulation.id);
+            // Reset the visual progress after a short delay; ensure we don't race with a new run
+            clearResetTimeout();
+            resetTimeoutRef.current = setTimeout(() => {
+              setProgress(0);
+              resetTimeoutRef.current = null;
+            }, 5000);
           } else if (currentRun.status === "Error" || currentRun.status === "Failed") {
             setIsRunning(false);
             stopPolling();
@@ -103,6 +118,7 @@ export function useSimulationRunner() {
     getSimulationResult,
     getSimulationsByModelId,
     getImpulseResponseBySimulationId,
+    clearResetTimeout,
   ]);
 
   const startSimulation = useCallback(async () => {
@@ -113,6 +129,8 @@ export function useSimulationRunner() {
       return;
     }
 
+    // Ensure any previous reset timers are cleared to avoid resetting a new run's progress
+    clearResetTimeout();
     setIsRunning(true);
     setProgress(0);
 
@@ -138,6 +156,7 @@ export function useSimulationRunner() {
     patchMeshes,
     runSimulation,
     pollProgress,
+    clearResetTimeout,
   ]);
 
   useEffect(() => {
@@ -201,8 +220,9 @@ export function useSimulationRunner() {
   useEffect(() => {
     return () => {
       stopPolling();
+      clearResetTimeout();
     };
-  }, [stopPolling]);
+  }, [stopPolling, clearResetTimeout]);
 
   return {
     isRunning,
