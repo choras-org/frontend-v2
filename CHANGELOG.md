@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.50](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.49...v0.0.50) (2025-11-04)
+
+### Features
+
+- add dropdown menu for editing group name and deleting groups in HomePage ([31dd1f8](https://github.com/ajatdarojat45/frontend-v2/commit/31dd1f84cc826a14668eea40450a76643a541481))
+- add EditGroup component for renaming groups and updating associated projects ([d5b7bab](https://github.com/ajatdarojat45/frontend-v2/commit/d5b7babc6cd2ba4687fce2802f8ebb6dd5392577))
+- add MethodInfoDialog component for displaying method details and links ([095ea12](https://github.com/ajatdarojat45/frontend-v2/commit/095ea128e81c67c11a6eb8f8285b6bd562e30885))
+- add ProjectForm component for editing project details in ProjectCard ([a266a9a](https://github.com/ajatdarojat45/frontend-v2/commit/a266a9adb66bd862755b38345de586e18a67db05))
+- add UpdateModel component to ModelCard for editing model details ([5623d05](https://github.com/ajatdarojat45/frontend-v2/commit/5623d055b87de925309014f323ed6cdb1262fec9))
+- add updateModel mutation to modelApi for updating model details ([8614139](https://github.com/ajatdarojat45/frontend-v2/commit/861413943a402639b6968364d270aab15e6ad758))
+- implement UpdateModel component for updating model details ([b4c4210](https://github.com/ajatdarojat45/frontend-v2/commit/b4c4210d5b21e90106ea8c8981e84d9a2f61b10d))
+- integrate MethodInfoDialog for displaying method details in SimulationPicker ([2e5cb41](https://github.com/ajatdarojat45/frontend-v2/commit/2e5cb4132d0f5cf4251bf71ede9a9f51fbf7cac2))
+- swap EditModel and DeleteModel actions in dropdown menu for better clarity ([f966809](https://github.com/ajatdarojat45/frontend-v2/commit/f9668093367ac116cc7ab0cc90b53045bb9fae87))
+- update DeleteGroup button styling and text for clarity ([bf222e0](https://github.com/ajatdarojat45/frontend-v2/commit/bf222e06d69f357b06a39bd5d1c2828d17f5d2ce))
+- update ProjectCard dropdown menu to edit and delete projects with confirmation dialog ([23e8a0b](https://github.com/ajatdarojat45/frontend-v2/commit/23e8a0b49123e9eec0397b03c92562c765067cdb))
+
+### Bug Fixes
+
+- add progress-based completion state to EditorNav component ([643f763](https://github.com/ajatdarojat45/frontend-v2/commit/643f7637bd8aefed072304d2f82f926a4c4af4b0))
+- implement reset timeout logic to manage simulation progress ([bfa5cfc](https://github.com/ajatdarojat45/frontend-v2/commit/bfa5cfca165aea6ad2ac3c853d0c8cdb11d1eddd))
+- update RunSimulationButton styling for non-running state ([8c85124](https://github.com/ajatdarojat45/frontend-v2/commit/8c85124809001e7ebde5ba4b6645df15538c65c2))
+
 ### [0.0.49](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.48...v0.0.49) (2025-10-31)
 
 ### Bug Fixes
