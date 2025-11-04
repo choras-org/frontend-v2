@@ -6,7 +6,12 @@ import { Loading } from "@/components/ui/loading";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useGetProjectsQuery } from "@/store/projectApi";
 import { selectProjectsByActiveGroup } from "@/store/projectSelector";
-import { AlertCircleIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  EllipsisVerticalIcon,
+} from "lucide-react";
 import plusIcon from "@/assets/plus-icon.png";
 import type React from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,6 +24,13 @@ import { useEffect, useState } from "react";
 import { SortPicker } from "@/components/features/SortPicker";
 import type { GroupProject, Project } from "@/types/project";
 import { cn } from "@/libs/style";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EditGroup } from "@/components/features/EditGroup";
 
 export function HomePage() {
   const { data: projects, isLoading, error } = useGetProjectsQuery();
@@ -172,10 +184,33 @@ export function HomePage() {
                   {groupProject.group === "NONE" ? "No group" : groupProject.group}
                 </h1>
               </CollapsibleTrigger>
-              <DeleteGroup
-                projectsCount={groupProject.projects.length}
-                group={groupProject.group}
-              />
+              {groupProject.group !== "NONE" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="ml-2 p-1 hover:bg-gray-200 rounded-md transition-colors">
+                      <EllipsisVerticalIcon className="h-4 w-4 text-choras-dark" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-white border border-gray-200 rounded-md shadow-lg p-1">
+                    <EditGroup
+                      currentGroupName={groupProject.group}
+                      trigger={
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          onClick={(e) => e.stopPropagation()}
+                          className="ml-1"
+                        >
+                          Edit name
+                        </DropdownMenuItem>
+                      }
+                    />
+                    <DeleteGroup
+                      projectsCount={groupProject.projects.length}
+                      group={groupProject.group}
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             <CollapsibleContent>
               <div
