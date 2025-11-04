@@ -126,7 +126,9 @@ export function RunSimulationButton() {
 
   return (
     <>
-      <div className={isRunning ? "flex items-center gap-0 bg-choras-dark rounded-full p-2" : ""}>
+      <div
+        className={isRunning ? "flex items-center gap-0 bg-choras-dark rounded-full p-2" : "p-2"}
+      >
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
