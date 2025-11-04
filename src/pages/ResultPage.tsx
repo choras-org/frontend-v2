@@ -73,28 +73,33 @@ export function ResultPage() {
     >
       <EditorNav active="results" modelId={+modelId} simulationId={+simulationId} />
 
-      <Tabs defaultValue="auralizations" className="mt-8">
-        <TabsList className="bg-transparent absolute bottom-0 h-[calc(100vh-4rem-174px)] w-8 p-0 flex-col rounded-r-xl roundedn-l-none z-50">
-          <TabsTrigger value="auralizations" asChild>
-            <TrapezoidOutlineTab value="auralizations">Auralizations</TrapezoidOutlineTab>
-          </TabsTrigger>
-          <TabsTrigger value="parameters" asChild>
-            <TrapezoidOutlineTab value="parameters">Parameters</TrapezoidOutlineTab>
-          </TabsTrigger>
-          <TabsTrigger value="plots" asChild>
-            <TrapezoidOutlineTab value="plots">Plots</TrapezoidOutlineTab>
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="parameters" className="pl-4">
-          <ResultParameters simulationId={+simulationId} />
-        </TabsContent>
-        <TabsContent value="plots" className="pl-4">
-          <ResultPlots simulationId={+simulationId} />
-        </TabsContent>
-        <TabsContent value="auralizations" className="pl-4">
-          <ResultAuralizations simulationId={+simulationId} />
-        </TabsContent>
-      </Tabs>
+      <div className="relative h-full">
+        <Tabs defaultValue="auralizations" className="h-full">
+          <TabsList className="bg-transparent fixed bottom-0 h-[calc(100vh-4rem-174px)] w-8 p-0 flex-col rounded-r-xl roundedn-l-none z-50">
+            <TabsTrigger value="auralizations" asChild>
+              <TrapezoidOutlineTab value="auralizations">Auralizations</TrapezoidOutlineTab>
+            </TabsTrigger>
+            <TabsTrigger value="parameters" asChild>
+              <TrapezoidOutlineTab value="parameters">Parameters</TrapezoidOutlineTab>
+            </TabsTrigger>
+            <TabsTrigger value="plots" asChild>
+              <TrapezoidOutlineTab value="plots">Plots</TrapezoidOutlineTab>
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="h-full overflow-auto">
+            <TabsContent value="parameters" className="pl-4">
+              <ResultParameters simulationId={+simulationId} />
+            </TabsContent>
+            <TabsContent value="plots" className="pl-4">
+              <ResultPlots simulationId={+simulationId} />
+            </TabsContent>
+            <TabsContent value="auralizations" className="pl-4">
+              <ResultAuralizations simulationId={+simulationId} />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </AppLayout>
   );
 }
