@@ -51,6 +51,19 @@ export function ModelCard({ model }: ModelCardProps) {
                 <EllipsisVerticalIcon className="text-black/50" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
+                <UpdateModel
+                  modelName={model.name}
+                  modelId={model.id.toString()}
+                  onSuccess={() => refetch()}
+                  trigger={
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Edit name
+                    </DropdownMenuItem>
+                  }
+                />
                 <ConfirmDialog
                   onConfirm={handleDeleteModel}
                   title="Delete model"
@@ -63,20 +76,7 @@ export function ModelCard({ model }: ModelCardProps) {
                       onClick={(e) => e.stopPropagation()}
                       className="text-red-600"
                     >
-                      Delete Model
-                    </DropdownMenuItem>
-                  }
-                />
-                <UpdateModel
-                  modelName={model.name}
-                  modelId={model.id.toString()}
-                  onSuccess={() => refetch()}
-                  trigger={
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Edit Model
+                      Delete model
                     </DropdownMenuItem>
                   }
                 />
