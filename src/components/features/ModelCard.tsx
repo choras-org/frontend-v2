@@ -5,7 +5,7 @@ import { useDeleteModelMutation } from "@/store/modelApi";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store";
-import { projectApi } from "@/store/projectApi";
+import { projectApi, useGetProjectQuery } from "@/store/projectApi";
 import { toast } from "sonner";
 import modelImg from "@/assets/model.png";
 import { Card, CardHeader, CardTitle, CardContent, CardAction } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDateLong } from "@/helpers/datetime";
+import { UpdateModel } from "./UpdateModel";
 
 type ModelCardProps = {
   model: Model;
@@ -25,6 +26,7 @@ export function ModelCard({ model }: ModelCardProps) {
   const dispatch: AppDispatch = useDispatch();
   const { data: simulations } = useGetSimulationsByModelIdQuery(model.id);
   const [deleteModel] = useDeleteModelMutation();
+  const { refetch } = useGetProjectQuery(model.projectId.toString());
 
   const handleDeleteModel = async () => {
     try {
@@ -62,6 +64,19 @@ export function ModelCard({ model }: ModelCardProps) {
                       className="text-red-600"
                     >
                       Delete Model
+                    </DropdownMenuItem>
+                  }
+                />
+                <UpdateModel
+                  modelName={model.name}
+                  modelId={model.id.toString()}
+                  onSuccess={() => refetch()}
+                  trigger={
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Edit Model
                     </DropdownMenuItem>
                   }
                 />
