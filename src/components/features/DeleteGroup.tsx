@@ -1,6 +1,5 @@
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { TrashIcon } from "lucide-react";
 import { useState } from "react";
 import {
   useDeleteProjectsByGroupMutation,
@@ -58,12 +57,8 @@ export function DeleteGroup({ group, projectsCount }: DeleteGroupProps) {
           : `Are you sure you want to delete group "${group}"? This action cannot be undone.`
       }
       trigger={
-        <Button
-          variant="ghost"
-          size="sm"
-          className="opacity-25 hover:opacity-75 hover:bg-transparent transition-opacity"
-        >
-          <TrashIcon className="size-4 text-black" />
+        <Button variant="ghost" size="sm" className="text-red-600">
+          Delete group
         </Button>
       }
       open={open}
