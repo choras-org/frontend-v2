@@ -15,7 +15,7 @@ import { useGetSimulationMethodsQuery } from "@/store/simulationSettingsApi";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helpers/datetime";
-import { CheckCircleIcon, FileText, GithubIcon, EllipsisVerticalIcon } from "lucide-react";
+import { CheckCircleIcon, EllipsisVerticalIcon, FileText, GithubIcon } from "lucide-react";
 import type { Simulation } from "@/types/simulation";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedMethodType } from "@/store/simulationSettingsSlice";
@@ -39,6 +39,7 @@ import {
   removeAllReceivers,
   removeAllSources,
 } from "@/store/sourceReceiverSlice";
+import { MethodInfoDialog } from "./MethodInfoDialog";
 
 type SimulationPickerProps = {
   modelId: number;
@@ -176,11 +177,11 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3 w-full items-center">
         <label htmlFor="simulation" className="font-medium text-white">
-          Simulation:
+          Simulation
         </label>
         <div className="col-span-2 flex">
           <Select onValueChange={handleSimulationChange} value={simulationId?.toString()}>
-            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray w-[calc(100%-36px)]">
+            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray min-w-[calc(100%-36px)]">
               <SelectValue>
                 {activeSimulation && activeSimulation.completedAt && (
                   <CheckCircleIcon className="inline text-green-600" />
@@ -265,11 +266,11 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
           </DropdownMenu>
         </div>
         <label htmlFor="method" className="font-medium text-white">
-          Method:
+          Method
         </label>
-        <div className="col-span-2">
+        <div className="col-span-2 flex">
           <Select value={selectedMethodType} onValueChange={handleMethodChange}>
-            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray w-full">
+            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray min-w-[calc(100%-36px)]">
               <SelectValue>
                 {selectedMethod ? selectedMethod.label.replace("method", "") : "Select a method"}
               </SelectValue>
@@ -286,6 +287,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
               ))}
             </SelectContent>
           </Select>
+          <MethodInfoDialog method={selectedMethod} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-6 w-full items-center">

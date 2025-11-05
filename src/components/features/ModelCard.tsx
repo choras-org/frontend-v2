@@ -1,11 +1,11 @@
 import type { Model } from "@/types/model";
 import { EllipsisVerticalIcon } from "lucide-react";
-import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
+import { simulationApi, useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
 import { useDeleteModelMutation } from "@/store/modelApi";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store";
-import { projectApi } from "@/store/projectApi";
+import { projectApi, useGetProjectQuery } from "@/store/projectApi";
 import { toast } from "sonner";
 import modelImg from "@/assets/model.png";
 import { Card, CardHeader, CardTitle, CardContent, CardAction } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDateLong } from "@/helpers/datetime";
+import { UpdateModel } from "./UpdateModel";
 
 type ModelCardProps = {
   model: Model;
@@ -25,11 +26,13 @@ export function ModelCard({ model }: ModelCardProps) {
   const dispatch: AppDispatch = useDispatch();
   const { data: simulations } = useGetSimulationsByModelIdQuery(model.id);
   const [deleteModel] = useDeleteModelMutation();
+  const { refetch } = useGetProjectQuery(model.projectId.toString());
 
-  const handleDeleteModel = async () => {
+  const handleDeleteModel: () => Promise<void> = async () => {
     try {
       await deleteModel(model.id).unwrap();
       dispatch(projectApi.util.invalidateTags([{ type: "Projects" }]));
+      dispatch(simulationApi.util.invalidateTags([{ type: "SimulationsByModel" }]));
       toast.success("Model deleted successfully");
     } catch {
       toast.error("Failed to delete model");
@@ -49,6 +52,19 @@ export function ModelCard({ model }: ModelCardProps) {
                 <EllipsisVerticalIcon className="text-black/50" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
+                <UpdateModel
+                  modelName={model.name}
+                  modelId={model.id.toString()}
+                  onSuccess={() => refetch()}
+                  trigger={
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Edit name
+                    </DropdownMenuItem>
+                  }
+                />
                 <ConfirmDialog
                   onConfirm={handleDeleteModel}
                   title="Delete model"
@@ -61,7 +77,7 @@ export function ModelCard({ model }: ModelCardProps) {
                       onClick={(e) => e.stopPropagation()}
                       className="text-red-600"
                     >
-                      Delete Model
+                      Delete model
                     </DropdownMenuItem>
                   }
                 />
