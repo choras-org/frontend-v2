@@ -1,6 +1,6 @@
 import type { Model } from "@/types/model";
 import { EllipsisVerticalIcon } from "lucide-react";
-import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
+import { simulationApi, useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
 import { useDeleteModelMutation } from "@/store/modelApi";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useDispatch } from "react-redux";
@@ -32,6 +32,7 @@ export function ModelCard({ model }: ModelCardProps) {
     try {
       await deleteModel(model.id).unwrap();
       dispatch(projectApi.util.invalidateTags([{ type: "Projects" }]));
+      dispatch(simulationApi.util.invalidateTags([{ type: "SimulationsByModel" }]));
       toast.success("Model deleted successfully");
     } catch {
       toast.error("Failed to delete model");
