@@ -177,7 +177,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3 w-full items-center">
         <label htmlFor="simulation" className="font-medium text-white">
-          Simulation:
+          Simulation
         </label>
         <div className="col-span-2 flex">
           <Select onValueChange={handleSimulationChange} value={simulationId?.toString()}>
@@ -266,7 +266,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
           </DropdownMenu>
         </div>
         <label htmlFor="method" className="font-medium text-white">
-          Method:
+          Method
         </label>
         <div className="col-span-2 flex">
           <Select value={selectedMethodType} onValueChange={handleMethodChange}>
