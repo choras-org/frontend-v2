@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.52](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.51...v0.0.52) (2025-11-05)
+
+### Bug Fixes
+
+- import simulationApi and ensure cache invalidation on model deletion ([3e6959d](https://github.com/ajatdarojat45/frontend-v2/commit/3e6959d132402bc48b18b4d22806c3441140c0d3))
+- remove colons from labels in SimulationPicker for consistency ([a96ba40](https://github.com/ajatdarojat45/frontend-v2/commit/a96ba4025f24dea25bc67dbf3a73c6411aba861b))
+
 ### [0.0.51](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.50...v0.0.51) (2025-11-04)
 
 ### [0.0.50](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.49...v0.0.50) (2025-11-04)
