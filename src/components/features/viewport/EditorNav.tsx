@@ -1,7 +1,6 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSimulationRunner } from "@/hooks/useSimulationRunner";
 import { useGetSimulationResultQuery } from "@/store/simulationApi";
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 type EditorNavProps = {
@@ -12,18 +11,7 @@ type EditorNavProps = {
 
 export function EditorNav({ active, modelId, simulationId }: EditorNavProps) {
   const { data: result } = useGetSimulationResultQuery(simulationId);
-  const { isRunning, progress } = useSimulationRunner();
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  useEffect(() => {
-    if (progress >= 90) {
-      setIsCompleted(() => true);
-      const timer = setTimeout(() => {
-        setIsCompleted(false);
-      }, 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [isRunning]);
+  const { isRunning } = useSimulationRunner();
 
   const hasResult = result && result.length > 0;
 
@@ -47,7 +35,6 @@ export function EditorNav({ active, modelId, simulationId }: EditorNavProps) {
           <TabsTrigger
             value="results"
             className={`w-full h-full rounded-tl-none rounded-tr-none data-[state=active]:bg-choras-dark data-[state=active]:text-choras-accent text-choras-accent/50 flex items-center justify-center bg-choras-dark/50 cursor-pointer
-            ${isCompleted && "ring-2 ring-yellow-400 shadow-lg animate-pulse bg-yellow-500/20"}
             `}
             style={{
               textOrientation: "mixed",
