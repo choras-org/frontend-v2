@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CircleHelp, FileText, GithubIcon } from "lucide-react";
+import { FileText, GithubIcon } from "lucide-react";
 
 type Method = {
   simulationType: string;
@@ -26,7 +26,22 @@ export function MethodInfoDialog({ method }: MethodInfoDialogProps) {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="px-2 hover:bg-white/10 ml-2">
-          <CircleHelp className="size-6 text-white" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            className="lucide lucide-circle-question-mark-icon lucide-circle-question-mark text-white size-6"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </svg>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
