@@ -28,7 +28,7 @@ export function ModelCard({ model }: ModelCardProps) {
   const [deleteModel] = useDeleteModelMutation();
   const { refetch } = useGetProjectQuery(model.projectId.toString());
 
-  const handleDeleteModel = async () => {
+  const handleDeleteModel: () => Promise<void> = async () => {
     try {
       await deleteModel(model.id).unwrap();
       dispatch(projectApi.util.invalidateTags([{ type: "Projects" }]));
