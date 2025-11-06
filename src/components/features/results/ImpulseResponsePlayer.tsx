@@ -51,59 +51,113 @@ export function ImpulseResponsePlayer({ simulationId, color }: ImpulseResponsePl
         url={audioUrl}
         dragToSeek={{ debounceTime: 5 }}
         mediaControls={true}
-        plugins={[
-          Hover.create({
-            lineColor: "#ff0000",
-            lineWidth: 2,
-            labelBackground: "#555",
-            labelColor: "#fff",
-            labelSize: "11px",
-            formatTimeCallback: (seconds: number) => {
-              // format: mm:ss:ms
-              const ms = Math.floor((seconds % 1) * 1000);
-              const totalSeconds = Math.floor(seconds);
-              const mins = Math.floor(totalSeconds / 60);
-              const secs = totalSeconds % 60;
-              return `${mins}:${secs.toString().padStart(2, "0")}:${ms.toString().padStart(3, "0")}`;
-            },
-          }),
-        ]}
-        renderFunction={(channels, ctx) => {
-          const { width, height } = ctx.canvas;
-          const scale = channels[0].length / width;
-          const step = 10;
-
-          ctx.translate(0, height / 2);
-          ctx.strokeStyle = ctx.fillStyle;
-          ctx.lineWidth = 4; // Make lines thicker
-          ctx.lineJoin = "miter"; // Sharp corners
-          ctx.lineCap = "butt";
-          ctx.beginPath();
-
-          for (let i = 0; i < width; i += step * 2) {
-            const index = Math.floor(i * scale);
-            const value = Math.abs(channels[0][index]);
-            let x = i;
-            // Scale down the height to leave room
-            let y = value * (height / 2 - step);
-
-            // Draw sharp triangle wave (upward)
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x + step / 2, y); // Peak at the middle
-            ctx.lineTo(x + step, 0);
-
-            // Draw sharp triangle wave (downward)
-            x = x + step;
-            y = -y;
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x + step / 2, y); // Peak at the middle
-            ctx.lineTo(x + step, 0);
-          }
-
-          ctx.stroke();
-          ctx.closePath();
-        }}
+        plugins={wavesurferPlugins}
+        renderFunction={renderFunction(color)}
       />
     </div>
   );
 }
+
+const wavesurferPlugins = [
+  Hover.create({
+    lineColor: "#ff0000",
+    lineWidth: 2,
+    labelBackground: "#555",
+    labelColor: "#fff",
+    labelSize: "11px",
+    formatTimeCallback: (seconds: number) => {
+      // format: mm:ss:ms
+      const ms = Math.floor((seconds % 1) * 1000);
+      const totalSeconds = Math.floor(seconds);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${mins}:${secs.toString().padStart(2, "0")}:${ms.toString().padStart(3, "0")}`;
+    },
+  }),
+];
+
+const renderFunction: (
+  color: string,
+) => (peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void =
+  (color) => (channels, ctx) => {
+    const { width, height } = ctx.canvas;
+    const channel = channels[0];
+    const step = 45; // Pixels per triangle
+
+    ctx.translate(0, height / 2);
+
+    // Draw horizontal centerline first
+    ctx.strokeStyle = color; // Light gray
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.stroke();
+
+    // Draw waveform
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.lineWidth = 4;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+
+    // Calculate how many samples per pixel
+    const samplesPerPixel = channel.length / width;
+
+    for (let x = 0; x < width; x += step * 2) {
+      // Get the range of samples for this pixel region
+      const startSample = Math.floor(x * samplesPerPixel);
+      const endSample = Math.floor((x + step) * samplesPerPixel);
+
+      // Find min and max in this range to capture peaks
+      let max = 0;
+      for (let i = startSample; i < endSample && i < channel.length; i++) {
+        const absValue = Math.abs(channel[i]);
+        if (absValue > max) max = absValue;
+      }
+
+      // Scale to canvas height
+      const y = max * (height / 2 - 10);
+
+      // Draw curved wave (upward) using bezier curve for smoother, rounder peaks
+      ctx.moveTo(x, 0);
+      ctx.bezierCurveTo(
+        x + step * 0.25,
+        y * 0.9, // First control point
+        x + step * 0.4,
+        y, // Second control point
+        x + step / 2,
+        y, // Peak
+      );
+      ctx.bezierCurveTo(
+        x + step * 0.6,
+        y, // First control point
+        x + step * 0.75,
+        y * 0.9, // Second control point
+        x + step,
+        0, // End point
+      );
+
+      // Draw curved wave (downward) using bezier curve for smoother, rounder peaks
+      ctx.moveTo(x + step, 0);
+      ctx.bezierCurveTo(
+        x + step + step * 0.25,
+        -y * 0.9, // First control point
+        x + step + step * 0.4,
+        -y, // Second control point
+        x + step + step / 2,
+        -y, // Peak
+      );
+      ctx.bezierCurveTo(
+        x + step + step * 0.6,
+        -y, // First control point
+        x + step + step * 0.75,
+        -y * 0.9, // Second control point
+        x + step * 2,
+        0, // End point
+      );
+    }
+
+    ctx.stroke();
+    ctx.closePath();
+  };
