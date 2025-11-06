@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.54](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.53...v0.0.54) (2025-11-06)
+
+### Features
+
+- implement timestamp label for audio playback in ImpulseResponsePlayer ([d96e06f](https://github.com/ajatdarojat45/frontend-v2/commit/d96e06fc38b9c52ad7a767bf39420c4adb0f45c7))
+
+### Bug Fixes
+
+- add compare item using the same color ([0396cf8](https://github.com/ajatdarojat45/frontend-v2/commit/0396cf88c307786b46606d0618660be7a2d9339a))
+- correct polygon points and increase stroke width in TrapezoidOutlineTab ([d60727e](https://github.com/ajatdarojat45/frontend-v2/commit/d60727e89a55352bd235d729924bbc8b4b637d5c))
+- enhance waveform rendering with thicker lines and sharp corners ([3638095](https://github.com/ajatdarojat45/frontend-v2/commit/36380958f88fc4669807a49a87610ec987767781))
+- Hide selected simulation the compare result option ([a0d111e](https://github.com/ajatdarojat45/frontend-v2/commit/a0d111ecd197cc2773cb6ba18ef184b59edb6e8f))
+- increase maximum file size limit to 100MB in UploadModelSchema ([a95415f](https://github.com/ajatdarojat45/frontend-v2/commit/a95415f7538860ba72750c90f9e230ee80fb0ad8))
+- IR visualization sync ([0acebdd](https://github.com/ajatdarojat45/frontend-v2/commit/0acebdde4d5b193a96e1ebae89e9e74c154a6304))
+- refactor waveform rendering to use bezier curves for smoother peaks and separate plugin definitions ([314353c](https://github.com/ajatdarojat45/frontend-v2/commit/314353c9742ac4bc920715cb8ac428a881ac2d71))
+- remove outdated TODO comments from ImpulseResponsePlayer component ([0132fc8](https://github.com/ajatdarojat45/frontend-v2/commit/0132fc82939f1684921fa077e1224e4439b23847))
+
 ### [0.0.53](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.52...v0.0.53) (2025-11-06)
 
 ### Bug Fixes
