@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.53](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.52...v0.0.53) (2025-11-06)
+
+### Bug Fixes
+
+- add return type to handleDeleteModel function for better type safety ([136aa4d](https://github.com/ajatdarojat45/frontend-v2/commit/136aa4db134f4b3d76dbab4aa36ce1dbdcd841e5))
+- update CustomSelectItem to display timestamp based on simulation state and running status ([10f3222](https://github.com/ajatdarojat45/frontend-v2/commit/10f3222d6a75a222af687749627236143322a87d))
+
 ### [0.0.52](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.51...v0.0.52) (2025-11-05)
 
 ### Bug Fixes
