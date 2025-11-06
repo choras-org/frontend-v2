@@ -40,6 +40,7 @@ import {
   removeAllSources,
 } from "@/store/sourceReceiverSlice";
 import { MethodInfoDialog } from "./MethodInfoDialog";
+import { useSimulationRunner } from "@/hooks/useSimulationRunner";
 
 type SimulationPickerProps = {
   modelId: number;
@@ -54,6 +55,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const [getSimulationsByModelId] = useLazyGetSimulationsByModelIdQuery();
   const { duplicateSimulation } = useDuplicateSimulation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isRunning } = useSimulationRunner();
 
   const [updateSimulation] = useUpdateSimulationMutation();
   const selectedMethodType = useSelector(
@@ -183,7 +185,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
           <Select onValueChange={handleSimulationChange} value={simulationId?.toString()}>
             <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray min-w-[calc(100%-36px)]">
               <SelectValue>
-                {activeSimulation && activeSimulation.completedAt && (
+                {activeSimulation && activeSimulation.completedAt && !isRunning && (
                   <CheckCircleIcon className="inline text-green-600" />
                 )}
                 {activeSimulation ? activeSimulation.name : "Select a simulation"}
@@ -191,7 +193,11 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
             </SelectTrigger>
             <SelectContent className="bg-choras-dark border-choras-gray">
               {simulations.map((simulation) => (
-                <CustomSelectItem key={simulation.id} simulation={simulation} />
+                <CustomSelectItem
+                  key={simulation.id}
+                  simulation={simulation}
+                  activeSimulationId={simulationId as number}
+                />
               ))}
             </SelectContent>
           </Select>
@@ -323,17 +329,30 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   );
 }
 
-function CustomSelectItem({ simulation }: { simulation: Simulation }) {
-  let timestamp = (
-    <p className="text-xs text-choras-gray">Created at: {formatDate(simulation.createdAt)}</p>
-  );
+function CustomSelectItem({
+  simulation,
+  activeSimulationId,
+}: {
+  simulation: Simulation;
+  activeSimulationId: number;
+}) {
+  const { isRunning } = useSimulationRunner();
 
-  if (simulation.completedAt) {
+  let timestamp;
+  if (simulation.id === activeSimulationId && isRunning) {
+    timestamp = (
+      <p className="text-xs text-choras-gray">Created at: {formatDate(simulation.createdAt)}</p>
+    );
+  } else if (simulation.completedAt) {
     timestamp = (
       <p className="text-xs text-choras-gray inline-flex gap-2">
         <CheckCircleIcon className="text-green-600" /> Completed at:{" "}
         {formatDate(simulation.completedAt)}
       </p>
+    );
+  } else {
+    timestamp = (
+      <p className="text-xs text-choras-gray">Created at: {formatDate(simulation.createdAt)}</p>
     );
   }
 
