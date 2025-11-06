@@ -113,7 +113,7 @@ const renderFunction: (
   (color) => (channels, ctx) => {
     const { width, height } = ctx.canvas;
     const channel = channels[0];
-    const step = 45; // Pixels per triangle
+    const step = 5; // Pixels per triangle
 
     ctx.translate(0, height / 2);
 
@@ -127,7 +127,7 @@ const renderFunction: (
 
     // Draw waveform
     ctx.strokeStyle = ctx.fillStyle;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 2;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.beginPath();
