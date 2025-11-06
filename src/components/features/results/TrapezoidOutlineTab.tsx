@@ -28,10 +28,10 @@ export function TrapezoidOutlineTab({ value, children, ...restProps }: Trapezoid
       >
         <polygon
           data-state={restProps["data-state"]}
-          points="0,0 1,0 100,15 100,85 1,100 0,100"
+          points="0,0 1,0 95,15 95,85 1,100 0,100"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1"
+          strokeWidth="2"
           vectorEffect="non-scaling-stroke"
           shapeRendering="crispEdges"
           className="transition-colors stroke-black/50 data-[state=active]:stroke-black"
