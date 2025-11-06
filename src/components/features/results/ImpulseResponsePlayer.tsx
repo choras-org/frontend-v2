@@ -6,13 +6,6 @@ import { useMemo } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loading } from "@/components/ui/loading";
 
-// TODO:
-// - [OK] Link IR visualization with navigation bar so interactions stay in sync.
-// - [OK] Implement click-and-drag navigation on the IR (not just click-to-move).
-// - [OK] Display time next to the IR cursor, formatted in milliseconds.
-// - [OK] The visualisation of the impulse response seems to be perfectly symmetric. However, this is not what the underlying data is (see image below). Is there a way to change the properties of the .wav visualiser to show the data more accurately?
-// - Playback seems to be triggered twice. If you click on play for a very short impulse response, you can hear two clicks rather than one. Try to download the .wav and compare.
-
 type ImpulseResponsePlayerProps = {
   simulationId: number;
   color: string;
