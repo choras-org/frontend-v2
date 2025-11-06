@@ -34,7 +34,7 @@ const UploadModelSchema = z.object({
   // single File expected (only .obj or .dxf)
   file: z
     .instanceof(File, { message: "Please upload a file." })
-    .refine((file: File) => file.size <= 5_000_000, { message: "Max file size is 5MB." })
+    .refine((file: File) => file.size <= 100_000_000, { message: "Max file size is 100MB." })
     .refine((file: File) => /\.(obj|dxf)$/i.test(file.name), {
       message: "Only .obj or .dxf files are accepted.",
     }),
