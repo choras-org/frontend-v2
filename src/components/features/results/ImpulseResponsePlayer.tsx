@@ -127,7 +127,7 @@ const renderFunction: (
 
     // Draw waveform
     ctx.strokeStyle = ctx.fillStyle;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.beginPath();
@@ -135,12 +135,13 @@ const renderFunction: (
     // Calculate how many samples per pixel
     const samplesPerPixel = channel.length / width;
 
+    // Analyze ALL samples without skipping for accurate IR analysis
     for (let x = 0; x < width; x += step * 2) {
-      // Get the range of samples for this pixel region
+      // Analyze the full range from current position to next position (no gaps)
       const startSample = Math.floor(x * samplesPerPixel);
-      const endSample = Math.floor((x + step) * samplesPerPixel);
+      const endSample = Math.floor((x + step * 2) * samplesPerPixel);
 
-      // Find min and max in this range to capture peaks
+      // Find peak in the entire region for accurate representation
       let max = 0;
       for (let i = startSample; i < endSample && i < channel.length; i++) {
         const absValue = Math.abs(channel[i]);
