@@ -82,24 +82,28 @@ export function ImpulseResponsePlayer({ simulationId, color }: ImpulseResponsePl
 
           ctx.translate(0, height / 2);
           ctx.strokeStyle = ctx.fillStyle;
+          ctx.lineWidth = 4; // Make lines thicker
+          ctx.lineJoin = "miter"; // Sharp corners
+          ctx.lineCap = "butt";
           ctx.beginPath();
 
           for (let i = 0; i < width; i += step * 2) {
             const index = Math.floor(i * scale);
             const value = Math.abs(channels[0][index]);
             let x = i;
-            let y = value * height;
+            // Scale down the height to leave room
+            let y = value * (height / 2 - step);
 
+            // Draw sharp triangle wave (upward)
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, y);
-            ctx.arc(x + step / 2, y, step / 2, Math.PI, 0, true);
+            ctx.lineTo(x + step / 2, y); // Peak at the middle
             ctx.lineTo(x + step, 0);
 
+            // Draw sharp triangle wave (downward)
             x = x + step;
             y = -y;
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, y);
-            ctx.arc(x + step / 2, y, step / 2, Math.PI, 0, false);
+            ctx.lineTo(x + step / 2, y); // Peak at the middle
             ctx.lineTo(x + step, 0);
           }
 
