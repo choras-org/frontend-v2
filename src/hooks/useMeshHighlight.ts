@@ -27,6 +27,7 @@ export function useMeshHighlight() {
         material instanceof THREE.MeshBasicMaterial
       ) {
         material.color.setHex(color);
+        material.needsUpdate = true;
       }
     });
   }, []);
@@ -48,7 +49,25 @@ export function useMeshHighlight() {
           } else {
             material.color.copy(originalColor);
           }
+          material.needsUpdate = true;
         }
+      }
+    });
+  }, []);
+
+  const setMeshBaseColor = useCallback((mesh: THREE.Mesh, color: number) => {
+    if (!mesh.material) return;
+
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+
+    materials.forEach((material) => {
+      if (
+        material instanceof THREE.MeshStandardMaterial ||
+        material instanceof THREE.MeshBasicMaterial
+      ) {
+        cacheRef.current.set(material, color);
+        material.color.setHex(color);
+        material.needsUpdate = true;
       }
     });
   }, []);
@@ -56,6 +75,7 @@ export function useMeshHighlight() {
   return {
     highlightMesh,
     restoreOriginalColor,
+    setMeshBaseColor,
     HIGHLIGHT_COLOR,
   };
 }

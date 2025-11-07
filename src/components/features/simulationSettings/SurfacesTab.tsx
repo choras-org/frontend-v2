@@ -5,6 +5,7 @@ import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/
 import { useDispatch, useSelector } from "react-redux";
 import { useGeometrySelection } from "@/hooks/useGeometrySelection";
 import { useMeshHighlight } from "@/hooks/useMeshHighlight";
+import { getAbsorptionColor, calculateAverageAbsorption } from "@/helpers/colorGradient";
 import * as THREE from "three";
 import type { RootState } from "@/store";
 import {
@@ -36,7 +37,8 @@ export function SurfacesTab() {
   const [hiddenSurfaces, setHiddenSurfaces] = useState<Set<string>>(new Set());
   const selectedSurfaceRowRef = useRef<HTMLTableRowElement>(null);
   const { selectGeometry, addHighlightedMesh, removeHighlightedMesh } = useGeometrySelection();
-  const { highlightMesh, restoreOriginalColor, HIGHLIGHT_COLOR } = useMeshHighlight();
+  const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
+    useMeshHighlight();
   const {
     data: materials = [],
     isLoading: materialsLoading,
@@ -66,6 +68,21 @@ export function SurfacesTab() {
       dispatch(setAssignments(simulation.layerIdByMaterialId));
     }
   }, [simulation?.layerIdByMaterialId, dispatch]);
+
+  useEffect(() => {
+    if (simulation?.layerIdByMaterialId && surfaces.length > 0 && materials.length > 0) {
+      Object.entries(simulation.layerIdByMaterialId).forEach(([surfaceId, materialId]) => {
+        const surface = surfaces.find((s) => s.id === surfaceId);
+        const material = materials.find((m) => m.id === materialId);
+
+        if (surface?.mesh && material?.absorptionCoefficients) {
+          const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
+          const absorptionColor = getAbsorptionColor(avgAbsorption);
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      });
+    }
+  }, [simulation?.layerIdByMaterialId, surfaces, materials, setMeshBaseColor]);
 
   useEffect(() => {
     if (simulationError) {
@@ -142,14 +159,29 @@ export function SurfacesTab() {
     }
 
     let updatedAssignments: Record<string, number>;
+    const surface = surfaces.find((s) => s.id === surfaceKey);
 
     if (materialId === "default") {
       dispatch(removeMaterialAssignment(surfaceKey));
       updatedAssignments = { ...materialAssignments };
       delete updatedAssignments[surfaceKey];
+
+      if (surface?.mesh) {
+        restoreOriginalColor(surface.mesh);
+      }
     } else {
-      dispatch(assignMaterial({ meshId: surfaceKey, materialId: parseInt(materialId) }));
-      updatedAssignments = { ...materialAssignments, [surfaceKey]: parseInt(materialId) };
+      const numMaterialId = parseInt(materialId);
+      dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+      updatedAssignments = { ...materialAssignments, [surfaceKey]: numMaterialId };
+
+      if (surface?.mesh) {
+        const material = materials.find((m) => m.id === numMaterialId);
+        if (material?.absorptionCoefficients) {
+          const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
+          const absorptionColor = getAbsorptionColor(avgAbsorption);
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      }
     }
 
     updateSimulationData(updatedAssignments);
@@ -162,16 +194,33 @@ export function SurfacesTab() {
     }
 
     let updatedAssignments: Record<string, number>;
+    const material = materials.find((m) => m.id === parseInt(materialId));
 
     if (materialId === "default") {
       dispatch(clearAllAssignments());
       updatedAssignments = {};
+
+      surfaces.forEach((surface) => {
+        if (surface.mesh) {
+          restoreOriginalColor(surface.mesh);
+        }
+      });
     } else {
       const newAssignments: Record<string, number> = {};
+      const numMaterialId = parseInt(materialId);
+      const avgAbsorption = material?.absorptionCoefficients
+        ? calculateAverageAbsorption(material.absorptionCoefficients)
+        : 0;
+      const absorptionColor = getAbsorptionColor(avgAbsorption);
+
       surfaces.forEach((surface) => {
         const surfaceKey = surface.id;
-        dispatch(assignMaterial({ meshId: surfaceKey, materialId: parseInt(materialId) }));
-        newAssignments[surfaceKey] = parseInt(materialId);
+        dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+        newAssignments[surfaceKey] = numMaterialId;
+
+        if (surface.mesh) {
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
       });
       updatedAssignments = { ...materialAssignments, ...newAssignments };
     }
