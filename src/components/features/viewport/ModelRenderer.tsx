@@ -6,6 +6,7 @@ import { useGeometrySelection } from "@/hooks/useGeometrySelection";
 import { useMeshHighlight } from "@/hooks/useMeshHighlight";
 import { createEdgeOutlineForObject3D } from "@/helpers/layerProcessor";
 import { selectSource, selectReceiver } from "@/store/sourceReceiverSlice";
+import { setActiveTab } from "@/store/tabSlice";
 import type { RootState } from "@/store";
 import * as THREE from "three";
 import type { ModelRendererProps } from "@/types/modelViewport";
@@ -243,6 +244,24 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
     pointer,
   ]);
 
+  const handleDoubleClick = useCallback(() => {
+    if (!groupRef.current) return;
+
+    const meshes: THREE.Mesh[] = [];
+    groupRef.current.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        meshes.push(child);
+      }
+    });
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(meshes);
+
+    if (intersects.length > 0) {
+      dispatch(setActiveTab("surfaces"));
+    }
+  }, [dispatch, camera, raycaster, pointer]);
+
   if (currentModelId !== modelId || !modelData) {
     return null;
   }
@@ -254,6 +273,7 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
       onPointerUp={handlePointerUp}
       onPointerMove={handlePointerMove}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
     >
       <mesh position={[0, 0, -1000]} visible={false}>
         <planeGeometry args={[10000, 10000]} />

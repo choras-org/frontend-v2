@@ -188,16 +188,13 @@ export function SurfacesTab() {
   const isMaterialsMixed = () => {
     if (surfaces.length === 0) return false;
 
-    // Get material assignment for each surface (undefined for None)
     const allMaterials = surfaces.map((surface) => {
       const surfaceKey = surface.id;
-      return materialAssignments[surfaceKey]; // undefined if not assigned (None)
+      return materialAssignments[surfaceKey];
     });
 
-    // Create set of unique materials (including undefined for None)
     const uniqueMaterials = new Set(allMaterials);
 
-    // Mixed if there are more than 1 unique material states
     return uniqueMaterials.size > 1;
   };
 
@@ -211,7 +208,6 @@ export function SurfacesTab() {
   const getAssignAllValue = () => {
     if (surfaces.length === 0) return "default";
 
-    // Check if materials are mixed first
     if (isMaterialsMixed()) {
       return "mixed";
     }
@@ -258,7 +254,6 @@ export function SurfacesTab() {
     }, 500);
   };
 
-  // Find the selected surface based on the selected geometry mesh
   const getSelectedSurfaceId = (): string | null => {
     if (!selectedGeometry?.mesh) return null;
 
@@ -272,13 +267,11 @@ export function SurfacesTab() {
 
   const selectedSurfaceId = getSelectedSurfaceId();
 
-  // Auto-expand individual assignments and scroll to selected surface when it's selected in viewport
   useEffect(() => {
     if (selectedSurfaceId && !showIndividualAssignments) {
       setShowIndividualAssignments(true);
     }
 
-    // Scroll to the selected surface row after the DOM has updated
     if (selectedSurfaceId && showIndividualAssignments && selectedSurfaceRowRef.current) {
       setTimeout(() => {
         selectedSurfaceRowRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -286,12 +279,10 @@ export function SurfacesTab() {
     }
   }, [selectedSurfaceId, showIndividualAssignments]);
 
-  // Handle surface row click to select in viewport
   const handleSurfaceRowClick = useCallback(
     (surface: SurfaceInfo) => {
       const mesh = surface.mesh;
 
-      // If this surface is already selected, deselect it
       if (selectedSurfaceId === surface.id) {
         removeHighlightedMesh(mesh);
         restoreOriginalColor(mesh);
@@ -299,13 +290,11 @@ export function SurfacesTab() {
         return;
       }
 
-      // Deselect previously selected surface if any
       if (selectedGeometry?.mesh) {
         removeHighlightedMesh(selectedGeometry.mesh);
         restoreOriginalColor(selectedGeometry.mesh);
       }
 
-      // Highlight and select the new surface
       highlightMesh(mesh, HIGHLIGHT_COLOR);
       addHighlightedMesh(mesh);
       selectGeometry({
