@@ -129,40 +129,23 @@ const renderFunction: (
 
       const amp = channelHeight / 2;
       const length = channel.length;
-      const hScale = length ? width / length : 0;
+      const hScale = width / length;
 
-      // Draw waveform like wavesurfer.js
+      // Draw waveform - plot every single sample
       ctx.beginPath();
 
-      let prevX = 0;
-      let maxValue = 0;
+      for (let i = 0; i < length; i++) {
+        const x = i * hScale;
+        const value = channel[i] || 0;
+        const y = offsetY - value * amp;
 
-      for (let i = 0; i <= length; i++) {
-        const x = Math.round(i * hScale);
-
-        if (x > prevX) {
-          // When we move to a new pixel, draw the accumulated peak
-          const y = offsetY - maxValue * amp;
-
-          if (prevX === 0) {
-            ctx.moveTo(prevX, y);
-          } else {
-            ctx.lineTo(prevX, y);
-          }
-
-          prevX = x;
-          maxValue = 0;
-        }
-
-        // Find the value with the highest absolute magnitude, but keep its sign
-        const currentValue = channel[i] || 0;
-        if (Math.abs(currentValue) > Math.abs(maxValue)) {
-          maxValue = currentValue;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
         }
       }
 
-      // Final point
-      ctx.lineTo(prevX, offsetY - maxValue * amp);
       ctx.stroke();
 
       // Draw center line
