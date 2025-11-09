@@ -192,6 +192,13 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                           >
                             or click to select a file
                           </span>
+                          <span
+                            className={cn("text-xs text-muted-foreground", {
+                              "text-destructive": fieldState.error,
+                            })}
+                          >
+                            max file size: 100MB
+                          </span>
                           <input
                             ref={fileInputRef}
                             id="file-drop"
@@ -214,6 +221,8 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                               "p-3 border rounded-md h-64 flex flex-col justify-center items-center gap-3",
                               {
                                 "opacity-50 pointer-events-none": isSubmitting,
+                                "border-destructive": fieldState.error,
+                                "bg-red-50": fieldState.error,
                               },
                             )}
                           >
@@ -224,8 +233,18 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
 
                             {/* metadata */}
                             <div className="text-center">
-                              <div className="font-medium">{field.value.name}</div>
-                              <div className="text-xs text-muted-foreground">
+                              <div
+                                className={cn("font-medium", {
+                                  "text-destructive": fieldState.error,
+                                })}
+                              >
+                                {field.value.name}
+                              </div>
+                              <div
+                                className={cn("text-xs text-muted-foreground", {
+                                  "text-destructive": fieldState.error,
+                                })}
+                              >
                                 {formatBytes(field.value.size)}
                               </div>
                             </div>
