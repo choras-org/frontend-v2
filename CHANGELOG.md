@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.55](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.54...v0.0.55) (2025-11-09)
+
+### Bug Fixes
+
+- adjust line width and sample analysis for improved waveform accuracy in ImpulseResponsePlayer ([8717092](https://github.com/ajatdarojat45/frontend-v2/commit/8717092b3194e6ac338e9c7d00e5a8570a08bced))
+- adjust stroke width for polygon in TrapezoidOutlineTab ([c5be6bd](https://github.com/ajatdarojat45/frontend-v2/commit/c5be6bd65e3683fa7e7bc8c28b6aea43a896c4e0))
+- enhance file upload feedback with error indication and size limit display ([496798a](https://github.com/ajatdarojat45/frontend-v2/commit/496798ad87c7f53f8cc13f2f36de7329f36476d2))
+- optimize waveform rendering by plotting every sample for improved accuracy in ImpulseResponsePlayer ([c829eb1](https://github.com/ajatdarojat45/frontend-v2/commit/c829eb1de28b2b1dfc0fda672da0f41bfcc7151d))
+- reduce step size and line width for improved waveform rendering in ImpulseResponsePlayer ([72678a2](https://github.com/ajatdarojat45/frontend-v2/commit/72678a232cc7baceeff527d00c3eb22ff0a654c9))
+- refactor waveform rendering for improved accuracy and clarity in ImpulseResponsePlayer ([9e192ab](https://github.com/ajatdarojat45/frontend-v2/commit/9e192ab37dd7d44b7a71be19935b9bdf5d1495a0))
+
 ### [0.0.54](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.53...v0.0.54) (2025-11-06)
 
 ### Features
