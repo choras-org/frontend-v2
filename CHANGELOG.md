@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.56](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.55...v0.0.56) (2025-11-09)
+
+### Features
+
+- add color to material assignment ([b641d57](https://github.com/ajatdarojat45/frontend-v2/commit/b641d578b21c0413b5a2538157e58e8c7dfcbd29))
+- add selection to both surface tab and surface in viewport ([ecbd536](https://github.com/ajatdarojat45/frontend-v2/commit/ecbd5367545f8966b79fc6c1e81f6beda01a8ae0))
+- change grid size ([2234fca](https://github.com/ajatdarojat45/frontend-v2/commit/2234fcaa4aaeffad30b2a3fd6268678532f10724))
+- double-clicking surface auto open surface tab ([2424276](https://github.com/ajatdarojat45/frontend-v2/commit/2424276a43f769941846b8f2315ceca3c6164d8a))
+
 ### [0.0.55](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.54...v0.0.55) (2025-11-09)
 
 ### Bug Fixes
