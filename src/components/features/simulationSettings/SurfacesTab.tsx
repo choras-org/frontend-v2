@@ -3,6 +3,10 @@ import { useSurfaces } from "@/hooks/useSurfaces";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
 import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
 import { useDispatch, useSelector } from "react-redux";
+import { useGeometrySelection } from "@/hooks/useGeometrySelection";
+import { useMeshHighlight } from "@/hooks/useMeshHighlight";
+import { getAbsorptionColor, calculateAverageAbsorption } from "@/helpers/colorGradient";
+import * as THREE from "three";
 import type { RootState } from "@/store";
 import {
   assignMaterial,
@@ -31,6 +35,10 @@ export function SurfacesTab() {
   const surfaces = useSurfaces();
   const [showIndividualAssignments, setShowIndividualAssignments] = useState(false);
   const [hiddenSurfaces, setHiddenSurfaces] = useState<Set<string>>(new Set());
+  const selectedSurfaceRowRef = useRef<HTMLTableRowElement>(null);
+  const { selectGeometry, addHighlightedMesh, removeHighlightedMesh } = useGeometrySelection();
+  const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
+    useMeshHighlight();
   const {
     data: materials = [],
     isLoading: materialsLoading,
@@ -42,6 +50,9 @@ export function SurfacesTab() {
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
   const highlightedElement = useSelector((state: RootState) => state.tab.highlightedElement);
+  const selectedGeometry = useSelector(
+    (state: RootState) => state.geometrySelection.selectedGeometry,
+  );
   const { data: simulation, error: simulationError } = useGetSimulationByIdQuery(
     activeSimulation?.id ?? 0,
     {
@@ -57,6 +68,21 @@ export function SurfacesTab() {
       dispatch(setAssignments(simulation.layerIdByMaterialId));
     }
   }, [simulation?.layerIdByMaterialId, dispatch]);
+
+  useEffect(() => {
+    if (simulation?.layerIdByMaterialId && surfaces.length > 0 && materials.length > 0) {
+      Object.entries(simulation.layerIdByMaterialId).forEach(([surfaceId, materialId]) => {
+        const surface = surfaces.find((s) => s.id === surfaceId);
+        const material = materials.find((m) => m.id === materialId);
+
+        if (surface?.mesh && material?.absorptionCoefficients) {
+          const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
+          const absorptionColor = getAbsorptionColor(avgAbsorption);
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      });
+    }
+  }, [simulation?.layerIdByMaterialId, surfaces, materials, setMeshBaseColor]);
 
   useEffect(() => {
     if (simulationError) {
@@ -133,14 +159,29 @@ export function SurfacesTab() {
     }
 
     let updatedAssignments: Record<string, number>;
+    const surface = surfaces.find((s) => s.id === surfaceKey);
 
     if (materialId === "default") {
       dispatch(removeMaterialAssignment(surfaceKey));
       updatedAssignments = { ...materialAssignments };
       delete updatedAssignments[surfaceKey];
+
+      if (surface?.mesh) {
+        restoreOriginalColor(surface.mesh);
+      }
     } else {
-      dispatch(assignMaterial({ meshId: surfaceKey, materialId: parseInt(materialId) }));
-      updatedAssignments = { ...materialAssignments, [surfaceKey]: parseInt(materialId) };
+      const numMaterialId = parseInt(materialId);
+      dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+      updatedAssignments = { ...materialAssignments, [surfaceKey]: numMaterialId };
+
+      if (surface?.mesh) {
+        const material = materials.find((m) => m.id === numMaterialId);
+        if (material?.absorptionCoefficients) {
+          const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
+          const absorptionColor = getAbsorptionColor(avgAbsorption);
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      }
     }
 
     updateSimulationData(updatedAssignments);
@@ -153,16 +194,33 @@ export function SurfacesTab() {
     }
 
     let updatedAssignments: Record<string, number>;
+    const material = materials.find((m) => m.id === parseInt(materialId));
 
     if (materialId === "default") {
       dispatch(clearAllAssignments());
       updatedAssignments = {};
+
+      surfaces.forEach((surface) => {
+        if (surface.mesh) {
+          restoreOriginalColor(surface.mesh);
+        }
+      });
     } else {
       const newAssignments: Record<string, number> = {};
+      const numMaterialId = parseInt(materialId);
+      const avgAbsorption = material?.absorptionCoefficients
+        ? calculateAverageAbsorption(material.absorptionCoefficients)
+        : 0;
+      const absorptionColor = getAbsorptionColor(avgAbsorption);
+
       surfaces.forEach((surface) => {
         const surfaceKey = surface.id;
-        dispatch(assignMaterial({ meshId: surfaceKey, materialId: parseInt(materialId) }));
-        newAssignments[surfaceKey] = parseInt(materialId);
+        dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+        newAssignments[surfaceKey] = numMaterialId;
+
+        if (surface.mesh) {
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
       });
       updatedAssignments = { ...materialAssignments, ...newAssignments };
     }
@@ -179,16 +237,13 @@ export function SurfacesTab() {
   const isMaterialsMixed = () => {
     if (surfaces.length === 0) return false;
 
-    // Get material assignment for each surface (undefined for None)
     const allMaterials = surfaces.map((surface) => {
       const surfaceKey = surface.id;
-      return materialAssignments[surfaceKey]; // undefined if not assigned (None)
+      return materialAssignments[surfaceKey];
     });
 
-    // Create set of unique materials (including undefined for None)
     const uniqueMaterials = new Set(allMaterials);
 
-    // Mixed if there are more than 1 unique material states
     return uniqueMaterials.size > 1;
   };
 
@@ -202,7 +257,6 @@ export function SurfacesTab() {
   const getAssignAllValue = () => {
     if (surfaces.length === 0) return "default";
 
-    // Check if materials are mixed first
     if (isMaterialsMixed()) {
       return "mixed";
     }
@@ -248,6 +302,67 @@ export function SurfacesTab() {
       setOpenCreateMaterialDialog(true);
     }, 500);
   };
+
+  const getSelectedSurfaceId = (): string | null => {
+    if (!selectedGeometry?.mesh) return null;
+
+    const selectedMesh = selectedGeometry.mesh;
+    const matchedSurface = surfaces.find(
+      (surface) => surface.mesh === selectedMesh || surface.mesh.uuid === selectedMesh.uuid,
+    );
+
+    return matchedSurface?.id || null;
+  };
+
+  const selectedSurfaceId = getSelectedSurfaceId();
+
+  useEffect(() => {
+    if (selectedSurfaceId && !showIndividualAssignments) {
+      setShowIndividualAssignments(true);
+    }
+
+    if (selectedSurfaceId && showIndividualAssignments && selectedSurfaceRowRef.current) {
+      setTimeout(() => {
+        selectedSurfaceRowRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 50);
+    }
+  }, [selectedSurfaceId, showIndividualAssignments]);
+
+  const handleSurfaceRowClick = useCallback(
+    (surface: SurfaceInfo) => {
+      const mesh = surface.mesh;
+
+      if (selectedSurfaceId === surface.id) {
+        removeHighlightedMesh(mesh);
+        restoreOriginalColor(mesh);
+        selectGeometry(null);
+        return;
+      }
+
+      if (selectedGeometry?.mesh) {
+        removeHighlightedMesh(selectedGeometry.mesh);
+        restoreOriginalColor(selectedGeometry.mesh);
+      }
+
+      highlightMesh(mesh, HIGHLIGHT_COLOR);
+      addHighlightedMesh(mesh);
+      selectGeometry({
+        mesh,
+        faceIndex: 0,
+        point: new THREE.Vector3(),
+      });
+    },
+    [
+      selectedSurfaceId,
+      selectedGeometry,
+      selectGeometry,
+      addHighlightedMesh,
+      removeHighlightedMesh,
+      highlightMesh,
+      restoreOriginalColor,
+      HIGHLIGHT_COLOR,
+    ],
+  );
 
   return (
     <div className="text-white h-full flex flex-col justify-between">
@@ -365,16 +480,26 @@ export function SurfacesTab() {
                   surfaces.map((surface, index) => {
                     const surfaceKey = surface.id;
                     const assignedMaterialId = materialAssignments[surfaceKey];
+                    const isSelected = selectedSurfaceId === surface.id;
 
                     return (
                       <tr
                         key={surface.id}
-                        className="hover:bg-choras-dark/90 border-t border-gray-700"
+                        ref={isSelected ? selectedSurfaceRowRef : null}
+                        onClick={() => handleSurfaceRowClick(surface)}
+                        className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
+                          isSelected
+                            ? "bg-choras-primary/20 hover:bg-choras-primary/30"
+                            : "hover:bg-choras-dark/90"
+                        }`}
                       >
                         <td className="px-3 py-2 text-sm w-1/3">
                           <div className="flex items-center gap-2">
                             <div
-                              onClick={() => toggleSurfaceVisibility(surfaceKey)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSurfaceVisibility(surfaceKey);
+                              }}
                               className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
                             >
                               {hiddenSurfaces.has(surfaceKey) ? (
@@ -388,7 +513,7 @@ export function SurfacesTab() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-3 py-2 w-1/3">
+                        <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
                           <Select
                             value={assignedMaterialId?.toString() || "default"}
                             onValueChange={(value) => handleMaterialAssignment(surfaceKey, value)}
