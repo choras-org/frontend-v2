@@ -85,24 +85,26 @@ export function useJsonValidation() {
   const validateSourcesFromJson = useCallback(
     (sourcesData: Record<string, unknown>): { isValid: boolean; error?: string } => {
       const sourceKeys = Object.keys(sourcesData);
-
+      if (sourceKeys.length > 1) {
+        return {
+          isValid: false,
+          error: `Only one source is allowed at the moment. Found: ${sourceKeys.length}`,
+        };
+      }
       for (const key of sourceKeys) {
         const coords = sourcesData[key] as unknown;
-
         if (!Array.isArray(coords) || coords.length !== 3) {
           return {
             isValid: false,
             error: `Invalid source "${key}": must be an array of 3 numbers [x, y, z]`,
           };
         }
-
         if (!coords.every((n) => typeof n === "number" && !isNaN(n))) {
           return {
             isValid: false,
             error: `Invalid source "${key}": coordinates must be valid numbers`,
           };
         }
-
         const [x, y, z] = coords;
         const sourceToValidate: Source = {
           id: key,
@@ -113,7 +115,6 @@ export function useJsonValidation() {
           z,
           isValid: true,
         };
-
         const validatedSource = validateSource(sourceToValidate);
         if (!validatedSource.isValid) {
           return {
@@ -131,24 +132,26 @@ export function useJsonValidation() {
   const validateReceiversFromJson = useCallback(
     (receiversData: Record<string, unknown>): { isValid: boolean; error?: string } => {
       const receiverKeys = Object.keys(receiversData);
-
+      if (receiverKeys.length > 1) {
+        return {
+          isValid: false,
+          error: `Only one receiver is allowed at the moment. Found: ${receiverKeys.length}`,
+        };
+      }
       for (const key of receiverKeys) {
         const coords = receiversData[key] as unknown;
-
         if (!Array.isArray(coords) || coords.length !== 3) {
           return {
             isValid: false,
             error: `Invalid receiver "${key}": must be an array of 3 numbers [x, y, z]`,
           };
         }
-
         if (!coords.every((n) => typeof n === "number" && !isNaN(n))) {
           return {
             isValid: false,
             error: `Invalid receiver "${key}": coordinates must be valid numbers`,
           };
         }
-
         const [x, y, z] = coords;
         const receiverToValidate: Receiver = {
           id: key,
@@ -159,7 +162,6 @@ export function useJsonValidation() {
           z,
           isValid: true,
         };
-
         const validatedReceiver = validateReceiver(receiverToValidate);
         if (!validatedReceiver.isValid) {
           return {
