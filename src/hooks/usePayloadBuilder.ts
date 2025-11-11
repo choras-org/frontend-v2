@@ -84,7 +84,7 @@ export function usePayloadBuilder() {
           taskType: parsedData.simulation_method,
           layerIdByMaterialId: surfaceMaterialMap,
           solverSettings: {
-            simulationSettings: parsedData.simulation_settings,
+            simulationSettings: parsedData.simulation_settings ?? {},
           },
           sources: updateSourcesFromJson(parsedData.sources || {}),
           receivers: updateReceiversFromJson(parsedData.receivers || {}),
