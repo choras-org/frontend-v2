@@ -18,7 +18,7 @@ import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/
 import { toast } from "sonner";
 import { useJsonValidation } from "@/hooks/useJsonValidation";
 import { useJsonBuilder } from "@/hooks/useJsonBuilder";
-import { usePayloadBuilder } from "@/hooks/usePayloadBuilder";
+import { useJsonPayloadBuilder } from "@/hooks/useJsonPayloadBuilder";
 import { setAssignments } from "@/store/materialAssignmentSlice";
 import { updateValue } from "@/store/simulationSettingsSlice";
 import { setSources, setReceivers } from "@/store/sourceReceiverSlice";
@@ -53,7 +53,7 @@ export function FullSettingJsonEditor() {
   } = useJsonBuilder();
   const { validateJsonData } = useJsonValidation();
 
-  const { buildPayload } = usePayloadBuilder();
+  const { buildPayload } = useJsonPayloadBuilder();
 
   // Initialize settings options from API
   useEffect(() => {

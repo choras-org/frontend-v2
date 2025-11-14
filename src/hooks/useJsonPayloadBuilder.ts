@@ -13,7 +13,7 @@ interface ParsedJsonStructure {
 }
 
 // Refactored to no-arg hook pulling data from store directly
-export function usePayloadBuilder() {
+export function useJsonPayloadBuilder() {
   const sources = useSelector((state: RootState) => state.sourceReceiver.sources);
   const receivers = useSelector((state: RootState) => state.sourceReceiver.receivers);
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
