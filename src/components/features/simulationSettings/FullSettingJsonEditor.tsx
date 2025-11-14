@@ -21,6 +21,7 @@ import { useJsonBuilder } from "@/hooks/useJsonBuilder";
 import { usePayloadBuilder } from "@/hooks/usePayloadBuilder";
 import { setAssignments } from "@/store/materialAssignmentSlice";
 import { updateValue } from "@/store/simulationSettingsSlice";
+import { setSources, setReceivers } from "@/store/sourceReceiverSlice";
 
 export function FullSettingJsonEditor() {
   const [open, setOpen] = useState(false);
@@ -145,6 +146,8 @@ export function FullSettingJsonEditor() {
       const payload = buildPayload(parsedData, surfaceMaterialMap, hasBeenEdited);
 
       await updateSimulation(payload).unwrap();
+
+      // Update simulation settings in store
       Object.entries(parsedData.simulation_settings || {}).forEach(([key, val]) => {
         if (typeof val === "string" || typeof val === "number") {
           dispatch(updateValue({ id: key, value: val }));
@@ -154,6 +157,41 @@ export function FullSettingJsonEditor() {
           dispatch(updateValue({ id: key, value: JSON.stringify(val) }));
         }
       });
+
+      // Update sources in store
+      if (parsedData.sources && typeof parsedData.sources === "object") {
+        const sourcesArray = Object.entries(parsedData.sources).map(([id, coords], index) => {
+          const [x, y, z] = coords as [number, number, number];
+          return {
+            id,
+            label: id,
+            orderNumber: index,
+            x,
+            y,
+            z,
+            isValid: true,
+          };
+        });
+        dispatch(setSources(sourcesArray));
+      }
+
+      // Update receivers in store
+      if (parsedData.receivers && typeof parsedData.receivers === "object") {
+        const receiversArray = Object.entries(parsedData.receivers).map(([id, coords], index) => {
+          const [x, y, z] = coords as [number, number, number];
+          return {
+            id,
+            label: id,
+            orderNumber: index,
+            x,
+            y,
+            z,
+            isValid: true,
+          };
+        });
+        dispatch(setReceivers(receiversArray));
+      }
+
       toast.success("Settings saved successfully");
 
       // Update original value and close dialog after successful save
