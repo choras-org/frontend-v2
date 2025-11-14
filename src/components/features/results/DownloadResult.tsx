@@ -20,6 +20,8 @@ import { Loading } from "@/components/ui/loading";
 import { http } from "@/libs/http";
 import { downloadFile, formatFilename } from "@/helpers/file";
 import { cn } from "@/libs/style";
+import JSZip from "jszip";
+import { useJsonBuilder } from "@/hooks/useJsonBuilder";
 
 type DownloadResultProps = {
   simulationIds: number[];
@@ -78,6 +80,11 @@ export function DownloadResult({
     csvIR: false,
   });
 
+  // Option for settings.json
+  const [includeSettingsJson, setIncludeSettingsJson] = useState(true);
+
+  const { buildJsonStructure, stringifyWithHorizontalArrays } = useJsonBuilder();
+
   const handleDownload = async () => {
     try {
       setIsDownloading(true);
@@ -123,8 +130,20 @@ export function DownloadResult({
         responseType: "blob",
       });
 
-      // Download the file
-      downloadFile(data, formatFilename(`simulation ${simulationIds.join(",")} results.zip`));
+      // If settings.json is requested, zip it together
+      if (includeSettingsJson) {
+        const zip = new JSZip();
+        zip.file("results.zip", data);
+        const settingsJson = stringifyWithHorizontalArrays(buildJsonStructure());
+        zip.file("settings.json", settingsJson);
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        downloadFile(
+          zipBlob,
+          formatFilename(`simulation ${simulationIds.join(",")} results+settings.zip`),
+        );
+      } else {
+        downloadFile(data, formatFilename(`simulation ${simulationIds.join(",")} results.zip`));
+      }
 
       toast.success("Download started successfully");
       setOpen(false);
@@ -141,6 +160,7 @@ export function DownloadResult({
     setParameters(false);
     setPlots(false);
     setAuralizations(false);
+    setIncludeSettingsJson(false);
     setParameterOptions({
       edt: false,
       t20: false,
@@ -376,17 +396,31 @@ export function DownloadResult({
               </div>
             </div>
           </div>
+
+          {/* Setting.json Section */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-settings-json"
+              checked={includeSettingsJson}
+              onCheckedChange={(checked) => setIncludeSettingsJson(!!checked)}
+            />
+            <Label htmlFor="include-settings-json" className="text-sm font-normal">
+              Settings.json
+            </Label>
+          </div>
         </div>
 
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" disabled={isDownloading}>
-              Cancel
+        <DialogFooter className="flex-col items-start gap-4">
+          <div className="flex w-full justify-end gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" disabled={isDownloading}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading ? "Downloading..." : "Download"}
             </Button>
-          </DialogClose>
-          <Button onClick={handleDownload} disabled={isDownloading}>
-            {isDownloading ? "Downloading..." : "Download"}
-          </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
