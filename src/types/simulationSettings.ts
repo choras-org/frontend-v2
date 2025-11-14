@@ -10,6 +10,7 @@ export interface SimulationSettingOption {
   startAdornment?: string;
   endAdornment?: string;
   options?: Record<string, string>;
+  description?: string;
 }
 
 export interface SimulationSettingsResponse {
