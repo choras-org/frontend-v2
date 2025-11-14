@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
 import { useGetSimulationMethodsQuery } from "@/store/simulationSettingsApi";
+import { http } from "@/libs/http";
 
 export function useJsonValidation() {
   // Pull required data from store/hooks
@@ -233,10 +234,7 @@ export function useJsonValidation() {
       simulationMethod: string,
     ): Promise<{ isValid: boolean; error?: string }> => {
       // Fetch settings data for the specific simulation method
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/simulation_settings/${simulationMethod}`,
-      );
-      const settingsData = response.ok ? await response.json() : null;
+      const { data: settingsData } = await http.get(`/simulation_settings/${simulationMethod}`);
       const options = settingsData?.options;
 
       if (!options || !Array.isArray(options)) return { isValid: true };
