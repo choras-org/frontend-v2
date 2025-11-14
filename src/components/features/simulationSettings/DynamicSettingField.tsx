@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SimulationSettingOption } from "@/types/simulationSettings";
 
 interface DynamicSettingFieldProps {
@@ -10,7 +11,19 @@ interface DynamicSettingFieldProps {
 }
 
 export function DynamicSettingField({ option, value, onChange }: DynamicSettingFieldProps) {
-  const { id, name, type, display, min, max, step, startAdornment, endAdornment, options } = option;
+  const {
+    id,
+    name,
+    type,
+    display,
+    min,
+    max,
+    step,
+    startAdornment,
+    endAdornment,
+    options,
+    description,
+  } = option;
   const [localValue, setLocalValue] = useState(String(value));
   const [isValid, setIsValid] = useState(true);
 
@@ -61,7 +74,20 @@ export function DynamicSettingField({ option, value, onChange }: DynamicSettingF
   );
 
   if (display === "radio" && options) {
-    const labelContent = <Label className="text-white font-medium">{name}</Label>;
+    const labelContent = description ? (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Label className="text-white font-medium cursor-help">{name}</Label>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="max-w-xs">
+            <p className="text-sm">{description}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ) : (
+      <Label className="text-white font-medium">{name}</Label>
+    );
 
     const currentStringValue = value ? String(value) : "";
 
@@ -103,7 +129,20 @@ export function DynamicSettingField({ option, value, onChange }: DynamicSettingF
     const inputType = type === "integer" ? "number" : type === "float" ? "number" : "text";
     const stepValue = step || (type === "integer" ? 1 : type === "float" ? 0.1 : undefined);
 
-    const labelContent = (
+    const labelContent = description ? (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Label htmlFor={id} className="text-white font-medium cursor-help">
+              {name}
+            </Label>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="max-w-xs">
+            <p className="text-sm">{description}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ) : (
       <Label htmlFor={id} className="text-white font-medium">
         {name}
       </Label>
