@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.57](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.56...v0.0.57) (2025-11-14)
+
+### Features
+
+- add FullSettingJsonEditor component for editing simulation settings in JSON format ([2f61386](https://github.com/ajatdarojat45/frontend-v2/commit/2f6138634e4b0dd611efded9bd13a243d2ceb9d5))
+- add option to include settings.json in download zip for simulation results ([27cdb36](https://github.com/ajatdarojat45/frontend-v2/commit/27cdb36298896878419a1f5b3ee04e58ce9bf9e5))
+- add tooltip for setting description ([b727fe0](https://github.com/ajatdarojat45/frontend-v2/commit/b727fe09b21f111ccc6b187d760fac7f8df4fe23))
+- add useJsonValidation hook for comprehensive JSON data validation ([e01df3d](https://github.com/ajatdarojat45/frontend-v2/commit/e01df3de99b93bff6ae780f525ac4782eade82ac))
+- implement useJsonBuilder hook for JSON structure generation and export ([9f32a0c](https://github.com/ajatdarojat45/frontend-v2/commit/9f32a0cc049380f1536d77637c3f09f602c51c19))
+- implement usePayloadBuilder hook for managing simulation payloads from JSON data ([e00bbce](https://github.com/ajatdarojat45/frontend-v2/commit/e00bbce46c2942df79c4bfb7396763391a5020bb))
+- integrate FullSettingJsonEditor into SettingTab, SourceReceiversTab, and SurfacesTab for enhanced JSON settings management ([780e58b](https://github.com/ajatdarojat45/frontend-v2/commit/780e58ba35b6c5c3aa9fcfe8426226bd1b08864e))
+- refactor fetch logic in useJsonValidation to use http library for simulation settings ([dd74256](https://github.com/ajatdarojat45/frontend-v2/commit/dd742568003f702a9777bcec67eb578c0a13c681))
+- refactor payload builder to use useJsonPayloadBuilder and remove deprecated usePayloadBuilder ([a972c2b](https://github.com/ajatdarojat45/frontend-v2/commit/a972c2b28d8efa8193712b728b9d66ae1ec52973))
+- restrict validation to a single source and receiver in JSON data ([6f54ab5](https://github.com/ajatdarojat45/frontend-v2/commit/6f54ab51a49990e3f1f2609ce567e0fd53b18046))
+- update simulation settings, sources, and receivers in store after saving JSON data ([dae20f7](https://github.com/ajatdarojat45/frontend-v2/commit/dae20f74d6695e50099e2050c8ae9f9c5a4d1697))
+
+### Bug Fixes
+
+- ensure simulation settings are initialized to an empty object if undefined ([d09539f](https://github.com/ajatdarojat45/frontend-v2/commit/d09539f6ede78202fe4f5fac3295875aeeebe73c))
+
 ### [0.0.56](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.55...v0.0.56) (2025-11-09)
 
 ### Features
