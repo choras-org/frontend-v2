@@ -130,12 +130,12 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
           }}
         >
           <ambientLight intensity={0.8} />
-          <directionalLight position={[1, 1, 1]} intensity={30} />
-          <directionalLight position={[-1, -1, 1]} intensity={30} />
-          <directionalLight position={[1, -1, 1]} intensity={30} />
-          <directionalLight position={[-1, 1, 1]} intensity={30} />
-          <directionalLight position={[1, 1, -1]} intensity={30} />
-          <directionalLight position={[-1, 1, -1]} intensity={20} />
+          <directionalLight position={[1, 1, 1]} intensity={10} />
+          <directionalLight position={[-1, -1, 1]} intensity={10} />
+          <directionalLight position={[1, -1, 1]} intensity={10} />
+          <directionalLight position={[-1, 1, 1]} intensity={10} />
+          <directionalLight position={[1, 1, -1]} intensity={10} />
+          <directionalLight position={[-1, 1, -1]} intensity={5} />
           <CustomAxesHelper size={50 / 2} />
           <Grid
             position={[0, 0, 0]}

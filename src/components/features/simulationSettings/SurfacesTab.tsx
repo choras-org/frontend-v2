@@ -168,7 +168,7 @@ export function SurfacesTab() {
       delete updatedAssignments[surfaceKey];
 
       if (surface?.mesh) {
-        restoreOriginalColor(surface.mesh);
+        setMeshBaseColor(surface.mesh, 0xffffff);
       }
     } else {
       const numMaterialId = parseInt(materialId);
@@ -203,7 +203,7 @@ export function SurfacesTab() {
 
       surfaces.forEach((surface) => {
         if (surface.mesh) {
-          restoreOriginalColor(surface.mesh);
+          setMeshBaseColor(surface.mesh, 0xffffff);
         }
       });
     } else {
