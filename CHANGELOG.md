@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.58](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.57...v0.0.58) (2025-11-28)
+
+### Bug Fixes
+
+- tone down viewport lighting so material color pop; reset color if selecting none ([f299ec9](https://github.com/ajatdarojat45/frontend-v2/commit/f299ec9c99434ecad39dbfe9c79895319719da97))
+
 ### [0.0.57](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.56...v0.0.57) (2025-11-14)
 
 ### Features
