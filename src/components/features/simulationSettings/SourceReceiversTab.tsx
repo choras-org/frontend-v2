@@ -27,6 +27,7 @@ import { useSourceReceiverApi } from "@/hooks/useSourceReceiverApi";
 import { toast } from "sonner";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { validateSourceOrReceiver, getModelBounds } from "@/helpers/sourceReceiverValidation";
+import { FullSettingJsonEditor } from "./FullSettingJsonEditor";
 
 export function SourceReceiversTab() {
   const dispatch = useDispatch();
@@ -275,196 +276,203 @@ export function SourceReceiversTab() {
   };
 
   return (
-    <>
-      <div className="text-white border-b border-gray-600 pb-4 over">
-        <div className="mb-4 flex justify-between items-center">
-          <h4 className="text-xl text-choras-primary">Sources</h4>
-          <SourceReceiversMenu onRemoveAll={handleRemoveAllSources} />
-        </div>
-        <div className="space-y-2">
-          {sources.length === 0 ? (
-            <div className="text-xs text-gray-500 italic py-2">Add new source to start editing</div>
-          ) : (
-            <>
-              {sources.map((source) => {
-                const isSelected = selectedSource === source.id;
-                const hasValidationError = !source.isValid && source.validationError;
-                return (
-                  <div
-                    key={source.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSourceClick(source.id);
-                    }}
-                    className={`text-xs p-2 ${
-                      isSelected
-                        ? "bg-yellow-500/20 border border-yellow-500/30"
-                        : hasValidationError
-                          ? "bg-red-500/20 border border-red-500/30"
-                          : "hover:bg-gray-700/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 py-3">
-                      <div
-                        className={`flex items-center justify-center w-6 h-6 border-2 border-[#667eea] text-[#667eea] rounded-full text-xs font-bold flex-shrink-0`}
-                      >
-                        {source.orderNumber}
+    <div className="text-white h-full flex flex-col justify-between">
+      <div>
+        <div className="text-white border-b border-gray-600 pb-4 over">
+          <div className="mb-4 flex justify-between items-center">
+            <h4 className="text-xl text-choras-primary">Sources</h4>
+            <SourceReceiversMenu onRemoveAll={handleRemoveAllSources} />
+          </div>
+          <div className="space-y-2">
+            {sources.length === 0 ? (
+              <div className="text-xs text-gray-500 italic py-2">
+                Add new source to start editing
+              </div>
+            ) : (
+              <>
+                {sources.map((source) => {
+                  const isSelected = selectedSource === source.id;
+                  const hasValidationError = !source.isValid && source.validationError;
+                  return (
+                    <div
+                      key={source.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSourceClick(source.id);
+                      }}
+                      className={`text-xs p-2 ${
+                        isSelected
+                          ? "bg-yellow-500/20 border border-yellow-500/30"
+                          : hasValidationError
+                            ? "bg-red-500/20 border border-red-500/30"
+                            : "hover:bg-gray-700/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 py-3">
+                        <div
+                          className={`flex items-center justify-center w-6 h-6 border-2 border-[#667eea] text-[#667eea] rounded-full text-xs font-bold flex-shrink-0`}
+                        >
+                          {source.orderNumber}
+                        </div>
+                        <div className="flex gap-1 flex-1">
+                          <CoordinateInput
+                            value={source.x}
+                            axis="x"
+                            onChange={(value) => handleUpdateSource(source.id, "x", value)}
+                          />
+                          <CoordinateInput
+                            value={source.y}
+                            axis="y"
+                            onChange={(value) => handleUpdateSource(source.id, "y", value)}
+                          />
+                          <CoordinateInput
+                            value={source.z}
+                            axis="z"
+                            onChange={(value) => handleUpdateSource(source.id, "z", value)}
+                          />
+                        </div>
+                        {/* Commented out removal individual button until backend supports multiple sources */}
+                        {/* <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveSource(source.id);
+                          }}
+                          className="p-1 h-6 w-6 text-choras-gray hover:text-red-400 flex-shrink-0"
+                        >
+                          <Trash2 size={12} />
+                        </Button> */}
                       </div>
-                      <div className="flex gap-1 flex-1">
-                        <CoordinateInput
-                          value={source.x}
-                          axis="x"
-                          onChange={(value) => handleUpdateSource(source.id, "x", value)}
-                        />
-                        <CoordinateInput
-                          value={source.y}
-                          axis="y"
-                          onChange={(value) => handleUpdateSource(source.id, "y", value)}
-                        />
-                        <CoordinateInput
-                          value={source.z}
-                          axis="z"
-                          onChange={(value) => handleUpdateSource(source.id, "z", value)}
-                        />
-                      </div>
-                      {/* Commented out removal individual button until backend supports multiple sources */}
-                      {/* <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveSource(source.id);
-                        }}
-                        className="p-1 h-6 w-6 text-choras-gray hover:text-red-400 flex-shrink-0"
-                      >
-                        <Trash2 size={12} />
-                      </Button> */}
+                      {hasValidationError && (
+                        <div className="mt-2 text-xs text-red-400 px-1">
+                          Error: {source.validationError}
+                        </div>
+                      )}
                     </div>
-                    {hasValidationError && (
-                      <div className="mt-2 text-xs text-red-400 px-1">
-                        Error: {source.validationError}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </>
-          )}
+                  );
+                })}
+              </>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <Button
+              onClick={handleAddSource}
+              disabled={sources.length >= 1}
+              size="sm"
+              className={`w-full h-8 text-xs cursor-pointer transition-all duration-500 ${
+                highlightedElement === "add-source-button"
+                  ? "ring-2 ring-yellow-400 shadow-lg animate-pulse bg-yellow-500/20"
+                  : ""
+              }`}
+              variant="outline"
+            >
+              <Plus size={14} className="mr-1" />
+              Add New Source {sources.length >= 1 && "(Max 1)"}
+            </Button>
+          </div>
         </div>
 
-        <div className="mt-3">
-          <Button
-            onClick={handleAddSource}
-            disabled={sources.length >= 1}
-            size="sm"
-            className={`w-full h-8 text-xs cursor-pointer transition-all duration-500 ${
-              highlightedElement === "add-source-button"
-                ? "ring-2 ring-yellow-400 shadow-lg animate-pulse bg-yellow-500/20"
-                : ""
-            }`}
-            variant="outline"
-          >
-            <Plus size={14} className="mr-1" />
-            Add New Source {sources.length >= 1 && "(Max 1)"}
-          </Button>
+        <div className="text-white pt-4">
+          <div className="mb-4 flex justify-between items-center">
+            <h4 className="text-xl text-choras-primary">Receivers</h4>
+            <SourceReceiversMenu onRemoveAll={handleRemoveAllReceivers} />
+          </div>
+          <div className="space-y-2">
+            {receivers.length === 0 ? (
+              <div className="text-xs text-gray-500 italic py-2">
+                Add new receiver to start editing
+              </div>
+            ) : (
+              <>
+                {receivers.map((receiver) => {
+                  const isSelected = selectedReceiver === receiver.id;
+                  const hasValidationError = !receiver.isValid && receiver.validationError;
+                  return (
+                    <div
+                      key={receiver.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReceiverClick(receiver.id);
+                      }}
+                      className={`text-xs p-2 ${
+                        isSelected
+                          ? "bg-yellow-500/20 border border-yellow-500/30"
+                          : hasValidationError
+                            ? "bg-red-500/20 border border-red-500/30"
+                            : "hover:bg-gray-700/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 py-3">
+                        <div
+                          className={`flex items-center justify-center w-6 h-6 border-2 border-[#eac766] text-[#eac766] rounded-full text-xs font-bold flex-shrink-0`}
+                        >
+                          {receiver.orderNumber}
+                        </div>
+                        <div className="flex gap-1 flex-1">
+                          <CoordinateInput
+                            value={receiver.x}
+                            axis="x"
+                            onChange={(value) => handleUpdateReceiver(receiver.id, "x", value)}
+                          />
+                          <CoordinateInput
+                            value={receiver.y}
+                            axis="y"
+                            onChange={(value) => handleUpdateReceiver(receiver.id, "y", value)}
+                          />
+                          <CoordinateInput
+                            value={receiver.z}
+                            axis="z"
+                            onChange={(value) => handleUpdateReceiver(receiver.id, "z", value)}
+                          />
+                        </div>
+                        {/* Commented out removal individual button until backend supports multiple receivers */}
+                        {/* <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveReceiver(receiver.id);
+                          }}
+                          className="p-1 h-6 w-6 text-choras-gray hover:text-red-400 flex-shrink-0"
+                        >
+                          <Trash2 size={12} />
+                        </Button> */}
+                      </div>
+                      {hasValidationError && (
+                        <div className="mt-2 text-xs text-red-400 px-1">
+                          Error: {receiver.validationError}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <Button
+              onClick={handleAddReceiver}
+              disabled={receivers.length >= 1}
+              size="sm"
+              className={`w-full h-8 text-xs mb-4 cursor-pointer transition-all duration-500 ${
+                highlightedElement === "add-receiver-button"
+                  ? "ring-2 ring-yellow-400 shadow-lg animate-pulse bg-yellow-500/20"
+                  : ""
+              }`}
+              variant="outline"
+            >
+              <Plus size={14} className="mr-1" />
+              Add New Receiver {receivers.length >= 1 && "(Max 1)"}
+            </Button>
+          </div>
         </div>
       </div>
-
-      <div className="text-white pt-4">
-        <div className="mb-4 flex justify-between items-center">
-          <h4 className="text-xl text-choras-primary">Receivers</h4>
-          <SourceReceiversMenu onRemoveAll={handleRemoveAllReceivers} />
-        </div>
-        <div className="space-y-2">
-          {receivers.length === 0 ? (
-            <div className="text-xs text-gray-500 italic py-2">
-              Add new receiver to start editing
-            </div>
-          ) : (
-            <>
-              {receivers.map((receiver) => {
-                const isSelected = selectedReceiver === receiver.id;
-                const hasValidationError = !receiver.isValid && receiver.validationError;
-                return (
-                  <div
-                    key={receiver.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleReceiverClick(receiver.id);
-                    }}
-                    className={`text-xs p-2 ${
-                      isSelected
-                        ? "bg-yellow-500/20 border border-yellow-500/30"
-                        : hasValidationError
-                          ? "bg-red-500/20 border border-red-500/30"
-                          : "hover:bg-gray-700/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 py-3">
-                      <div
-                        className={`flex items-center justify-center w-6 h-6 border-2 border-[#eac766] text-[#eac766] rounded-full text-xs font-bold flex-shrink-0`}
-                      >
-                        {receiver.orderNumber}
-                      </div>
-                      <div className="flex gap-1 flex-1">
-                        <CoordinateInput
-                          value={receiver.x}
-                          axis="x"
-                          onChange={(value) => handleUpdateReceiver(receiver.id, "x", value)}
-                        />
-                        <CoordinateInput
-                          value={receiver.y}
-                          axis="y"
-                          onChange={(value) => handleUpdateReceiver(receiver.id, "y", value)}
-                        />
-                        <CoordinateInput
-                          value={receiver.z}
-                          axis="z"
-                          onChange={(value) => handleUpdateReceiver(receiver.id, "z", value)}
-                        />
-                      </div>
-                      {/* Commented out removal individual button until backend supports multiple receivers */}
-                      {/* <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveReceiver(receiver.id);
-                        }}
-                        className="p-1 h-6 w-6 text-choras-gray hover:text-red-400 flex-shrink-0"
-                      >
-                        <Trash2 size={12} />
-                      </Button> */}
-                    </div>
-                    {hasValidationError && (
-                      <div className="mt-2 text-xs text-red-400 px-1">
-                        Error: {receiver.validationError}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </>
-          )}
-        </div>
-
-        <div className="mt-3">
-          <Button
-            onClick={handleAddReceiver}
-            disabled={receivers.length >= 1}
-            size="sm"
-            className={`w-full h-8 text-xs mb-4 cursor-pointer transition-all duration-500 ${
-              highlightedElement === "add-receiver-button"
-                ? "ring-2 ring-yellow-400 shadow-lg animate-pulse bg-yellow-500/20"
-                : ""
-            }`}
-            variant="outline"
-          >
-            <Plus size={14} className="mr-1" />
-            Add New Receiver {receivers.length >= 1 && "(Max 1)"}
-          </Button>
-        </div>
+      <div className="mb-4">
+        <FullSettingJsonEditor />
       </div>
-    </>
+    </div>
   );
 }

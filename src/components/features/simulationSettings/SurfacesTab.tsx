@@ -29,6 +29,7 @@ import { ChevronRight, Eye, EyeOff, Plus } from "lucide-react";
 import { SurfaceMaterialList } from "./SurfaceMaterialList";
 import { AbsorptionCoefficientChart } from "./AbsorptionCoefficientChart";
 import { Button } from "@/components/ui/button";
+import { FullSettingJsonEditor } from "./FullSettingJsonEditor";
 
 export function SurfacesTab() {
   const dispatch = useDispatch();
@@ -588,7 +589,7 @@ export function SurfacesTab() {
         )}
       </div>
 
-      <div>
+      <div className="mb-4">
         <div className="grid grid-cols-2 gap-4 w-full items-center mb-4">
           <Button
             variant="outline"
@@ -608,6 +609,7 @@ export function SurfacesTab() {
             <span>Create material</span>
           </Button>
         </div>
+        <FullSettingJsonEditor />
       </div>
     </div>
   );
