@@ -86,6 +86,20 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
   useEffect(() => {
     if (modelData?.object3D && currentModelId === modelId) {
       applyViewMode(modelData.object3D);
+      modelData.object3D.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((material) => {
+            if (
+              material instanceof THREE.MeshStandardMaterial ||
+              material instanceof THREE.MeshBasicMaterial
+            ) {
+              material.color.setHex(0xffffff);
+              material.needsUpdate = true;
+            }
+          });
+        }
+      });
     }
   }, [modelData?.object3D, currentModelId, modelId, applyViewMode]);
 
