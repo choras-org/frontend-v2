@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.60](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.59...v0.0.60) (2025-12-20)
+
+### Features
+
+- add JSZip integration for downloading simulation results and settings as a zip file ([2809f69](https://github.com/ajatdarojat45/frontend-v2/commit/2809f69c6187a9af57ff6a0dbc3fe6fb01159ac1))
+- implement useDownloadPreferences hook for managing download settings and preferences ([36b49d6](https://github.com/ajatdarojat45/frontend-v2/commit/36b49d68c1e18aea949dac6ad9c8a8dac5705eb6))
+
+### Bug Fixes
+
+- remove debug console log from ResultAuralizations component ([ee3a555](https://github.com/ajatdarojat45/frontend-v2/commit/ee3a5559f537caba3ff39c91b2937ab0a2312df0))
+- remove debug console log from ResultPlots component ([34c890f](https://github.com/ajatdarojat45/frontend-v2/commit/34c890f9970a9c22f93794d5c6bb0f503d7a5c3b))
+
 ### [0.0.59](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.58...v0.0.59) (2025-12-20)
 
 ### Features
