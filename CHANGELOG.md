@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.59](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.58...v0.0.59) (2025-12-20)
+
+### Features
+
+- implement useApplySurfaceColors hook for dynamic surface color application ([889455c](https://github.com/ajatdarojat45/frontend-v2/commit/889455ca551cedfc6dd5a1ae7a7a9cbd6ebdfd6a))
+- integrate applySurfaceColors in ModelRenderer for enhanced material handling ([4acacb1](https://github.com/ajatdarojat45/frontend-v2/commit/4acacb1898ccce146e4b6c2a9e1144bb06b2ce99))
+
+### Bug Fixes
+
+- correct SVG attributes to camelCase in MethodInfoDialog component ([91fe723](https://github.com/ajatdarojat45/frontend-v2/commit/91fe723e3f3f9e99fc2b89601a6e81b7991e34f8))
+
 ### [0.0.58](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.57...v0.0.58) (2025-11-28)
 
 ### Bug Fixes
