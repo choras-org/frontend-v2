@@ -71,21 +71,6 @@ export function SurfacesTab() {
   }, [simulation?.layerIdByMaterialId, dispatch]);
 
   useEffect(() => {
-    if (simulation?.layerIdByMaterialId && surfaces.length > 0 && materials.length > 0) {
-      Object.entries(simulation.layerIdByMaterialId).forEach(([surfaceId, materialId]) => {
-        const surface = surfaces.find((s) => s.id === surfaceId);
-        const material = materials.find((m) => m.id === materialId);
-
-        if (surface?.mesh && material?.absorptionCoefficients) {
-          const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
-          const absorptionColor = getAbsorptionColor(avgAbsorption);
-          setMeshBaseColor(surface.mesh, absorptionColor);
-        }
-      });
-    }
-  }, [simulation?.layerIdByMaterialId, surfaces, materials, setMeshBaseColor]);
-
-  useEffect(() => {
     if (simulationError) {
       toast.error("Cannot load simulation data. Material assignments will not be saved.");
     }

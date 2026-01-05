@@ -11,12 +11,14 @@ import type { RootState } from "@/store";
 import * as THREE from "three";
 import type { ModelRendererProps } from "@/types/modelViewport";
 import type { ThreeEvent } from "@react-three/fiber";
+import { useApplySurfaceColors } from "@/hooks/useApplySurfaceColors";
 
 type MaterialWithUuid = THREE.Material & { uuid: string };
 
 const HOVER_COLOR = 0x888888;
 
 export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
+  const { applySurfaceColors } = useApplySurfaceColors();
   const dispatch = useDispatch();
   const selectedSource = useSelector((state: RootState) => state.sourceReceiver.selectedSource);
   const selectedReceiver = useSelector((state: RootState) => state.sourceReceiver.selectedReceiver);
@@ -86,6 +88,7 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
   useEffect(() => {
     if (modelData?.object3D && currentModelId === modelId) {
       applyViewMode(modelData.object3D);
+
       modelData.object3D.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material) {
           const materials = Array.isArray(child.material) ? child.material : [child.material];
@@ -100,6 +103,8 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
           });
         }
       });
+
+      applySurfaceColors();
     }
   }, [modelData?.object3D, currentModelId, modelId, applyViewMode]);
 
