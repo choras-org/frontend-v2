@@ -98,7 +98,12 @@ export function SurfaceMaterialList({
                           onClick={() => setSelectedMaterial(material)}
                         >
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm break-words">{material.name}</h4>
+                            <div className="flex items-center">
+                              <h4 className="font-medium text-sm break-words">{material.name}</h4>
+                              <label className="text-[10px] text-gray-500 border border-gray-300 px-2 ml-1 rounded-full">
+                                {material.origin}
+                              </label>
+                            </div>
                             {material.description && (
                               <p className="text-xs text-gray-500 break-words">
                                 {material.description}
