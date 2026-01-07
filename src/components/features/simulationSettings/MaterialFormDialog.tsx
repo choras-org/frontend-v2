@@ -21,7 +21,7 @@ type IProps = {
   setOpenCreateMaterialDialog: (open: boolean) => void;
 };
 
-export function CreateMaterialDialog({
+export function MaterialFormDialog({
   openCreateMaterialDialog,
   setOpenCreateMaterialDialog,
 }: IProps) {
