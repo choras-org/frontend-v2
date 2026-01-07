@@ -11,7 +11,7 @@ import { Search } from "lucide-react";
 import { useState } from "react";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
 import type { Material } from "@/types/material";
-import { CreateMaterialDialog } from "./CreateMaterialDialog";
+import { MaterialFormDialog } from "./MaterialFormDialog";
 
 type IProps = {
   openMaterialLibrary: boolean;
@@ -44,7 +44,7 @@ export function SurfaceMaterialList({
           <DialogHeader>
             <div className="flex justify-between items-center mt-4">
               <DialogTitle className="text-xl text-choras-primary">Material library</DialogTitle>
-              <CreateMaterialDialog
+              <MaterialFormDialog
                 openCreateMaterialDialog={openCreateMaterialDialog}
                 setOpenCreateMaterialDialog={setOpenCreateMaterialDialog}
               />
