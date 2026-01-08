@@ -69,6 +69,7 @@ export function SurfacesTab() {
   const [updateSimulation] = useUpdateSimulationMutation();
   const [openMaterialLibrary, setOpenMaterialLibrary] = useState(false);
   const [openCreateMaterialDialog, setOpenCreateMaterialDialog] = useState(false);
+  const [bulkMaterialId, setBulkMaterialId] = useState<string>("");
 
   useEffect(() => {
     if (simulation?.layerIdByMaterialId) {
@@ -324,6 +325,7 @@ export function SurfacesTab() {
     (surface: SurfaceInfo) => {
       const selectedGeo = selectedGeometries[surface.mesh.uuid];
       const mesh = surface.mesh;
+      setBulkMaterialId("");
       if (selectedGeo) {
         removeSelectedGeometry(surface.mesh.uuid);
         removeHighlightedMesh(mesh);
@@ -354,6 +356,57 @@ export function SurfacesTab() {
     },
     [selectedGeometries, addSelectedGeometry, removeSelectedGeometry],
   );
+
+  const handleAssignBulkMaterials = async (materialId: string) => {
+    if (materialId === "") {
+      return;
+    }
+
+    if (materialId === "open-library") {
+      setOpenMaterialLibrary(true);
+      return;
+    }
+
+    setBulkMaterialId(materialId);
+    let updatedAssignments: Record<string, number>;
+    const material = materials.find((m) => m.id === parseInt(materialId));
+
+    if (materialId === "default") {
+      const numMaterialId = parseInt(materialId);
+      const newAssignments: Record<string, number> = {};
+
+      surfaces.forEach((surface) => {
+        if (selectedGeometries[surface.mesh.uuid]) {
+          const surfaceKey = surface.id;
+          dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+          newAssignments[surfaceKey] = numMaterialId;
+          setMeshBaseColor(surface.mesh, 0xffffff);
+        }
+      });
+
+      updatedAssignments = { ...materialAssignments, ...newAssignments };
+    } else {
+      const newAssignments: Record<string, number> = {};
+      const numMaterialId = parseInt(materialId);
+      const avgAbsorption = material?.absorptionCoefficients
+        ? calculateAverageAbsorption(material.absorptionCoefficients)
+        : 0;
+      const absorptionColor = getAbsorptionColor(avgAbsorption);
+
+      surfaces.forEach((surface) => {
+        if (selectedGeometries[surface.mesh.uuid]) {
+          const surfaceKey = surface.id;
+          dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+          newAssignments[surfaceKey] = numMaterialId;
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      });
+
+      updatedAssignments = { ...materialAssignments, ...newAssignments };
+    }
+
+    updateSimulationData(updatedAssignments);
+  };
 
   return (
     <div className="text-white h-full flex flex-col justify-between">
@@ -602,9 +655,81 @@ export function SurfacesTab() {
           <div className="mt-4 pt-4 border-t border-choras-gray">
             <div className="text-sm text-gray-400">Total: {surfaces.length} surfaces found</div>
             {Object.keys(selectedGeometries).length > 0 && (
-              <div className="text-sm text-gray-400">
-                Selected: {Object.keys(selectedGeometries).length}{" "}
-                {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
+              <div className="mt-1">
+                <div className="text-sm text-gray-400">
+                  Selected: {Object.keys(selectedGeometries).length}{" "}
+                  {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
+                </div>
+                <table className="w-full table-fixed">
+                  <tbody>
+                    <tr
+                      className={`border-gray-700 transition-colors duration-200 cursor-pointer hover:bg-choras-dark/90`}
+                    >
+                      <td className=" py-2 text-sm w-1/3">
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium truncate">Assign to selected</div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
+                        <Select value={bulkMaterialId} onValueChange={handleAssignBulkMaterials}>
+                          <SelectTrigger
+                            size="sm"
+                            className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                          >
+                            <SelectValue placeholder={"Select material"} />
+                          </SelectTrigger>
+                          <SelectContent className="bg-choras-dark border-choras-gray">
+                            <SelectItem value="default" className="text-white">
+                              None
+                            </SelectItem>
+                            {materialsLoading ? (
+                              <SelectItem value="loading" disabled className="text-gray-400">
+                                Loading materials...
+                              </SelectItem>
+                            ) : materialsError ? (
+                              <SelectItem value="error" disabled className="text-red-400">
+                                Error loading materials
+                              </SelectItem>
+                            ) : (
+                              <TooltipProvider>
+                                {materials.map((material) => (
+                                  <Tooltip key={material.id} delayDuration={300}>
+                                    <TooltipTrigger asChild>
+                                      <SelectItem
+                                        value={material.id.toString()}
+                                        className="text-white"
+                                      >
+                                        <span className="truncate block" title={material.name}>
+                                          {material.name}
+                                        </span>
+                                      </SelectItem>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                      side="right"
+                                      className="p-3 bg-choras-dark border-choras-primary"
+                                    >
+                                      <div className="text-sm mb-2 font-medium text-white">
+                                        {material.name}
+                                      </div>
+                                      <AbsorptionCoefficientChart
+                                        coefficients={material.absorptionCoefficients}
+                                        size="md"
+                                      />
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                                <hr className="border-t border-gray-700 my-1" />
+                                <SelectItem value="open-library" className="text-choras-primary">
+                                  Open material library
+                                </SelectItem>
+                              </TooltipProvider>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
