@@ -12,11 +12,13 @@ export interface SelectedGeometry {
 interface GeometrySelectionState {
   selectedGeometry: SelectedGeometry | null;
   highlightedMeshes: THREE.Mesh[];
+  selectedGeometries: Record<string, SelectedGeometry>;
 }
 
 const initialState: GeometrySelectionState = {
   selectedGeometry: null,
   highlightedMeshes: [],
+  selectedGeometries: {},
 };
 
 export const geometrySelectionSlice = createSlice({
@@ -44,6 +46,18 @@ export const geometrySelectionSlice = createSlice({
       state.highlightedMeshes = state.highlightedMeshes.filter((mesh) => mesh.uuid !== meshUuid);
     },
 
+    addSelectedGeometry: (state, action: PayloadAction<SelectedGeometry>) => {
+      const geometry = action.payload;
+      if (geometry.materialId) {
+        state.selectedGeometries[geometry.mesh.uuid] = geometry;
+      }
+    },
+
+    removeSelectedGeometry: (state, action: PayloadAction<string>) => {
+      const meshUuid = action.payload;
+      delete state.selectedGeometries[meshUuid];
+    },
+
     clearHighlights: (state) => {
       state.highlightedMeshes = [];
     },
@@ -56,6 +70,8 @@ export const {
   addHighlightedMesh,
   removeHighlightedMesh,
   clearHighlights,
+  addSelectedGeometry,
+  removeSelectedGeometry,
 } = geometrySelectionSlice.actions;
 
 export default geometrySelectionSlice.reducer;
