@@ -37,7 +37,13 @@ export function SurfacesTab() {
   const [showIndividualAssignments, setShowIndividualAssignments] = useState(false);
   const [hiddenSurfaces, setHiddenSurfaces] = useState<Set<string>>(new Set());
   const selectedSurfaceRowRef = useRef<HTMLTableRowElement>(null);
-  const { selectGeometry, addHighlightedMesh, removeHighlightedMesh } = useGeometrySelection();
+  const {
+    selectGeometry,
+    addHighlightedMesh,
+    removeHighlightedMesh,
+    addSelectedGeometry,
+    removeSelectedGeometry,
+  } = useGeometrySelection();
   const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
     useMeshHighlight();
   const {
@@ -51,8 +57,8 @@ export function SurfacesTab() {
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
   const highlightedElement = useSelector((state: RootState) => state.tab.highlightedElement);
-  const selectedGeometry = useSelector(
-    (state: RootState) => state.geometrySelection.selectedGeometry,
+  const { selectedGeometry, selectedGeometries } = useSelector(
+    (state: RootState) => state.geometrySelection,
   );
   const { data: simulation, error: simulationError } = useGetSimulationByIdQuery(
     activeSimulation?.id ?? 0,
@@ -314,40 +320,39 @@ export function SurfacesTab() {
     }
   }, [selectedSurfaceId, showIndividualAssignments]);
 
-  const handleSurfaceRowClick = useCallback(
+  const handleSelectSurface = useCallback(
     (surface: SurfaceInfo) => {
+      const selectedGeo = selectedGeometries[surface.mesh.uuid];
       const mesh = surface.mesh;
-
-      if (selectedSurfaceId === surface.id) {
+      if (selectedGeo) {
+        removeSelectedGeometry(surface.mesh.uuid);
         removeHighlightedMesh(mesh);
         restoreOriginalColor(mesh);
-        selectGeometry(null);
-        return;
-      }
 
-      if (selectedGeometry?.mesh) {
-        removeHighlightedMesh(selectedGeometry.mesh);
-        restoreOriginalColor(selectedGeometry.mesh);
+        const remainingSelectedIds = Object.keys(selectedGeometries).filter(
+          (id) => id !== surface.mesh.uuid,
+        );
+        if (remainingSelectedIds.length > 0) {
+          const lastSelectedId = remainingSelectedIds[remainingSelectedIds.length - 1];
+          const lastSelectedGeo = selectedGeometries[lastSelectedId];
+          selectGeometry(lastSelectedGeo);
+        } else {
+          selectGeometry(null);
+        }
+      } else {
+        const payload = {
+          mesh: surface.mesh,
+          faceIndex: 0,
+          point: new THREE.Vector3(),
+          materialId: surface.id,
+        };
+        addSelectedGeometry(payload);
+        selectGeometry(payload);
+        highlightMesh(mesh, HIGHLIGHT_COLOR);
+        addHighlightedMesh(mesh);
       }
-
-      highlightMesh(mesh, HIGHLIGHT_COLOR);
-      addHighlightedMesh(mesh);
-      selectGeometry({
-        mesh,
-        faceIndex: 0,
-        point: new THREE.Vector3(),
-      });
     },
-    [
-      selectedSurfaceId,
-      selectedGeometry,
-      selectGeometry,
-      addHighlightedMesh,
-      removeHighlightedMesh,
-      highlightMesh,
-      restoreOriginalColor,
-      HIGHLIGHT_COLOR,
-    ],
+    [selectedGeometries, addSelectedGeometry, removeSelectedGeometry],
   );
 
   return (
@@ -488,9 +493,9 @@ export function SurfacesTab() {
                           <tr
                             key={surface.id}
                             ref={isSelected ? selectedSurfaceRowRef : null}
-                            onClick={() => handleSurfaceRowClick(surface)}
+                            onClick={() => handleSelectSurface(surface)}
                             className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
-                              isSelected
+                              selectedGeometries[surface.mesh.uuid]
                                 ? "bg-choras-primary/20 hover:bg-choras-primary/30"
                                 : "hover:bg-choras-dark/90"
                             }`}
@@ -596,6 +601,12 @@ export function SurfacesTab() {
         {surfaces.length > 0 && (
           <div className="mt-4 pt-4 border-t border-choras-gray">
             <div className="text-sm text-gray-400">Total: {surfaces.length} surfaces found</div>
+            {Object.keys(selectedGeometries).length > 0 && (
+              <div className="text-sm text-gray-400">
+                Selected: {Object.keys(selectedGeometries).length}{" "}
+                {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
+              </div>
+            )}
           </div>
         )}
       </div>
