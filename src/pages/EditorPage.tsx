@@ -11,6 +11,7 @@ import { ModelViewer } from "@/components/features/viewport/ModelViewer";
 import { useGetModelQuery } from "@/store/modelApi";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { EditorNav } from "@/components/features/viewport/EditorNav";
+import { clearSelection } from "@/store/geometrySelectionSlice";
 
 export function EditorPage() {
   const navigate = useNavigate();
@@ -37,6 +38,12 @@ export function EditorPage() {
       navigate(`/editor/${modelId}/${firstSimulationId}`, { replace: true });
     }
   }, [simulations, simulationId, modelId, navigate, dispatch]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearSelection());
+    };
+  }, []);
 
   return (
     <AppLayout
