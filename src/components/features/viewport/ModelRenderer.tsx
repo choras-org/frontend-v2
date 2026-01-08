@@ -31,6 +31,9 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
     highlightedMeshes,
     addHighlightedMesh,
     removeHighlightedMesh,
+    selectedGeometries,
+    addSelectedGeometry,
+    removeSelectedGeometry,
   } = useGeometrySelection();
   const { highlightMesh, restoreOriginalColor, HIGHLIGHT_COLOR } = useMeshHighlight();
   const { camera, raycaster, pointer, gl } = useThree();
@@ -213,20 +216,45 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
       const intersection = intersects[0];
       const mesh = intersection.object as THREE.Mesh;
 
-      if (selectedGeometry?.mesh && selectedGeometry.mesh !== mesh) {
-        removeHighlightedMesh(selectedGeometry.mesh);
-        restoreOriginalColor(selectedGeometry.mesh);
+      if (mesh.visible === false) {
+        Object.keys(selectedGeometries).forEach((uuid) => {
+          const geo = selectedGeometries[uuid];
+          removeHighlightedMesh(geo.mesh);
+          restoreOriginalColor(geo.mesh);
+        });
+        clearSelection();
+        return;
+      }
+
+      const selectedGeo = selectedGeometries[mesh.uuid];
+      if (selectedGeo) {
+        removeSelectedGeometry(mesh.uuid);
+        removeHighlightedMesh(mesh);
+        restoreOriginalColor(mesh);
+
+        const remainingSelectedGeometries = Object.values(selectedGeometries).filter(
+          (geo) => geo.mesh.uuid !== mesh.uuid,
+        );
+        if (remainingSelectedGeometries.length > 0) {
+          const latestGeometry =
+            remainingSelectedGeometries[remainingSelectedGeometries.length - 1];
+          selectGeometry(latestGeometry);
+        } else {
+          clearSelection();
+        }
+        return;
       }
 
       highlightMesh(mesh, HIGHLIGHT_COLOR);
       addHighlightedMesh(mesh);
-
-      selectGeometry({
+      const payload = {
         mesh,
         faceIndex: intersection.faceIndex || 0,
         point: intersection.point,
         materialId: mesh.material ? (mesh.material as MaterialWithUuid).uuid : undefined,
-      });
+      };
+      selectGeometry(payload);
+      addSelectedGeometry(payload);
 
       if (!mesh.userData.meshId) {
         let meshCount = 0;
@@ -239,10 +267,11 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
         });
       }
     } else {
-      if (selectedGeometry?.mesh) {
-        removeHighlightedMesh(selectedGeometry.mesh);
-        restoreOriginalColor(selectedGeometry.mesh);
-      }
+      Object.keys(selectedGeometries).forEach((uuid) => {
+        const geo = selectedGeometries[uuid];
+        removeHighlightedMesh(geo.mesh);
+        restoreOriginalColor(geo.mesh);
+      });
       clearSelection();
     }
   }, [
