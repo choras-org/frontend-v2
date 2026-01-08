@@ -31,6 +31,7 @@ export const geometrySelectionSlice = createSlice({
 
     clearSelection: (state) => {
       state.selectedGeometry = null;
+      state.selectedGeometries = {};
     },
 
     addHighlightedMesh: (state, action: PayloadAction<THREE.Mesh>) => {
