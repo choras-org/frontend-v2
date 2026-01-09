@@ -176,11 +176,64 @@ export function useJsonValidation() {
     [validateReceiver],
   );
 
+  // Interface for new materials that need to be created
+  interface NewMaterial {
+    coefficients: number[];
+    coefficientString: string;
+    surfaceNames: string[];
+  }
+
+  // Helper function to detect new materials (coefficients that don't match existing materials)
+  const detectNewMaterials = useCallback(
+    (coefficientsData: Record<string, string>): NewMaterial[] => {
+      const newMaterialsMap = new Map<string, NewMaterial>();
+
+      for (const surfaceKey of Object.keys(coefficientsData)) {
+        const coeffValue = coefficientsData[surfaceKey];
+        const coeffArray = coeffValue.split(",").map((v: string) => parseFloat(v.trim()));
+
+        // Check if this coefficient matches any existing material
+        const matchingMaterial = materials.find(
+          (material) =>
+            material.absorptionCoefficients.length === coeffArray.length &&
+            material.absorptionCoefficients.every(
+              (coeff, idx) => Math.abs(coeff - coeffArray[idx]) < 0.0001,
+            ),
+        );
+
+        // If no match, add to new materials map
+        if (!matchingMaterial) {
+          // Normalize the coefficient string for grouping (remove extra spaces)
+          const normalizedCoeffString = coeffArray.join(", ");
+
+          if (!newMaterialsMap.has(normalizedCoeffString)) {
+            newMaterialsMap.set(normalizedCoeffString, {
+              coefficients: coeffArray,
+              coefficientString: normalizedCoeffString,
+              surfaceNames: [],
+            });
+          }
+          newMaterialsMap.get(normalizedCoeffString)!.surfaceNames.push(surfaceKey);
+        }
+      }
+
+      return Array.from(newMaterialsMap.values());
+    },
+    [materials],
+  );
+
   // Validate absorption coefficients from JSON
   const validateAbsorptionCoefficients = useCallback(
-    (coefficientsData: Record<string, string>): { isValid: boolean; error?: string } => {
+    (
+      coefficientsData: Record<string, string>,
+    ): {
+      isValid: boolean;
+      error?: string;
+      newMaterials?: NewMaterial[];
+    } => {
       const coeffKeys = Object.keys(coefficientsData);
 
+      // First, validate format and range for all coefficients
       for (const surfaceKey of coeffKeys) {
         const coeffValue = coefficientsData[surfaceKey];
 
@@ -206,25 +259,17 @@ export function useJsonValidation() {
             error: `Invalid absorption_coefficients "${surfaceKey}": all values must be numbers between 0 and 1`,
           };
         }
-
-        const matchingMaterial = materials.find(
-          (material) =>
-            material.absorptionCoefficients.length === coeffArray.length &&
-            material.absorptionCoefficients.every(
-              (coeff, idx) => Math.abs(coeff - coeffArray[idx]) < 0.0001,
-            ),
-        );
-
-        if (!matchingMaterial) {
-          return {
-            isValid: false,
-            error: `Invalid absorption_coefficients "${surfaceKey}": [${coeffValue}] does not match any material in the database. Please use existing materials or add a new material first.`,
-          };
-        }
       }
-      return { isValid: true };
+
+      // Format validation passed, now detect new materials
+      const newMaterials = detectNewMaterials(coefficientsData);
+
+      return {
+        isValid: true,
+        newMaterials: newMaterials.length > 0 ? newMaterials : undefined,
+      };
     },
-    [materials],
+    [detectNewMaterials],
   );
 
   // Validate simulation settings from JSON with dynamic settings data
@@ -321,7 +366,13 @@ export function useJsonValidation() {
 
   // Main validation function
   const validateJsonData = useCallback(
-    async (jsonValue: string): Promise<{ isValid: boolean; error?: string }> => {
+    async (
+      jsonValue: string,
+    ): Promise<{
+      isValid: boolean;
+      error?: string;
+      newMaterials?: NewMaterial[];
+    }> => {
       try {
         const parsedData = JSON.parse(jsonValue);
 
@@ -344,13 +395,15 @@ export function useJsonValidation() {
           if (!result.isValid) return result;
         }
 
-        // Validate absorption_coefficients
+        // Validate absorption_coefficients and collect new materials
+        let newMaterials: NewMaterial[] | undefined;
         if (
           parsedData.absorption_coefficients &&
           typeof parsedData.absorption_coefficients === "object"
         ) {
           const result = validateAbsorptionCoefficients(parsedData.absorption_coefficients);
           if (!result.isValid) return result;
+          newMaterials = result.newMaterials;
         }
 
         // Validate simulation_settings with the specified simulation_method
@@ -366,7 +419,10 @@ export function useJsonValidation() {
           if (!result.isValid) return result;
         }
 
-        return { isValid: true };
+        return {
+          isValid: true,
+          newMaterials,
+        };
       } catch (_err) {
         return { isValid: false, error: "Invalid JSON format. Please fix syntax errors." };
       }
