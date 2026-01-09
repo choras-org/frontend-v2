@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.64](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.63...v0.0.64) (2026-01-09)
+
+### Features
+
+- add material creation flow and confirmation dialog in FullSettingJsonEditor ([0190475](https://github.com/ajatdarojat45/choras-frontend/commit/019047513989ed94522fcf49e108d82b5457203c))
+- enhance JSON validation to detect new materials and update absorption coefficient validation ([2549be7](https://github.com/ajatdarojat45/choras-frontend/commit/2549be74b099fa27fea88437241b7a6995b1b5b6))
+- enhance MaterialFormDialog props for improved customization and user experience ([4bab229](https://github.com/ajatdarojat45/choras-frontend/commit/4bab2296e2513ea41472d2ee1ee8d9c6baf31522))
+- simplify JSON initialization and confirm material creation flow ([48cc047](https://github.com/ajatdarojat45/choras-frontend/commit/48cc0473c35bd08ef8308b4908ade01f77d0876e))
+- update MaterialFormDialog titles and labels for clarity ([34eb038](https://github.com/ajatdarojat45/choras-frontend/commit/34eb038e1cb9195957b176bebeec96a0e9198086))
+
 ### [0.0.63](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.62...v0.0.63) (2026-01-08)
 
 ### Features
