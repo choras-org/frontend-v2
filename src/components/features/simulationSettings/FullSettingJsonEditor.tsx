@@ -91,7 +91,7 @@ export function FullSettingJsonEditor() {
       setJsonValue(formattedJson);
       setJsonValueOriginal(formattedJson);
     }
-  }, [open, buildJsonStructure, stringifyWithHorizontalArrays]);
+  }, [open]);
 
   // Handle reset button
   const handleReset = useCallback(() => {
@@ -214,8 +214,6 @@ export function FullSettingJsonEditor() {
       }
 
       toast.success("Settings saved successfully");
-
-      // Update original value and close dialog after successful save
       setJsonValueOriginal(jsonValue);
     } catch (error: unknown) {
       toast.error("Failed to save settings");
@@ -227,6 +225,7 @@ export function FullSettingJsonEditor() {
     material: Omit<Material, "id" | "createdAt" | "updatedAt">,
   ) => {
     try {
+      setIsOpenConfirmCreateMaterials(false);
       await createMaterial(material).unwrap();
       toast.success("Material created successfully!");
 
@@ -235,7 +234,6 @@ export function FullSettingJsonEditor() {
         setActiveCreateMaterialIndex(newIndex);
       } else {
         setIsOpenMaterialForm(false);
-        setIsOpenConfirmCreateMaterials(false);
         setActiveCreateMaterialIndex(0);
         setNewMaterialsToCreate([]);
       }
