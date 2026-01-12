@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.60](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.59...v0.0.60) (2025-12-20)
+
+### Features
+
+- add JSZip integration for downloading simulation results and settings as a zip file ([2809f69](https://github.com/ajatdarojat45/frontend-v2/commit/2809f69c6187a9af57ff6a0dbc3fe6fb01159ac1))
+- implement useDownloadPreferences hook for managing download settings and preferences ([36b49d6](https://github.com/ajatdarojat45/frontend-v2/commit/36b49d68c1e18aea949dac6ad9c8a8dac5705eb6))
+
+### Bug Fixes
+
+- remove debug console log from ResultAuralizations component ([ee3a555](https://github.com/ajatdarojat45/frontend-v2/commit/ee3a5559f537caba3ff39c91b2937ab0a2312df0))
+- remove debug console log from ResultPlots component ([34c890f](https://github.com/ajatdarojat45/frontend-v2/commit/34c890f9970a9c22f93794d5c6bb0f503d7a5c3b))
+
+### [0.0.59](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.58...v0.0.59) (2025-12-20)
+
+### Features
+
+- implement useApplySurfaceColors hook for dynamic surface color application ([889455c](https://github.com/ajatdarojat45/frontend-v2/commit/889455ca551cedfc6dd5a1ae7a7a9cbd6ebdfd6a))
+- integrate applySurfaceColors in ModelRenderer for enhanced material handling ([4acacb1](https://github.com/ajatdarojat45/frontend-v2/commit/4acacb1898ccce146e4b6c2a9e1144bb06b2ce99))
+
+### Bug Fixes
+
+- correct SVG attributes to camelCase in MethodInfoDialog component ([91fe723](https://github.com/ajatdarojat45/frontend-v2/commit/91fe723e3f3f9e99fc2b89601a6e81b7991e34f8))
+
 ### [0.0.58](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.57...v0.0.58) (2025-11-28)
 
 ### Bug Fixes
