@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.0.61 (2026-01-07)
+
+### Features
+
+- enhance SurfaceMaterialList with create, update, and copy functionalities for materials ([08af290](https://github.com/ajatdarojat45/choras-frontend/commit/08af2903458f823b45057095bf7db27fa8e47847))
+- refactor MaterialFormDialog to support editing existing materials and improve submission handling ([6084186](https://github.com/ajatdarojat45/choras-frontend/commit/6084186ab4eb78338ec03ce0e994b08fa41eec6c))
+- add updateMaterial mutation to materialsApi for updating existing materials ([f648a2e](https://github.com/ajatdarojat45/choras-frontend/commit/f648a2e88e130e0dd349ede4b55c00dc3222f674))
+- replace CreateMaterialDialog with MaterialFormDialog in SurfaceMaterialList ([10721e1](https://github.com/ajatdarojat45/choras-frontend/commit/10721e174974b1732dde201a6219768f51fb1ec5))
+- implement MaterialFormDialog for creating new materials ([a1f684c](https://github.com/ajatdarojat45/choras-frontend/commit/a1f684c31e6e476cd98006e94eaba9b1ab34dd8d))
+- display material origin in SurfaceMaterialList component ([0179896](https://github.com/ajatdarojat45/choras-frontend/commit/0179896b786ca0cba6b2b8700dad44c758ded4da))
+- add optional origin field to Material interface ([b6a981d](https://github.com/ajatdarojat45/choras-frontend/commit/b6a981de3f5ad9702b036500011bc047b8b612a8))
+
 ### [0.0.60](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.59...v0.0.60) (2025-12-20)
 
 ### Features

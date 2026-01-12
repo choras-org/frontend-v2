@@ -12,27 +12,56 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
-import { useState } from "react";
-import { useCreateMaterialMutation } from "@/store/materialsApi";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import type { Material } from "@/types/material";
 
 type IProps = {
-  openCreateMaterialDialog: boolean;
-  setOpenCreateMaterialDialog: (open: boolean) => void;
+  isOpen: boolean;
+  onOpen: (open: boolean) => void;
+  onSubmit?: (material: Omit<Material, "id" | "createdAt" | "updatedAt">) => void;
+  material?: Material | null;
+  label?: string;
+  description?: string;
+  isLoading?: boolean;
+  isShownTrigger?: boolean;
 };
 
-export function CreateMaterialDialog({
-  openCreateMaterialDialog,
-  setOpenCreateMaterialDialog,
+export function MaterialFormDialog({
+  isOpen,
+  onOpen,
+  material,
+  label = "Create",
+  description = "Fill in the details to create a new material.",
+  isLoading = false,
+  onSubmit,
+  isShownTrigger = true,
 }: IProps) {
-  const [createMaterial, { isLoading: isCreating }] = useCreateMaterialMutation();
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     category: "",
     absorptionCoefficients: [0.01, 0.04, 0.14, 0.47, 0.88, 0.53, 0.26],
   });
+
+  useEffect(() => {
+    if (material) {
+      setFormData({
+        name: material.name,
+        description: material.description,
+        category: material.category,
+        absorptionCoefficients: material.absorptionCoefficients,
+      });
+    }
+
+    return () => {
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        absorptionCoefficients: [0.01, 0.04, 0.14, 0.47, 0.88, 0.53, 0.26],
+      });
+    };
+  }, [material]);
 
   const handleInputChange = (field: string, value: string | number[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -56,35 +85,26 @@ export function CreateMaterialDialog({
     handleCoeffChange(index, roundedValue.toString());
   };
 
-  const handleCreateSubmit = async () => {
-    try {
-      await createMaterial(formData).unwrap();
-      toast.success("Material created successfully!");
-      setOpenCreateMaterialDialog(false);
-      setFormData({
-        name: "",
-        description: "",
-        category: "",
-        absorptionCoefficients: [0.01, 0.04, 0.14, 0.47, 0.88, 0.53, 0.26],
-      });
-    } catch (error) {
-      toast.error("Failed to create material");
-      console.error("Error creating material:", error);
+  const handleSubmit = async () => {
+    if (onSubmit) {
+      onSubmit(formData);
     }
   };
 
   return (
-    <Dialog open={openCreateMaterialDialog} onOpenChange={setOpenCreateMaterialDialog}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Plus size={16} />
-          Create material
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpen}>
+      {isShownTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Plus size={16} />
+            {label} Material
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create New Material</DialogTitle>
-          <DialogDescription>Add a new material with acoustic properties</DialogDescription>
+          <DialogTitle>{label} Material</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -93,7 +113,7 @@ export function CreateMaterialDialog({
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className="col-span-3"
+              className="col-span-3 bg-white text-gray-900"
               placeholder="Material name"
             />
           </div>
@@ -194,10 +214,10 @@ export function CreateMaterialDialog({
         <DialogFooter>
           <Button
             type="submit"
-            onClick={handleCreateSubmit}
-            disabled={isCreating || !formData.name || !formData.category}
+            onClick={handleSubmit}
+            disabled={isLoading || !formData.name || !formData.category}
           >
-            {isCreating ? "Creating..." : "Create Material"}
+            {isLoading ? "Submitting..." : `${label} Material`}
           </Button>
         </DialogFooter>
       </DialogContent>
