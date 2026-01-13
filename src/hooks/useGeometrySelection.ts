@@ -10,6 +10,7 @@ import {
   clearHighlights as clearHighlightsAction,
   addSelectedGeometry as addSelectedGeometryAction,
   removeSelectedGeometry as removeSelectedGeometryAction,
+  clearSelectedGeometries as clearSelectedGeometriesAction,
 } from "@/store/geometrySelectionSlice";
 import type { SelectedGeometry } from "@/store/geometrySelectionSlice";
 
@@ -64,6 +65,10 @@ export function useGeometrySelection() {
     [dispatch],
   );
 
+  const clearSelectedGeometries = useCallback(() => {
+    dispatch(clearSelectedGeometriesAction());
+  }, [dispatch]);
+
   return {
     selectedGeometry,
     highlightedMeshes: highlightedMeshesSet,
@@ -75,5 +80,6 @@ export function useGeometrySelection() {
     addSelectedGeometry,
     removeSelectedGeometry,
     selectedGeometries,
+    clearSelectedGeometries,
   };
 }
