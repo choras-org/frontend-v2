@@ -152,8 +152,21 @@ export function SurfacesTab() {
       return;
     }
 
-    let updatedAssignments: Record<string, number>;
     const surface = surfaces.find((s) => s.id === surfaceKey);
+
+    // If multiple surfaces selected and current surface is one of them, use bulk assign
+    const isMultipleSelected =
+      Object.keys(selectedGeometries).length > 1 &&
+      surface?.mesh?.uuid &&
+      selectedGeometries[surface.mesh.uuid];
+
+    if (isMultipleSelected) {
+      handleAssignBulkMaterials(materialId);
+      return;
+    }
+
+    // Single surface assignment
+    let updatedAssignments: Record<string, number>;
 
     if (materialId === "default") {
       dispatch(removeMaterialAssignment(surfaceKey));
