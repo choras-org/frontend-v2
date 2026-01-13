@@ -376,7 +376,7 @@ export function SurfacesTab() {
             <div className="relative">
               <div
                 className="
-                max-h-100 overflow-y-auto pr-4
+                max-h-120 overflow-y-auto pr-4
                 scrollbar-thin
                 scrollbar-thumb-slate-700/60
                 scrollbar-track-transparent
@@ -592,34 +592,41 @@ export function SurfacesTab() {
             </div>
           </div>
         )}
-
-        {surfaces.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-choras-gray">
-            <div className="text-sm text-gray-400">Total: {surfaces.length} surfaces found</div>
-          </div>
-        )}
       </div>
 
-      <div className="mb-4">
+      <div
+        className="
+        sticky bottom-0 z-20
+        bg-choras-dark
+        border-t border-choras-gray
+        pt-4
+        px-1
+        mb-4
+      "
+      >
+        <div className="text-sm text-gray-400 mb-4">Total: {surfaces.length} surfaces found</div>
+
         <div className="grid grid-cols-2 gap-4 w-full items-center mb-4">
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center text-xs"
+            className="text-xs"
             onClick={() => setOpenMaterialLibrary(true)}
           >
             Open material library
           </Button>
+
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center text-xs"
+            className="text-xs"
             onClick={handleOpenCreateMaterialDialog}
           >
             <Plus size={14} />
             <span>Create material</span>
           </Button>
         </div>
+
         <FullSettingJsonEditor />
       </div>
     </div>
