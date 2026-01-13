@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
 import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
@@ -350,6 +350,52 @@ export function SurfacesTab() {
     ],
   );
 
+  // Memoize material options to avoid re-rendering for each surface row
+  const materialSelectOptions = useMemo(() => {
+    if (materialsLoading) {
+      return (
+        <SelectItem value="loading" disabled className="text-gray-400">
+          Loading materials...
+        </SelectItem>
+      );
+    }
+
+    if (materialsError) {
+      return (
+        <SelectItem value="error" disabled className="text-red-400">
+          Error loading materials
+        </SelectItem>
+      );
+    }
+
+    return (
+      <>
+        {materials.map((material) => (
+          <Tooltip key={material.id} delayDuration={300}>
+            <TooltipTrigger asChild>
+              <SelectItem value={material.id.toString()} className="text-white">
+                <span className="truncate block" title={material.name}>
+                  {material.name}
+                </span>
+              </SelectItem>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="p-3 bg-choras-dark border-choras-primary">
+              <div className="text-sm mb-2 font-medium text-white">{material.name}</div>
+              <AbsorptionCoefficientChart
+                coefficients={material.absorptionCoefficients}
+                size="md"
+              />
+            </TooltipContent>
+          </Tooltip>
+        ))}
+        <hr className="border-t border-gray-700 my-1" />
+        <SelectItem value="open-library" className="text-choras-primary">
+          Open material library
+        </SelectItem>
+      </>
+    );
+  }, [materials, materialsLoading, materialsError]);
+
   return (
     <div className="text-white h-full flex flex-col justify-between">
       <div>
@@ -478,114 +524,71 @@ export function SurfacesTab() {
                       </td>
                     </tr>
 
-                    {showIndividualAssignments &&
-                      surfaces.map((surface, index) => {
-                        const surfaceKey = surface.id;
-                        const assignedMaterialId = materialAssignments[surfaceKey];
-                        const isSelected = selectedSurfaceId === surface.id;
+                    <TooltipProvider>
+                      {showIndividualAssignments &&
+                        surfaces.map((surface, index) => {
+                          const surfaceKey = surface.id;
+                          const assignedMaterialId = materialAssignments[surfaceKey];
+                          const isSelected = selectedSurfaceId === surface.id;
 
-                        return (
-                          <tr
-                            key={surface.id}
-                            ref={isSelected ? selectedSurfaceRowRef : null}
-                            onClick={() => handleSurfaceRowClick(surface)}
-                            className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
-                              isSelected
-                                ? "bg-choras-primary/20 hover:bg-choras-primary/30"
-                                : "hover:bg-choras-dark/90"
-                            }`}
-                          >
-                            <td className="px-3 py-2 text-sm w-1/3">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleSurfaceVisibility(surfaceKey);
-                                  }}
-                                  className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
-                                >
-                                  {hiddenSurfaces.has(surfaceKey) ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
+                          return (
+                            <tr
+                              key={surface.id}
+                              ref={isSelected ? selectedSurfaceRowRef : null}
+                              onClick={() => handleSurfaceRowClick(surface)}
+                              className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
+                                isSelected
+                                  ? "bg-choras-primary/20 hover:bg-choras-primary/30"
+                                  : "hover:bg-choras-dark/90"
+                              }`}
+                            >
+                              <td className="px-3 py-2 text-sm w-1/3">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleSurfaceVisibility(surfaceKey);
+                                    }}
+                                    className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
+                                  >
+                                    {hiddenSurfaces.has(surfaceKey) ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                  </div>
+                                  <div className="font-medium truncate">
+                                    {getDisplayName(surface, index)}
+                                  </div>
                                 </div>
-                                <div className="font-medium truncate">
-                                  {getDisplayName(surface, index)}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
-                              <Select
-                                value={assignedMaterialId?.toString() || "default"}
-                                onValueChange={(value) =>
-                                  handleMaterialAssignment(surfaceKey, value)
-                                }
-                              >
-                                <SelectTrigger
-                                  size="sm"
-                                  className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                              </td>
+                              <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
+                                <Select
+                                  value={assignedMaterialId?.toString() || "default"}
+                                  onValueChange={(value) =>
+                                    handleMaterialAssignment(surfaceKey, value)
+                                  }
                                 >
-                                  <SelectValue placeholder={getMaterialName(assignedMaterialId)} />
-                                </SelectTrigger>
-                                <SelectContent className="bg-choras-dark border-choras-gray">
-                                  <SelectItem value="default" className="text-white">
-                                    None
-                                  </SelectItem>
-                                  {materialsLoading ? (
-                                    <SelectItem value="loading" disabled className="text-gray-400">
-                                      Loading materials...
+                                  <SelectTrigger
+                                    size="sm"
+                                    className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                                  >
+                                    <SelectValue
+                                      placeholder={getMaterialName(assignedMaterialId)}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-choras-dark border-choras-gray">
+                                    <SelectItem value="default" className="text-white">
+                                      None
                                     </SelectItem>
-                                  ) : materialsError ? (
-                                    <SelectItem value="error" disabled className="text-red-400">
-                                      Error loading materials
-                                    </SelectItem>
-                                  ) : (
-                                    <TooltipProvider>
-                                      {materials.map((material) => (
-                                        <Tooltip key={material.id} delayDuration={300}>
-                                          <TooltipTrigger asChild>
-                                            <SelectItem
-                                              value={material.id.toString()}
-                                              className="text-white"
-                                            >
-                                              <span
-                                                className="truncate block"
-                                                title={material.name}
-                                              >
-                                                {material.name}
-                                              </span>
-                                            </SelectItem>
-                                          </TooltipTrigger>
-                                          <TooltipContent
-                                            side="right"
-                                            className="p-3 bg-choras-dark border-choras-primary"
-                                          >
-                                            <div className="text-sm mb-2 font-medium text-white">
-                                              {material.name}
-                                            </div>
-                                            <AbsorptionCoefficientChart
-                                              coefficients={material.absorptionCoefficients}
-                                              size="md"
-                                            />
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      ))}
-                                      <hr className="border-t border-gray-700 my-1" />
-                                      <SelectItem
-                                        value="open-library"
-                                        className="text-choras-primary"
-                                      >
-                                        Open material library
-                                      </SelectItem>
-                                    </TooltipProvider>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                                    {materialSelectOptions}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </TooltipProvider>
                   </tbody>
                 </table>
               </div>
