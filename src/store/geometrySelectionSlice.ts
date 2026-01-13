@@ -59,6 +59,10 @@ export const geometrySelectionSlice = createSlice({
       delete state.selectedGeometries[meshUuid];
     },
 
+    clearSelectedGeometries: (state) => {
+      state.selectedGeometries = {};
+    },
+
     clearHighlights: (state) => {
       state.highlightedMeshes = [];
     },
@@ -73,6 +77,7 @@ export const {
   clearHighlights,
   addSelectedGeometry,
   removeSelectedGeometry,
+  clearSelectedGeometries,
 } = geometrySelectionSlice.actions;
 
 export default geometrySelectionSlice.reducer;
