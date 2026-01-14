@@ -29,6 +29,8 @@ export function DynamicSettingField({ option, value, onChange }: DynamicSettingF
 
   useEffect(() => {
     setLocalValue(String(value));
+    const valid = validateValue(value);
+    setIsValid(valid);
   }, [value]);
 
   const validateValue = (inputValue: string | number): boolean => {
