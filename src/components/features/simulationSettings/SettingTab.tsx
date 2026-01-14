@@ -49,12 +49,10 @@ export function SettingTab() {
     }
   }, [simulation?.id, settingsData?.options, dispatch]);
 
-  const handleValueChange = (id: string, value: string | number, isValid: boolean = true) => {
-    if (isValid) {
-      dispatch(updateValue({ id, value }));
-      const updatedValues = { ...values, [id]: value };
-      updateSimulationSettings(updatedValues);
-    }
+  const handleValueChange = (id: string, value: string | number, _: boolean = true) => {
+    dispatch(updateValue({ id, value }));
+    const updatedValues = { ...values, [id]: value };
+    updateSimulationSettings(updatedValues);
   };
 
   const generalSettingsNames = ["simulation length", "impulse response length", "speed of sound"];
@@ -119,7 +117,7 @@ export function SettingTab() {
                   <DynamicSettingField
                     key={option.id}
                     option={option}
-                    value={values[option.id] || option.default}
+                    value={values[option.id] === undefined ? option.default : values[option.id]}
                     onChange={(value, isValid) => handleValueChange(option.id, value, isValid)}
                   />
                 ))}
@@ -150,7 +148,7 @@ export function SettingTab() {
                   <DynamicSettingField
                     key={option.id}
                     option={option}
-                    value={values[option.id] || option.default}
+                    value={values[option.id] === undefined ? option.default : values[option.id]}
                     onChange={(value, isValid) => handleValueChange(option.id, value, isValid)}
                   />
                 ))}
@@ -168,7 +166,7 @@ export function SettingTab() {
           <div className="text-center py-8 text-gray-400">No settings available</div>
         )}
       </div>
-      <div className="mb-4">
+      <div className="mb-4 mt-4">
         <FullSettingJsonEditor />
       </div>
     </div>
