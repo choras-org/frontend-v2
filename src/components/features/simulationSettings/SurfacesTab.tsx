@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
 import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
@@ -43,6 +43,7 @@ export function SurfacesTab() {
     removeHighlightedMesh,
     addSelectedGeometry,
     removeSelectedGeometry,
+    clearSelectedGeometries,
   } = useGeometrySelection();
   const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
     useMeshHighlight();
@@ -151,8 +152,21 @@ export function SurfacesTab() {
       return;
     }
 
-    let updatedAssignments: Record<string, number>;
     const surface = surfaces.find((s) => s.id === surfaceKey);
+
+    // If multiple surfaces selected and current surface is one of them, use bulk assign
+    const isMultipleSelected =
+      Object.keys(selectedGeometries).length > 1 &&
+      surface?.mesh?.uuid &&
+      selectedGeometries[surface.mesh.uuid];
+
+    if (isMultipleSelected) {
+      handleAssignBulkMaterials(materialId);
+      return;
+    }
+
+    // Single surface assignment
+    let updatedAssignments: Record<string, number>;
 
     if (materialId === "default") {
       dispatch(removeMaterialAssignment(surfaceKey));
@@ -323,6 +337,38 @@ export function SurfacesTab() {
 
   const handleSelectSurface = useCallback(
     (surface: SurfaceInfo) => {
+      // Restore previous mesh if it exists
+      if (selectedGeometry?.mesh) {
+        removeHighlightedMesh(selectedGeometry.mesh);
+        restoreOriginalColor(selectedGeometry.mesh);
+      }
+
+      // Highlight and select new mesh
+      const payload = {
+        mesh: surface.mesh,
+        faceIndex: 0,
+        point: new THREE.Vector3(),
+        materialId: surface.id,
+      };
+      selectGeometry(payload);
+      highlightMesh(surface.mesh, HIGHLIGHT_COLOR);
+      addHighlightedMesh(surface.mesh);
+      clearSelectedGeometries();
+      addSelectedGeometry(payload);
+    },
+    [
+      selectedGeometry,
+      selectGeometry,
+      highlightMesh,
+      HIGHLIGHT_COLOR,
+      addHighlightedMesh,
+      removeHighlightedMesh,
+      restoreOriginalColor,
+    ],
+  );
+
+  const handleSelectMultipleSurfaces = useCallback(
+    (surface: SurfaceInfo) => {
       const selectedGeo = selectedGeometries[surface.mesh.uuid];
       const mesh = surface.mesh;
       setBulkMaterialId("");
@@ -408,6 +454,51 @@ export function SurfacesTab() {
     updateSimulationData(updatedAssignments);
   };
 
+  const materialSelectOptions = useMemo(() => {
+    if (materialsLoading) {
+      return (
+        <SelectItem value="loading" disabled className="text-gray-400">
+          Loading materials...
+        </SelectItem>
+      );
+    }
+
+    if (materialsError) {
+      return (
+        <SelectItem value="error" disabled className="text-red-400">
+          Error loading materials
+        </SelectItem>
+      );
+    }
+
+    return (
+      <>
+        {materials.map((material) => (
+          <Tooltip key={material.id} delayDuration={300}>
+            <TooltipTrigger asChild>
+              <SelectItem value={material.id.toString()} className="text-white">
+                <span className="truncate block" title={material.name}>
+                  {material.name}
+                </span>
+              </SelectItem>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="p-3 bg-choras-dark border-choras-primary">
+              <div className="text-sm mb-2 font-medium text-white">{material.name}</div>
+              <AbsorptionCoefficientChart
+                coefficients={material.absorptionCoefficients}
+                size="md"
+              />
+            </TooltipContent>
+          </Tooltip>
+        ))}
+        <hr className="border-t border-gray-700 my-1" />
+        <SelectItem value="open-library" className="text-choras-primary">
+          Open material library
+        </SelectItem>
+      </>
+    );
+  }, [materials, materialsLoading, materialsError]);
+
   return (
     <div className="text-white h-full flex flex-col justify-between">
       <div>
@@ -434,7 +525,7 @@ export function SurfacesTab() {
             <div className="relative">
               <div
                 className="
-                max-h-100 overflow-y-auto pr-4
+                max-h-120 overflow-y-auto pr-4
                 scrollbar-thin
                 scrollbar-thumb-slate-700/60
                 scrollbar-track-transparent
@@ -536,227 +627,167 @@ export function SurfacesTab() {
                       </td>
                     </tr>
 
-                    {showIndividualAssignments &&
-                      surfaces.map((surface, index) => {
-                        const surfaceKey = surface.id;
-                        const assignedMaterialId = materialAssignments[surfaceKey];
-                        const isSelected = selectedSurfaceId === surface.id;
+                    <TooltipProvider>
+                      {showIndividualAssignments &&
+                        surfaces.map((surface, index) => {
+                          const surfaceKey = surface.id;
+                          const assignedMaterialId = materialAssignments[surfaceKey];
+                          const isSelected = selectedSurfaceId === surface.id;
 
-                        return (
-                          <tr
-                            key={surface.id}
-                            ref={isSelected ? selectedSurfaceRowRef : null}
-                            onClick={() => handleSelectSurface(surface)}
-                            className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
-                              selectedGeometries[surface.mesh.uuid]
-                                ? "bg-choras-primary/20 hover:bg-choras-primary/30"
-                                : "hover:bg-choras-dark/90"
-                            }`}
-                          >
-                            <td className="px-3 py-2 text-sm w-1/3">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleSurfaceVisibility(surfaceKey);
-                                  }}
-                                  className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
-                                >
-                                  {hiddenSurfaces.has(surfaceKey) ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                </div>
-                                <div className="font-medium truncate">
-                                  {getDisplayName(surface, index)}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
-                              <Select
-                                value={assignedMaterialId?.toString() || "default"}
-                                onValueChange={(value) =>
-                                  handleMaterialAssignment(surfaceKey, value)
+                          return (
+                            <tr
+                              key={surface.id}
+                              ref={isSelected ? selectedSurfaceRowRef : null}
+                              onClick={(e) => {
+                                if (e.ctrlKey || e.metaKey) {
+                                  handleSelectMultipleSurfaces(surface);
+                                } else {
+                                  handleSelectSurface(surface);
                                 }
-                              >
-                                <SelectTrigger
-                                  size="sm"
-                                  className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                              }}
+                              className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
+                                selectedGeometries[surface.mesh.uuid]
+                                  ? "bg-choras-primary/20 hover:bg-choras-primary/30"
+                                  : "hover:bg-choras-dark/90"
+                              }`}
+                            >
+                              <td className="px-3 py-2 text-sm w-1/3">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleSurfaceVisibility(surfaceKey);
+                                    }}
+                                    className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
+                                  >
+                                    {hiddenSurfaces.has(surfaceKey) ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                  </div>
+                                  <div className="font-medium truncate">
+                                    {getDisplayName(surface, index)}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
+                                <Select
+                                  value={assignedMaterialId?.toString() || "default"}
+                                  onValueChange={(value) =>
+                                    handleMaterialAssignment(surfaceKey, value)
+                                  }
                                 >
-                                  <SelectValue placeholder={getMaterialName(assignedMaterialId)} />
-                                </SelectTrigger>
-                                <SelectContent className="bg-choras-dark border-choras-gray">
-                                  <SelectItem value="default" className="text-white">
-                                    None
-                                  </SelectItem>
-                                  {materialsLoading ? (
-                                    <SelectItem value="loading" disabled className="text-gray-400">
-                                      Loading materials...
+                                  <SelectTrigger
+                                    size="sm"
+                                    className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                                  >
+                                    <SelectValue
+                                      placeholder={getMaterialName(assignedMaterialId)}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-choras-dark border-choras-gray">
+                                    <SelectItem value="default" className="text-white">
+                                      None
                                     </SelectItem>
-                                  ) : materialsError ? (
-                                    <SelectItem value="error" disabled className="text-red-400">
-                                      Error loading materials
-                                    </SelectItem>
-                                  ) : (
-                                    <TooltipProvider>
-                                      {materials.map((material) => (
-                                        <Tooltip key={material.id} delayDuration={300}>
-                                          <TooltipTrigger asChild>
-                                            <SelectItem
-                                              value={material.id.toString()}
-                                              className="text-white"
-                                            >
-                                              <span
-                                                className="truncate block"
-                                                title={material.name}
-                                              >
-                                                {material.name}
-                                              </span>
-                                            </SelectItem>
-                                          </TooltipTrigger>
-                                          <TooltipContent
-                                            side="right"
-                                            className="p-3 bg-choras-dark border-choras-primary"
-                                          >
-                                            <div className="text-sm mb-2 font-medium text-white">
-                                              {material.name}
-                                            </div>
-                                            <AbsorptionCoefficientChart
-                                              coefficients={material.absorptionCoefficients}
-                                              size="md"
-                                            />
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      ))}
-                                      <hr className="border-t border-gray-700 my-1" />
-                                      <SelectItem
-                                        value="open-library"
-                                        className="text-choras-primary"
-                                      >
-                                        Open material library
-                                      </SelectItem>
-                                    </TooltipProvider>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                                    {materialSelectOptions}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </TooltipProvider>
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
         )}
-
-        {surfaces.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-choras-gray">
-            <div className="text-sm text-gray-400">Total: {surfaces.length} surfaces found</div>
-            {Object.keys(selectedGeometries).length > 0 && (
-              <div className="mt-1">
-                <div className="text-sm text-gray-400">
-                  Selected: {Object.keys(selectedGeometries).length}{" "}
-                  {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
-                </div>
-                <table className="w-full table-fixed">
-                  <tbody>
-                    <tr
-                      className={`border-gray-700 transition-colors duration-200 cursor-pointer hover:bg-choras-dark/90`}
-                    >
-                      <td className=" py-2 text-sm w-1/3">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium truncate">Assign to selected</div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
-                        <Select value={bulkMaterialId} onValueChange={handleAssignBulkMaterials}>
-                          <SelectTrigger
-                            size="sm"
-                            className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
-                          >
-                            <SelectValue placeholder={"Select material"} />
-                          </SelectTrigger>
-                          <SelectContent className="bg-choras-dark border-choras-gray">
-                            <SelectItem value="default" className="text-white">
-                              None
-                            </SelectItem>
-                            {materialsLoading ? (
-                              <SelectItem value="loading" disabled className="text-gray-400">
-                                Loading materials...
-                              </SelectItem>
-                            ) : materialsError ? (
-                              <SelectItem value="error" disabled className="text-red-400">
-                                Error loading materials
-                              </SelectItem>
-                            ) : (
-                              <TooltipProvider>
-                                {materials.map((material) => (
-                                  <Tooltip key={material.id} delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                      <SelectItem
-                                        value={material.id.toString()}
-                                        className="text-white"
-                                      >
-                                        <span className="truncate block" title={material.name}>
-                                          {material.name}
-                                        </span>
-                                      </SelectItem>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                      side="right"
-                                      className="p-3 bg-choras-dark border-choras-primary"
-                                    >
-                                      <div className="text-sm mb-2 font-medium text-white">
-                                        {material.name}
-                                      </div>
-                                      <AbsorptionCoefficientChart
-                                        coefficients={material.absorptionCoefficients}
-                                        size="md"
-                                      />
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ))}
-                                <hr className="border-t border-gray-700 my-1" />
-                                <SelectItem value="open-library" className="text-choras-primary">
-                                  Open material library
-                                </SelectItem>
-                              </TooltipProvider>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      <div className="mb-4">
+      <div className="sticky bottom-0 z-20 bg-choras-dark border-t border-choras-gray pt-4 px-1">
+        {surfaces.length > 0 && (
+          <div className="border-choras-gray mb-4">
+            <div className="text-sm text-gray-400 mb-1">
+              Total: {surfaces.length} surfaces found
+            </div>
+
+            <div className="max-h-40">
+              {Object.keys(selectedGeometries).length > 1 ? (
+                <>
+                  <div className="text-sm text-gray-400 mb-1">
+                    Selected: {Object.keys(selectedGeometries).length}{" "}
+                    {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
+                  </div>
+
+                  <table className="w-full table-fixed">
+                    <tbody>
+                      <tr className="cursor-pointer hover:bg-choras-dark/90">
+                        <td className="py-2 text-sm w-1/3">
+                          <div className="font-medium truncate">Assign to selected</div>
+                        </td>
+
+                        <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
+                          <Select value={bulkMaterialId} onValueChange={handleAssignBulkMaterials}>
+                            <SelectTrigger
+                              size="sm"
+                              className="w-full bg-choras-dark border-choras-gray text-white"
+                            >
+                              <SelectValue placeholder="Select material" />
+                            </SelectTrigger>
+
+                            <SelectContent className="bg-choras-dark text-white border-choras-gray">
+                              <SelectItem value="default">None</SelectItem>
+
+                              {materials.map((material) => (
+                                <SelectItem key={material.id} value={material.id.toString()}>
+                                  {material.name}
+                                </SelectItem>
+                              ))}
+
+                              <hr className="border-t border-gray-700 my-1" />
+                              <SelectItem value="open-library" className="text-choras-primary">
+                                Open material library
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              ) : (
+                <div />
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4 w-full items-center mb-4">
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center text-xs"
+            className="text-xs"
             onClick={() => setOpenMaterialLibrary(true)}
           >
             Open material library
           </Button>
+
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center text-xs"
+            className="text-xs"
             onClick={handleOpenCreateMaterialDialog}
           >
             <Plus size={14} />
             <span>Create material</span>
           </Button>
         </div>
+
         <FullSettingJsonEditor />
+
+        <div className="mb-4" />
       </div>
     </div>
   );
