@@ -27,6 +27,7 @@ type IProps = {
   isShownTrigger?: boolean;
   title?: string;
   notes?: string;
+  notesColor?: string;
 };
 
 export function MaterialFormDialog({
@@ -41,6 +42,7 @@ export function MaterialFormDialog({
   triggerLabel = "Create",
   title = "Material Form",
   notes,
+  notesColor = "gray",
 }: IProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -218,7 +220,7 @@ export function MaterialFormDialog({
           </div>
         </div>
         <DialogFooter className="flex justify-center items-center">
-          {notes && <div className="text-sm text-gray-600 mr-auto">{notes}</div>}
+          {notes && <div className={`text-sm text-${notesColor}-400 mr-auto`}>{notes}</div>}
           <Button
             type="submit"
             onClick={handleSubmit}
