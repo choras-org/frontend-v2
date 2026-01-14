@@ -8,6 +8,7 @@ const initialState: SimulationSettingsState = {
   loading: false,
   error: null,
   selectedMethodType: "DE",
+  errors: {},
 };
 
 const simulationSettingsSlice = createSlice({
@@ -35,16 +36,34 @@ const simulationSettingsSlice = createSlice({
       state.options = [];
       state.values = {};
       state.error = null;
+      state.errors = {};
     },
     setSelectedMethodType: (state, action: PayloadAction<string>) => {
       state.selectedMethodType = action.payload;
       state.options = [];
       state.values = {};
     },
+    setErrors: (state, action: PayloadAction<Record<string, string>>) => {
+      state.errors = action.payload;
+    },
+    addError: (state, action: PayloadAction<{ id: string; name: string }>) => {
+      state.errors[action.payload.id] = action.payload.name;
+    },
+    removeError: (state, action: PayloadAction<string>) => {
+      delete state.errors[action.payload];
+    },
   },
 });
 
-export const { setOptions, updateValue, resetValues, clearSettings, setSelectedMethodType } =
-  simulationSettingsSlice.actions;
+export const {
+  setOptions,
+  updateValue,
+  resetValues,
+  clearSettings,
+  setSelectedMethodType,
+  setErrors,
+  addError,
+  removeError,
+} = simulationSettingsSlice.actions;
 
 export const simulationSettingsReducer = simulationSettingsSlice.reducer;
