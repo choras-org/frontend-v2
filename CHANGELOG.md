@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.66](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.65...v0.0.66) (2026-01-14)
+
+### Features
+
+- add clearSelectedGeometries action to reset selected geometries state ([da21657](https://github.com/ajatdarojat45/choras-frontend/commit/da21657a6b404c60b966c47a663d0daeadbb95ed))
+- add clearSelectedGeometries function to reset selected geometries state ([8e863f4](https://github.com/ajatdarojat45/choras-frontend/commit/8e863f4d3717739808769e446e25790ad25246e3))
+- add customizable notes color in MaterialFormDialog ([4834f73](https://github.com/ajatdarojat45/choras-frontend/commit/4834f73d61f65fb167ab44174a01aa72785cb00d))
+- display summary for multiple selected surfaces in GeometrySelectionInfo ([07febca](https://github.com/ajatdarojat45/choras-frontend/commit/07febca773669dcb4e1ced0d2069b7c9cc000b8c))
+- enhance SurfacesTab layout with improved sticky footer and updated surface count display ([760c4fd](https://github.com/ajatdarojat45/choras-frontend/commit/760c4fd44244a8e16f9e77e82ba0d092f8b2d9b6))
+- implement multi-select functionality for geometry selection ([1dba206](https://github.com/ajatdarojat45/choras-frontend/commit/1dba206d0b82e4aedcaad73a320d6ef2aa25405e))
+- implement surface selection with geometry clearing and multiple selection support ([4d37323](https://github.com/ajatdarojat45/choras-frontend/commit/4d37323778a04b31d18117ff72aba4f3cdae8c03))
+- memoize material options in SurfacesTab to optimize rendering and handle loading/error states ([8efbe5f](https://github.com/ajatdarojat45/choras-frontend/commit/8efbe5f7338e45dc4ec6809ee09eecaa881631b6))
+- support bulk material assignment for multiple selected surfaces ([d2367d7](https://github.com/ajatdarojat45/choras-frontend/commit/d2367d7348759c891ef9da02c9e763c136922878))
+- update material handling messages and improve copy logic in SurfaceMaterialList ([5de18e1](https://github.com/ajatdarojat45/choras-frontend/commit/5de18e175045e1fafa437a590354a00128606887))
+
 ### [0.0.65](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.64...v0.0.65) (2026-01-10)
 
 ### Features
