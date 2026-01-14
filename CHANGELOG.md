@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.67](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.66...v0.0.67) (2026-01-14)
+
+### Features
+
+- add error handling actions to simulation settings slice ([15d69b4](https://github.com/ajatdarojat45/choras-frontend/commit/15d69b489dde58f364cdf7a7826c1fee599cbbc1))
+- add errors field to SimulationSettingsState interface ([c477f56](https://github.com/ajatdarojat45/choras-frontend/commit/c477f564bd7411dc7fd75e0fbf824fc10346d3ca))
+- add simulation settings error handling and user confirmation dialog in RunSimulationButton ([3a73cff](https://github.com/ajatdarojat45/choras-frontend/commit/3a73cff6818fa91f13b1694a79ccfaa0441d2bbb))
+- enhance simulation validation logic and integrate error handling ([96762d6](https://github.com/ajatdarojat45/choras-frontend/commit/96762d6709ee254ebfcd631dc2cad1381b9bae85))
+- improve validation logic in DynamicSettingField component ([3fe6239](https://github.com/ajatdarojat45/choras-frontend/commit/3fe623931d9daabc7ccaa5cacf038dcdb6585114))
+- simplify value update logic and enhance default value handling in SettingTab ([fed4cdb](https://github.com/ajatdarojat45/choras-frontend/commit/fed4cdb44477f17d0b8fcc2275337025aa8b8524))
+
 ### [0.0.66](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.65...v0.0.66) (2026-01-14)
 
 ### Features
