@@ -24,6 +24,7 @@ export interface SimulationSettingsState {
   loading: boolean;
   error: string | null;
   selectedMethodType: string;
+  errors: Record<string, string>;
 }
 
 export interface SimulationMethod {
