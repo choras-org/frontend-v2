@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.68](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.67...v0.0.68) (2026-01-15)
+
+### Features
+
+- add highlighted element handling and improve settings display in SettingTab ([a36bca8](https://github.com/ajatdarojat45/choras-frontend/commit/a36bca8da2179b596e91309c9ef9ef7dc36b3429))
+- enhance simulation settings validation and improve error display in RunSimulationButton ([4199581](https://github.com/ajatdarojat45/choras-frontend/commit/419958189699ce8ef8583ea2115fd3974799930f))
+- refactor simulation settings validation logic and remove unused state management ([6e3bfd2](https://github.com/ajatdarojat45/choras-frontend/commit/6e3bfd2cef38df2d063e825a12984fe8797ce678))
+- remove unnecessary error state reset in clearSettings reducer ([34d5b75](https://github.com/ajatdarojat45/choras-frontend/commit/34d5b757ebe90b7db5c1a6d6a4939f1ed74365b8))
+
 ### [0.0.67](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.66...v0.0.67) (2026-01-14)
 
 ### Features
