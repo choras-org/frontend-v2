@@ -26,7 +26,8 @@ import type { RootState } from "@/store";
 
 export function RunSimulationButton() {
   const { isRunning, progress, startSimulation, cancelAndStop } = useSimulationRunner();
-  const { isValid, errors, simulationSettingsErrors } = useSimulationValidation();
+  const { isValid, errors, validateSimulationSettings, simulationSettingsErrors } =
+    useSimulationValidation();
   const { duplicateSimulation } = useDuplicateSimulation();
   const { modelId, simulationId } = useParams() as { modelId: string; simulationId?: string };
   const { data: simulations } = useGetSimulationsByModelIdQuery(+modelId);
@@ -76,10 +77,18 @@ export function RunSimulationButton() {
         }),
       );
     } else {
+      const simulationSettingsErrors = validateSimulationSettings();
+
       if (
         !simulationSettingsErrorsDontShowAgain &&
         Object.keys(simulationSettingsErrors).length > 0
       ) {
+        dispatch(
+          navigateToTabAndHighlight({
+            tab: "settings",
+            element: "simulation-settings",
+          }),
+        );
         setShowSimulationSettingsErrors(true);
         return;
       }
@@ -232,14 +241,18 @@ export function RunSimulationButton() {
             <AlertDialogTitle>Simulation Settings Errors</AlertDialogTitle>
             <AlertDialogDescription>
               The following parameters are outside of the defined ranges:
-              <ul className="list-disc list-inside my-2">
-                {Object.entries(simulationSettingsErrors).map(([param, message]) => (
-                  <li key={param}>{message}</li>
-                ))}
-              </ul>
-              The simulation method might break. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="px-6">
+            <ul className="list-disc list-inside">
+              {Object.entries(simulationSettingsErrors).map(([param, message]) => (
+                <li key={param}>{message}</li>
+              ))}
+            </ul>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            The simulation method might break. Are you sure you want to continue?
+          </p>
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <Checkbox
