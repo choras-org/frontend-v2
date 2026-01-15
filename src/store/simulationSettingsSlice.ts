@@ -36,7 +36,6 @@ const simulationSettingsSlice = createSlice({
       state.options = [];
       state.values = {};
       state.error = null;
-      state.errors = {};
     },
     setSelectedMethodType: (state, action: PayloadAction<string>) => {
       state.selectedMethodType = action.payload;
