@@ -7,8 +7,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, SquarePen } from "lucide-react";
-import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Copy, Search, SquarePen } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   useCreateMaterialMutation,
   useGetMaterialsQuery,
@@ -37,22 +38,36 @@ export function SurfaceMaterialList({
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { data: materials = [], isLoading, error } = useGetMaterialsQuery();
-  const [selectedMaterialForEdit, setSelectedMaterialForEdit] = useState<Material | null>(null);
   const [createMaterial, { isLoading: isCreating }] = useCreateMaterialMutation();
-  const [isOpenEditForm, setIsOpenEditForm] = useState(false);
   const [updateMaterial, { isLoading: isUpdating }] = useUpdateMaterialMutation();
-  const [isOpenCopyForm, setIsOpenCopyForm] = useState(false);
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const [updateSimulation] = useUpdateSimulationMutation();
+
+  const [openMaterialForm, setOpenMaterialForm] = useState(false);
+  const [materialActionType, setMaterialActionType] = useState<
+    "Create" | "Edit" | "Copy" | "Duplicate"
+  >("Create");
+  const [material, setMaterial] = useState<Material | null>(null);
 
   const filteredMaterials = materials.filter((material) =>
     material.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  useEffect(() => {
+    if (openCreateMaterialDialog) {
+      setSelectedMaterial(null);
+      setSearchQuery("");
+      setMaterialActionType("Create");
+      setMaterial(null);
+      setOpenMaterialForm(true);
+    }
+  }, [openCreateMaterialDialog]);
+
   const handleCreate = async (material: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
     try {
       await createMaterial(material).unwrap();
       toast.success("Material created successfully!");
+      setOpenMaterialForm(false);
       setOpenCreateMaterialDialog(false);
     } catch (error) {
       toast.error("Failed to create material");
@@ -60,26 +75,26 @@ export function SurfaceMaterialList({
     }
   };
 
-  const handleUpdate = async (material: Omit<Material, "createdAt" | "updatedAt" | "id">) => {
+  const handleUpdate = async (payload: Omit<Material, "createdAt" | "updatedAt" | "id">) => {
     try {
-      await updateMaterial({ id: selectedMaterialForEdit?.id as number, ...material }).unwrap();
+      await updateMaterial({ id: material?.id as number, ...payload }).unwrap();
       toast.success("Material edited successfully!");
-      setIsOpenEditForm(false);
+      setOpenMaterialForm(false);
     } catch (error) {
       toast.error("Failed to edit material");
       console.error("Error editing material:", error);
     }
   };
 
-  const handleCopy = async (material: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
+  const handleCopy = async (payload: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
     try {
-      const newMaterial = await createMaterial(material).unwrap();
+      const newMaterial = await createMaterial(payload).unwrap();
 
       const layerIdByMaterialId: Record<string, number> = {
         ...activeSimulation?.layerIdByMaterialId,
       };
       for (const key in activeSimulation?.layerIdByMaterialId) {
-        if (activeSimulation?.layerIdByMaterialId[key] === selectedMaterialForEdit?.id) {
+        if (activeSimulation?.layerIdByMaterialId[key] === material?.id) {
           layerIdByMaterialId[key] = newMaterial.id;
         }
       }
@@ -99,10 +114,41 @@ export function SurfaceMaterialList({
       }
 
       toast.success("Material edited successfully!");
-      setIsOpenCopyForm(false);
+      setOpenMaterialForm(false);
     } catch (error) {
       toast.error("Failed to edit material");
       console.error("Error editing material:", error);
+    }
+  };
+
+  const handleMaterialAction = (
+    e: React.MouseEvent,
+    material: Material,
+    actionType: "Create" | "Edit" | "Copy" | "Duplicate",
+  ) => {
+    e.stopPropagation();
+
+    const materialCopy = { ...material };
+    if ((actionType === "Edit" && material.origin === "factory") || actionType === "Duplicate") {
+      materialCopy.name = "Copy of " + material.name;
+    }
+
+    setMaterial(materialCopy);
+    setMaterialActionType(actionType);
+    setOpenMaterialForm(true);
+  };
+
+  const handleSubmit = async (payload: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
+    if (materialActionType === "Create") {
+      await handleCreate(payload);
+    } else if (materialActionType === "Edit") {
+      if (material?.origin === "factory") {
+        await handleCopy(payload);
+      } else {
+        await handleUpdate(payload);
+      }
+    } else if (materialActionType === "Duplicate") {
+      await handleCreate(payload);
     }
   };
 
@@ -116,40 +162,32 @@ export function SurfaceMaterialList({
           <DialogHeader>
             <div className="flex justify-between items-center mt-4">
               <DialogTitle className="text-xl text-choras-primary">Material library</DialogTitle>
-              <MaterialFormDialog
-                title="Create material"
-                isOpen={openCreateMaterialDialog}
-                onOpen={setOpenCreateMaterialDialog}
-                label={"Create material"}
-                description={"Fill in the details to create a new material."}
-                onSubmit={handleCreate}
-                isLoading={isCreating}
-              />
 
               <MaterialFormDialog
-                isOpen={isOpenEditForm}
-                onOpen={() => setIsOpenEditForm(!isOpenEditForm)}
-                material={selectedMaterialForEdit}
-                title="Edit material"
-                label="Edit material"
-                description={"Modify the details of the material."}
-                onSubmit={handleUpdate}
-                isLoading={isUpdating}
-                isShownTrigger={false}
-              />
-
-              <MaterialFormDialog
-                isOpen={isOpenCopyForm}
-                onOpen={() => setIsOpenCopyForm(!isOpenCopyForm)}
-                material={selectedMaterialForEdit}
-                title="Edit material"
-                label="Edit material"
-                description={"Modify the details of the material."}
-                onSubmit={handleCopy}
-                isLoading={isUpdating}
-                isShownTrigger={false}
-                notes="The material you tried to edit is a factory material. The original material will not be overwritten, but all surfaces with this factory material assigned will now have the edited material assigned to them."
-                notesColor="red"
+                title={`${openCreateMaterialDialog ? "Create" : materialActionType} material`}
+                material={materialActionType === "Create" ? null : material}
+                isOpen={openMaterialForm}
+                onOpen={(open) => {
+                  setMaterialActionType("Create");
+                  setMaterial(null);
+                  setOpenMaterialForm(open);
+                  setOpenCreateMaterialDialog(open);
+                }}
+                label={`${openCreateMaterialDialog ? "Create" : materialActionType} material`}
+                description={`${openCreateMaterialDialog ? "Create" : materialActionType} a surface material to use in your simulations.`}
+                onSubmit={openCreateMaterialDialog ? handleCreate : handleSubmit}
+                isLoading={isUpdating || isCreating}
+                notes={
+                  materialActionType === "Edit" && material?.origin === "factory"
+                    ? "The material you tried to edit is a factory material. The original material will not be overwritten, but all surfaces with this factory material assigned will now have the edited material assigned to them."
+                    : undefined
+                }
+                notesColor={
+                  materialActionType === "Edit" && material?.origin === "factory"
+                    ? "red"
+                    : undefined
+                }
+                isShownTrigger={true}
               />
             </div>
             <DialogDescription>Select a material to view its details</DialogDescription>
@@ -213,29 +251,30 @@ export function SurfaceMaterialList({
                               </p>
                             )}
                           </div>
-                          {material.origin === "user" ? (
-                            <SquarePen
-                              size={16}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedMaterialForEdit(material);
-                                setIsOpenEditForm(true);
-                              }}
-                            />
-                          ) : (
-                            <SquarePen
-                              size={16}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const payload = {
-                                  ...material,
-                                  name: "Copy of " + material.name,
-                                };
-                                setSelectedMaterialForEdit(payload);
-                                setIsOpenCopyForm(true);
-                              }}
-                            />
-                          )}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SquarePen
+                                size={16}
+                                className="cursor-pointer hover:text-choras-primary transition-colors"
+                                onClick={(e) => handleMaterialAction(e, material, "Edit")}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit material</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Copy
+                                size={16}
+                                className="cursor-pointer hover:text-choras-primary transition-colors"
+                                onClick={(e) => handleMaterialAction(e, material, "Duplicate")}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Duplicate material</p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                       ))}
                     </div>
