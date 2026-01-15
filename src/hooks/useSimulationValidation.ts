@@ -4,15 +4,8 @@ import { useSurfaces } from "./useSurfaces";
 import { useGetSimulationByIdQuery } from "@/store/simulationApi";
 import { validateSourceOrReceiver, getModelBounds } from "@/helpers/sourceReceiverValidation";
 import { useEffect, useState } from "react";
-import {
-  addError,
-  removeError,
-  setOptions,
-  clearSettings,
-  updateValue,
-} from "@/store/simulationSettingsSlice";
+import { setErrors as setSimulationSettingsErrors } from "@/store/simulationSettingsSlice";
 import { useGetSimulationSettingsQuery } from "@/store/simulationSettingsApi";
-import type { SimulationSettingsState } from "@/types/simulationSettings";
 
 export interface ValidationError {
   type: "sources" | "receivers" | "materials" | "sourceValidity" | "receiverValidity";
@@ -26,7 +19,6 @@ export function useSimulationValidation() {
   const surfaces = useSurfaces();
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [isValid, setIsValid] = useState<boolean>(true);
-  const { options, values } = useSelector((state: RootState) => state.simulationSettings);
   const { errors: simulationSettingsErrors, selectedMethodType } = useSelector(
     (state: RootState) => state.simulationSettings,
   );
@@ -38,42 +30,6 @@ export function useSimulationValidation() {
       skip: !activeSimulation?.id,
     },
   );
-
-  useEffect(() => {
-    if (simulation?.solverSettings?.simulationSettings && settingsData?.options) {
-      const existingSettings = simulation.solverSettings
-        .simulationSettings as SimulationSettingsState["values"];
-
-      dispatch(clearSettings());
-      dispatch(setOptions(settingsData.options));
-
-      settingsData.options.forEach((option) => {
-        const savedValue = existingSettings[option.id];
-        if (savedValue !== undefined) {
-          dispatch(updateValue({ id: option.id, value: savedValue }));
-        }
-      });
-    }
-  }, [simulation?.id, settingsData?.options, dispatch]);
-
-  useEffect(() => {
-    options.forEach((option) => {
-      if (values[option.id] !== undefined) {
-        const value = values[option.id];
-        const isValid =
-          option.type === "string"
-            ? true
-            : typeof value === "number" &&
-              (option.min === undefined || value >= option.min) &&
-              (option.max === undefined || value <= option.max);
-        if (!isValid) {
-          dispatch(addError({ id: option.id, name: option.name }));
-        } else {
-          dispatch(removeError(option.id));
-        }
-      }
-    });
-  }, [values, options, dispatch]);
 
   useEffect(() => {
     const { isValid, errors: validationErrors } = validateSimulation();
@@ -199,5 +155,33 @@ export function useSimulationValidation() {
     };
   };
 
-  return { isValid, errors, simulationSettingsErrors };
+  const validateSimulationSettings = () => {
+    setSimulationSettingsErrors({});
+    const results: Record<string, string> = {};
+
+    if (simulation?.solverSettings?.simulationSettings && settingsData?.options) {
+      settingsData?.options.forEach((option) => {
+        const value = (simulation.solverSettings?.simulationSettings as Record<string, unknown>)[
+          option.id
+        ];
+        const isValid =
+          option.type === "string"
+            ? true
+            : typeof value === "number" &&
+              (option.min === undefined || value >= option.min) &&
+              (option.max === undefined || value <= option.max);
+
+        if (!isValid) {
+          results[option.id] = option.name;
+        } else {
+          delete results[option.id];
+        }
+      });
+    }
+
+    dispatch(setSimulationSettingsErrors(results));
+    return results;
+  };
+
+  return { isValid, errors, validateSimulationSettings, simulationSettingsErrors };
 }
