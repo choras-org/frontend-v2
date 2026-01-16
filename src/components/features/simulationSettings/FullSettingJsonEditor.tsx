@@ -13,7 +13,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useGetSimulationSettingsQuery } from "@/store/simulationSettingsApi";
-import { setOptions } from "@/store/simulationSettingsSlice";
+import { clearSettings, setOptions } from "@/store/simulationSettingsSlice";
 import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
 import { toast } from "sonner";
 import { useJsonValidation } from "@/hooks/useJsonValidation";
@@ -26,6 +26,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MaterialFormDialog } from "./MaterialFormDialog";
 import type { Material } from "@/types/material";
 import { useCreateMaterialMutation } from "@/store/materialsApi";
+import type { SimulationSettingsState } from "@/types/simulationSettings";
 
 export function FullSettingJsonEditor() {
   const [open, setOpen] = useState(false);
@@ -76,6 +77,23 @@ export function FullSettingJsonEditor() {
       dispatch(setOptions(settingsData.options));
     }
   }, [settingsData, dispatch]);
+
+  useEffect(() => {
+    if (simulation?.solverSettings?.simulationSettings && settingsData?.options) {
+      const existingSettings = simulation.solverSettings
+        .simulationSettings as SimulationSettingsState["values"];
+
+      dispatch(clearSettings());
+      dispatch(setOptions(settingsData.options));
+
+      settingsData.options.forEach((option) => {
+        const savedValue = existingSettings[option.id];
+        if (savedValue !== undefined) {
+          dispatch(updateValue({ id: option.id, value: savedValue }));
+        }
+      });
+    }
+  }, [simulation?.id, settingsData?.options, dispatch]);
 
   useEffect(() => {
     if (simulation?.layerIdByMaterialId) {
