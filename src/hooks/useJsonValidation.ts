@@ -326,36 +326,6 @@ export function useJsonValidation() {
                 error: `Invalid value for "${option.name}": must be a string`,
               };
             }
-          } else if (option.type === "integer" || option.type === "float") {
-            const numValueRaw = typeof value === "string" ? Number(value) : value;
-
-            if (typeof numValueRaw !== "number" || Number.isNaN(numValueRaw)) {
-              return {
-                isValid: false,
-                error: `Invalid value for "${option.name}": must be a number`,
-              };
-            }
-
-            if (option.type === "integer" && !Number.isInteger(numValueRaw)) {
-              return {
-                isValid: false,
-                error: `Invalid value for "${option.name}": must be an integer`,
-              };
-            }
-
-            if (option.min !== undefined && numValueRaw < option.min) {
-              return {
-                isValid: false,
-                error: `Invalid value for "${option.name}": ${numValueRaw} is less than minimum ${option.min}`,
-              };
-            }
-
-            if (option.max !== undefined && numValueRaw > option.max) {
-              return {
-                isValid: false,
-                error: `Invalid value for "${option.name}": ${numValueRaw} is greater than maximum ${option.max}`,
-              };
-            }
           }
         }
       }
