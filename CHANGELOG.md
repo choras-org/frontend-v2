@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.71](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.70...v0.0.71) (2026-01-17)
+
+### Features
+
+- add optional imagePath property to Model interface ([4baeabd](https://github.com/ajatdarojat45/choras-frontend/commit/4baeabd75c07c947b33d80757b0fc2137a0865ad))
+- enhance ProjectCard to sort and display models with dynamic image paths ([d5c0073](https://github.com/ajatdarojat45/choras-frontend/commit/d5c0073328f3039718ad4c6f9d932bc895986046))
+- implement 3D model rendering and screenshot capture in UploadModel component ([83325f6](https://github.com/ajatdarojat45/choras-frontend/commit/83325f6b95e3f65b09e19f96068f0f17587df05b))
+- refactor sorting logic and update model image rendering in ProjectDetailPage ([6eae0ac](https://github.com/ajatdarojat45/choras-frontend/commit/6eae0ac505b2977de4051f763a3fe8a509fcb0bc))
+- update ModelCard to use dynamic imagePath for model illustration ([79cb612](https://github.com/ajatdarojat45/choras-frontend/commit/79cb6124f78c41c2d24145da54dbd43f32567b01))
+
 ### [0.0.70](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.69...v0.0.70) (2026-01-16)
 
 ### Features
