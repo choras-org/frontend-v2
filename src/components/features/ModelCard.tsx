@@ -22,6 +22,8 @@ type ModelCardProps = {
   model: Model;
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
 export function ModelCard({ model }: ModelCardProps) {
   const dispatch: AppDispatch = useDispatch();
   const { data: simulations } = useGetSimulationsByModelIdQuery(model.id);
@@ -89,7 +91,7 @@ export function ModelCard({ model }: ModelCardProps) {
           <div className="card-responsive-visible relative max-w-36 w-full aspect-[3/2] card-responsive-order-2 card-responsive-scale">
             <img
               className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
-              src={modelImg}
+              src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
               alt="Model Illustration"
             />
           </div>
