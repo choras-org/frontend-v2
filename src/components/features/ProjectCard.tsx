@@ -139,7 +139,7 @@ export function ProjectCard(props: ProjectCardProps) {
                 .map((model, index) => (
                   <img
                     key={model.id}
-                    className="absolute w-32 h-24 rounded-lg bg-white/80"
+                    className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
                     src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
                     alt="Model Illustration"
                     style={{
