@@ -194,6 +194,7 @@ export function HomePage() {
                   <DropdownMenuContent className="bg-white border border-gray-200 rounded-md shadow-lg p-1">
                     <EditGroup
                       currentGroupName={groupProject.group}
+                      projectIds={groupProject.projects.map((p) => p.id)}
                       trigger={
                         <DropdownMenuItem
                           onSelect={(e) => e.preventDefault()}
@@ -207,6 +208,7 @@ export function HomePage() {
                     <DeleteGroup
                       projectsCount={groupProject.projects.length}
                       group={groupProject.group}
+                      projectIds={groupProject.projects.map((p) => p.id)}
                     />
                   </DropdownMenuContent>
                 </DropdownMenu>
