@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.0.62 (2026-01-07)
+
+### Features
+
+- enhance SurfacesTab with scrollable material selection and improved layout ([7970e57](https://github.com/ajatdarojat45/choras-frontend/commit/7970e57f9a493a59549ea206927cde64303e2082))
+
 ### 0.0.61 (2026-01-07)
 
 ### Features
