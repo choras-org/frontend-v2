@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.69](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.68...v0.0.69) (2026-01-15)
+
+### Features
+
+- enhance material management with tooltip actions and unified form handling ([b038a35](https://github.com/ajatdarojat45/choras-frontend/commit/b038a3593a86880857ed1ef65f71805d27f42090))
+
 ### [0.0.68](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.67...v0.0.68) (2026-01-15)
 
 ### Features
