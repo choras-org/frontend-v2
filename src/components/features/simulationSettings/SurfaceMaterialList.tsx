@@ -115,9 +115,10 @@ export function SurfaceMaterialList({
             <div className="flex justify-between items-center mt-4">
               <DialogTitle className="text-xl text-choras-primary">Material library</DialogTitle>
               <MaterialFormDialog
+                title="Create material"
                 isOpen={openCreateMaterialDialog}
                 onOpen={setOpenCreateMaterialDialog}
-                label={"Create"}
+                label={"Create material"}
                 description={"Fill in the details to create a new material."}
                 onSubmit={handleCreate}
                 isLoading={isCreating}
@@ -127,7 +128,8 @@ export function SurfaceMaterialList({
                 isOpen={isOpenEditForm}
                 onOpen={() => setIsOpenEditForm(!isOpenEditForm)}
                 material={selectedMaterialForEdit}
-                label={"Update"}
+                title="Update material"
+                label="Update material"
                 description={"Update the details of the material."}
                 onSubmit={handleUpdate}
                 isLoading={isUpdating}
@@ -138,7 +140,8 @@ export function SurfaceMaterialList({
                 isOpen={isOpenCopyForm}
                 onOpen={() => setIsOpenCopyForm(!isOpenCopyForm)}
                 material={selectedMaterialForEdit}
-                label={"Copy"}
+                title="Copy material"
+                label="Copy material"
                 description={"Copy the details of the material to create a new one."}
                 onSubmit={handleCopy}
                 isLoading={isUpdating}

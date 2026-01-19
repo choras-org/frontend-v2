@@ -22,6 +22,10 @@ import { useJsonPayloadBuilder } from "@/hooks/useJsonPayloadBuilder";
 import { setAssignments } from "@/store/materialAssignmentSlice";
 import { updateValue } from "@/store/simulationSettingsSlice";
 import { setSources, setReceivers } from "@/store/sourceReceiverSlice";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { MaterialFormDialog } from "./MaterialFormDialog";
+import type { Material } from "@/types/material";
+import { useCreateMaterialMutation } from "@/store/materialsApi";
 
 export function FullSettingJsonEditor() {
   const [open, setOpen] = useState(false);
@@ -30,6 +34,17 @@ export function FullSettingJsonEditor() {
   const [validationError, setValidationError] = useState<string>("");
   const [isValidJson, setIsValidJson] = useState(true);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isOpenConfirmCreateMaterials, setIsOpenConfirmCreateMaterials] = useState(false);
+  const [newMaterialsToCreate, setNewMaterialsToCreate] = useState<
+    {
+      coefficients: number[];
+      coefficientString: string;
+      surfaceNames: string[];
+    }[]
+  >([]);
+  const [activeCreateMaterialIndex, setActiveCreateMaterialIndex] = useState(0);
+  const [isOpenMaterialForm, setIsOpenMaterialForm] = useState(false);
+  const [createMaterial, { isLoading: isCreatingMaterial }] = useCreateMaterialMutation();
 
   const [updateSimulation] = useUpdateSimulationMutation();
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
@@ -76,7 +91,7 @@ export function FullSettingJsonEditor() {
       setJsonValue(formattedJson);
       setJsonValueOriginal(formattedJson);
     }
-  }, [open, buildJsonStructure, stringifyWithHorizontalArrays]);
+  }, [open]);
 
   // Handle reset button
   const handleReset = useCallback(() => {
@@ -128,6 +143,12 @@ export function FullSettingJsonEditor() {
     if (!validationResult.isValid) {
       setIsValidJson(false);
       setValidationError(validationResult.error || "Validation failed");
+      return;
+    }
+
+    if (validationResult?.newMaterials && validationResult.newMaterials.length > 0) {
+      setNewMaterialsToCreate(validationResult.newMaterials);
+      setIsOpenConfirmCreateMaterials(true);
       return;
     }
 
@@ -193,8 +214,6 @@ export function FullSettingJsonEditor() {
       }
 
       toast.success("Settings saved successfully");
-
-      // Update original value and close dialog after successful save
       setJsonValueOriginal(jsonValue);
     } catch (error: unknown) {
       toast.error("Failed to save settings");
@@ -202,75 +221,144 @@ export function FullSettingJsonEditor() {
     }
   }, [jsonValue, validateJsonData, parseAbsorptionCoefficients, buildPayload, updateSimulation]);
 
+  const handleCreateMaterial = async (
+    material: Omit<Material, "id" | "createdAt" | "updatedAt">,
+  ) => {
+    try {
+      setIsOpenConfirmCreateMaterials(false);
+      await createMaterial(material).unwrap();
+      toast.success("Material created successfully!");
+
+      const newIndex = activeCreateMaterialIndex + 1;
+      if (newIndex < newMaterialsToCreate.length) {
+        setActiveCreateMaterialIndex(newIndex);
+      } else {
+        setIsOpenMaterialForm(false);
+        setActiveCreateMaterialIndex(0);
+        setNewMaterialsToCreate([]);
+      }
+    } catch (error) {
+      toast.error("Failed to create material");
+      console.error("Error creating material:", error);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size={"sm"}
-          className="hover:bg-gray-600 hover:text-white border border-choras-gray rounded-lg w-full"
-        >
-          Open JSON
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="!w-[700px] !max-w-none max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle>Edit Settings With JSON</DialogTitle>
-          <DialogDescription>
-            You can edit settings from this JSON editor. Changes will be reflected in the form
-            inputs.
-          </DialogDescription>
-        </DialogHeader>
+    <div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size={"sm"}
+            className="hover:bg-gray-600 hover:text-white border border-choras-gray rounded-lg w-full"
+          >
+            Open JSON
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="!w-[700px] !max-w-none max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Edit Settings With JSON</DialogTitle>
+            <DialogDescription>
+              You can edit settings from this JSON editor. Changes will be reflected in the form
+              inputs.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="flex-1 min-h-[400px] border rounded-md overflow-hidden">
-          <Editor
-            height="400px"
-            language="json"
-            theme="vs-light"
-            value={jsonValue}
-            onChange={handleEditorChange}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: "on",
-              renderWhitespace: "selection",
-              automaticLayout: true,
-              formatOnPaste: true,
-              formatOnType: true,
-            }}
-          />
-        </div>
-
-        {validationError && (
-          <div className="text-red-500 text-sm bg-red-50 p-2 rounded border border-red-200">
-            {validationError}
+          <div className="flex-1 min-h-[400px] border rounded-md overflow-hidden">
+            <Editor
+              height="400px"
+              language="json"
+              theme="vs-light"
+              value={jsonValue}
+              onChange={handleEditorChange}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                renderWhitespace: "selection",
+                automaticLayout: true,
+                formatOnPaste: true,
+                formatOnType: true,
+              }}
+            />
           </div>
-        )}
 
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="border-choras-primary cursor-pointer"
-          >
-            Reset
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="border-choras-primary cursor-pointer"
-          >
-            Export
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!isValidJson || !!validationError}
-            className="bg-choras-primary disabled:bg-gray-600 cursor-pointer disabled:cursor-not-allowed"
-          >
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          {validationError && (
+            <div className="text-red-500 text-sm bg-red-50 p-2 rounded border border-red-200">
+              {validationError}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              className="border-choras-primary cursor-pointer"
+            >
+              Reset
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="border-choras-primary cursor-pointer"
+            >
+              Export
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!isValidJson || !!validationError}
+              className="bg-choras-primary disabled:bg-gray-600 cursor-pointer disabled:cursor-not-allowed"
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <ConfirmDialog
+        title={`Create ${newMaterialsToCreate.length} New Material${
+          newMaterialsToCreate.length > 1 ? "s" : ""
+        }`}
+        description={
+          newMaterialsToCreate.length === 1
+            ? "You assigned a material that does not yet exist in the database. Would you like to create a new material for it?"
+            : `You assigned ${newMaterialsToCreate.length} materials that do not yet exist in the database. Would you like to create new materials for these?`
+        }
+        onConfirm={() => {
+          if (newMaterialsToCreate.length > 0) {
+            setActiveCreateMaterialIndex(0);
+            setIsOpenMaterialForm(true);
+          }
+        }}
+        confirmVariant="default"
+        confirmLabel={`Create Material${newMaterialsToCreate.length > 1 ? "s" : ""}`}
+        open={isOpenConfirmCreateMaterials}
+        onOpenChange={setIsOpenConfirmCreateMaterials}
+        trigger={<div></div>}
+      />
+      {newMaterialsToCreate.length > 0 &&
+        activeCreateMaterialIndex < newMaterialsToCreate.length && (
+          <MaterialFormDialog
+            title={`Create material (${activeCreateMaterialIndex + 1}/${newMaterialsToCreate.length})`}
+            label={`Create material (${activeCreateMaterialIndex + 1}/${newMaterialsToCreate.length})`}
+            notes={
+              newMaterialsToCreate[activeCreateMaterialIndex].surfaceNames.length > 0
+                ? `Assigned to surfaces: ${newMaterialsToCreate[activeCreateMaterialIndex].surfaceNames.join(", ")}`
+                : undefined
+            }
+            description="Create new material from assigned absorption coefficients"
+            isOpen={isOpenMaterialForm}
+            onOpen={() => setIsOpenMaterialForm(!isOpenMaterialForm)}
+            isShownTrigger={false}
+            material={{
+              name: "",
+              description: "",
+              category: "",
+              absorptionCoefficients: newMaterialsToCreate[activeCreateMaterialIndex].coefficients,
+            }}
+            isLoading={isCreatingMaterial}
+            onSubmit={handleCreateMaterial}
+          />
+        )}
+    </div>
   );
 }

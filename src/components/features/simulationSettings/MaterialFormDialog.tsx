@@ -19,11 +19,14 @@ type IProps = {
   isOpen: boolean;
   onOpen: (open: boolean) => void;
   onSubmit?: (material: Omit<Material, "id" | "createdAt" | "updatedAt">) => void;
-  material?: Material | null;
+  material?: Omit<Material, "id" | "createdAt" | "updatedAt"> | null;
   label?: string;
+  triggerLabel?: string;
   description?: string;
   isLoading?: boolean;
   isShownTrigger?: boolean;
+  title?: string;
+  notes?: string;
 };
 
 export function MaterialFormDialog({
@@ -35,6 +38,9 @@ export function MaterialFormDialog({
   isLoading = false,
   onSubmit,
   isShownTrigger = true,
+  triggerLabel = "Create",
+  title = "Material Form",
+  notes,
 }: IProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -97,13 +103,13 @@ export function MaterialFormDialog({
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Plus size={16} />
-            {label} Material
+            {triggerLabel}
           </Button>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{label} Material</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -211,13 +217,14 @@ export function MaterialFormDialog({
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex justify-center items-center">
+          {notes && <div className="text-sm text-gray-600 mr-auto">{notes}</div>}
           <Button
             type="submit"
             onClick={handleSubmit}
             disabled={isLoading || !formData.name || !formData.category}
           >
-            {isLoading ? "Submitting..." : `${label} Material`}
+            {isLoading ? "Submitting..." : `${label}`}
           </Button>
         </DialogFooter>
       </DialogContent>
