@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.63](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.62...v0.0.63) (2026-01-08)
+
+### Features
+
+- add cleanup effect to clear geometry selection on component unmount ([a0eab60](https://github.com/ajatdarojat45/choras-frontend/commit/a0eab6022b17a79a4db795a2e9e2b269f1749f40))
+- add selected geometries management to geometry selection hook ([2b2f40f](https://github.com/ajatdarojat45/choras-frontend/commit/2b2f40fd996320e480d8ba13a223a8f24b07c3a3))
+- add selected geometry management to geometry selection slice ([2d9cf34](https://github.com/ajatdarojat45/choras-frontend/commit/2d9cf343b178b8b83a629bf251484a520345def8))
+- enhance surface selection logic with geometry management ([84a7161](https://github.com/ajatdarojat45/choras-frontend/commit/84a71617b86f3b91c0603580960be727b5db9aa2))
+- implement bulk material assignment functionality in SurfacesTab ([b18ddbe](https://github.com/ajatdarojat45/choras-frontend/commit/b18ddbe68be55417fdd3ce4e2d9739f9a6aeac3b))
+- improve geometry selection handling and highlight management ([8ad1824](https://github.com/ajatdarojat45/choras-frontend/commit/8ad1824b9a782ef3a51a74845b2684ef58606543))
+
+### Bug Fixes
+
+- reset selected geometries on clear selection ([d17db97](https://github.com/ajatdarojat45/choras-frontend/commit/d17db975c3704dff396dbd9f074fcd48d5aa8525))
+
 ### 0.0.62 (2026-01-07)
 
 ### Features

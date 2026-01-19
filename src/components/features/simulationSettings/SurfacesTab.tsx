@@ -37,7 +37,14 @@ export function SurfacesTab() {
   const [showIndividualAssignments, setShowIndividualAssignments] = useState(false);
   const [hiddenSurfaces, setHiddenSurfaces] = useState<Set<string>>(new Set());
   const selectedSurfaceRowRef = useRef<HTMLTableRowElement>(null);
-  const { selectGeometry, addHighlightedMesh, removeHighlightedMesh } = useGeometrySelection();
+  const {
+    selectGeometry,
+    addHighlightedMesh,
+    removeHighlightedMesh,
+    addSelectedGeometry,
+    removeSelectedGeometry,
+    clearSelectedGeometries,
+  } = useGeometrySelection();
   const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
     useMeshHighlight();
   const {
@@ -51,8 +58,8 @@ export function SurfacesTab() {
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
   const highlightedElement = useSelector((state: RootState) => state.tab.highlightedElement);
-  const selectedGeometry = useSelector(
-    (state: RootState) => state.geometrySelection.selectedGeometry,
+  const { selectedGeometry, selectedGeometries } = useSelector(
+    (state: RootState) => state.geometrySelection,
   );
   const { data: simulation, error: simulationError } = useGetSimulationByIdQuery(
     activeSimulation?.id ?? 0,
@@ -63,6 +70,7 @@ export function SurfacesTab() {
   const [updateSimulation] = useUpdateSimulationMutation();
   const [openMaterialLibrary, setOpenMaterialLibrary] = useState(false);
   const [openCreateMaterialDialog, setOpenCreateMaterialDialog] = useState(false);
+  const [bulkMaterialId, setBulkMaterialId] = useState<string>("");
 
   useEffect(() => {
     if (simulation?.layerIdByMaterialId) {
@@ -144,8 +152,21 @@ export function SurfacesTab() {
       return;
     }
 
-    let updatedAssignments: Record<string, number>;
     const surface = surfaces.find((s) => s.id === surfaceKey);
+
+    // If multiple surfaces selected and current surface is one of them, use bulk assign
+    const isMultipleSelected =
+      Object.keys(selectedGeometries).length > 1 &&
+      surface?.mesh?.uuid &&
+      selectedGeometries[surface.mesh.uuid];
+
+    if (isMultipleSelected) {
+      handleAssignBulkMaterials(materialId);
+      return;
+    }
+
+    // Single surface assignment
+    let updatedAssignments: Record<string, number>;
 
     if (materialId === "default") {
       dispatch(removeMaterialAssignment(surfaceKey));
@@ -314,43 +335,125 @@ export function SurfacesTab() {
     }
   }, [selectedSurfaceId, showIndividualAssignments]);
 
-  const handleSurfaceRowClick = useCallback(
+  const handleSelectSurface = useCallback(
     (surface: SurfaceInfo) => {
-      const mesh = surface.mesh;
-
-      if (selectedSurfaceId === surface.id) {
-        removeHighlightedMesh(mesh);
-        restoreOriginalColor(mesh);
-        selectGeometry(null);
-        return;
-      }
-
+      // Restore previous mesh if it exists
       if (selectedGeometry?.mesh) {
         removeHighlightedMesh(selectedGeometry.mesh);
         restoreOriginalColor(selectedGeometry.mesh);
       }
 
-      highlightMesh(mesh, HIGHLIGHT_COLOR);
-      addHighlightedMesh(mesh);
-      selectGeometry({
-        mesh,
+      // Highlight and select new mesh
+      const payload = {
+        mesh: surface.mesh,
         faceIndex: 0,
         point: new THREE.Vector3(),
-      });
+        materialId: surface.id,
+      };
+      selectGeometry(payload);
+      highlightMesh(surface.mesh, HIGHLIGHT_COLOR);
+      addHighlightedMesh(surface.mesh);
+      clearSelectedGeometries();
+      addSelectedGeometry(payload);
     },
     [
-      selectedSurfaceId,
       selectedGeometry,
       selectGeometry,
+      highlightMesh,
+      HIGHLIGHT_COLOR,
       addHighlightedMesh,
       removeHighlightedMesh,
-      highlightMesh,
       restoreOriginalColor,
-      HIGHLIGHT_COLOR,
     ],
   );
 
-  // Memoize material options to avoid re-rendering for each surface row
+  const handleSelectMultipleSurfaces = useCallback(
+    (surface: SurfaceInfo) => {
+      const selectedGeo = selectedGeometries[surface.mesh.uuid];
+      const mesh = surface.mesh;
+      setBulkMaterialId("");
+      if (selectedGeo) {
+        removeSelectedGeometry(surface.mesh.uuid);
+        removeHighlightedMesh(mesh);
+        restoreOriginalColor(mesh);
+
+        const remainingSelectedIds = Object.keys(selectedGeometries).filter(
+          (id) => id !== surface.mesh.uuid,
+        );
+        if (remainingSelectedIds.length > 0) {
+          const lastSelectedId = remainingSelectedIds[remainingSelectedIds.length - 1];
+          const lastSelectedGeo = selectedGeometries[lastSelectedId];
+          selectGeometry(lastSelectedGeo);
+        } else {
+          selectGeometry(null);
+        }
+      } else {
+        const payload = {
+          mesh: surface.mesh,
+          faceIndex: 0,
+          point: new THREE.Vector3(),
+          materialId: surface.id,
+        };
+        addSelectedGeometry(payload);
+        selectGeometry(payload);
+        highlightMesh(mesh, HIGHLIGHT_COLOR);
+        addHighlightedMesh(mesh);
+      }
+    },
+    [selectedGeometries, addSelectedGeometry, removeSelectedGeometry],
+  );
+
+  const handleAssignBulkMaterials = async (materialId: string) => {
+    if (materialId === "") {
+      return;
+    }
+
+    if (materialId === "open-library") {
+      setOpenMaterialLibrary(true);
+      return;
+    }
+
+    setBulkMaterialId(materialId);
+    let updatedAssignments: Record<string, number>;
+    const material = materials.find((m) => m.id === parseInt(materialId));
+
+    if (materialId === "default") {
+      const numMaterialId = parseInt(materialId);
+      const newAssignments: Record<string, number> = {};
+
+      surfaces.forEach((surface) => {
+        if (selectedGeometries[surface.mesh.uuid]) {
+          const surfaceKey = surface.id;
+          dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+          newAssignments[surfaceKey] = numMaterialId;
+          setMeshBaseColor(surface.mesh, 0xffffff);
+        }
+      });
+
+      updatedAssignments = { ...materialAssignments, ...newAssignments };
+    } else {
+      const newAssignments: Record<string, number> = {};
+      const numMaterialId = parseInt(materialId);
+      const avgAbsorption = material?.absorptionCoefficients
+        ? calculateAverageAbsorption(material.absorptionCoefficients)
+        : 0;
+      const absorptionColor = getAbsorptionColor(avgAbsorption);
+
+      surfaces.forEach((surface) => {
+        if (selectedGeometries[surface.mesh.uuid]) {
+          const surfaceKey = surface.id;
+          dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+          newAssignments[surfaceKey] = numMaterialId;
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      });
+
+      updatedAssignments = { ...materialAssignments, ...newAssignments };
+    }
+
+    updateSimulationData(updatedAssignments);
+  };
+
   const materialSelectOptions = useMemo(() => {
     if (materialsLoading) {
       return (
@@ -535,9 +638,15 @@ export function SurfacesTab() {
                             <tr
                               key={surface.id}
                               ref={isSelected ? selectedSurfaceRowRef : null}
-                              onClick={() => handleSurfaceRowClick(surface)}
+                              onClick={(e) => {
+                                if (e.ctrlKey || e.metaKey) {
+                                  handleSelectMultipleSurfaces(surface);
+                                } else {
+                                  handleSelectSurface(surface);
+                                }
+                              }}
                               className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
-                                isSelected
+                                selectedGeometries[surface.mesh.uuid]
                                   ? "bg-choras-primary/20 hover:bg-choras-primary/30"
                                   : "hover:bg-choras-dark/90"
                               }`}
@@ -597,17 +706,63 @@ export function SurfacesTab() {
         )}
       </div>
 
-      <div
-        className="
-        sticky bottom-0 z-20
-        bg-choras-dark
-        border-t border-choras-gray
-        pt-4
-        px-1
-        mb-4
-      "
-      >
-        <div className="text-sm text-gray-400 mb-4">Total: {surfaces.length} surfaces found</div>
+      <div className="sticky bottom-0 z-20 bg-choras-dark border-t border-choras-gray pt-4 px-1">
+        {surfaces.length > 0 && (
+          <div className="border-choras-gray mb-4">
+            <div className="text-sm text-gray-400 mb-1">
+              Total: {surfaces.length} surfaces found
+            </div>
+
+            <div className="max-h-40">
+              {Object.keys(selectedGeometries).length > 1 ? (
+                <>
+                  <div className="text-sm text-gray-400 mb-1">
+                    Selected: {Object.keys(selectedGeometries).length}{" "}
+                    {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
+                  </div>
+
+                  <table className="w-full table-fixed">
+                    <tbody>
+                      <tr className="cursor-pointer hover:bg-choras-dark/90">
+                        <td className="py-2 text-sm w-1/3">
+                          <div className="font-medium truncate">Assign to selected</div>
+                        </td>
+
+                        <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
+                          <Select value={bulkMaterialId} onValueChange={handleAssignBulkMaterials}>
+                            <SelectTrigger
+                              size="sm"
+                              className="w-full bg-choras-dark border-choras-gray text-white"
+                            >
+                              <SelectValue placeholder="Select material" />
+                            </SelectTrigger>
+
+                            <SelectContent className="bg-choras-dark text-white border-choras-gray">
+                              <SelectItem value="default">None</SelectItem>
+
+                              {materials.map((material) => (
+                                <SelectItem key={material.id} value={material.id.toString()}>
+                                  {material.name}
+                                </SelectItem>
+                              ))}
+
+                              <hr className="border-t border-gray-700 my-1" />
+                              <SelectItem value="open-library" className="text-choras-primary">
+                                Open material library
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              ) : (
+                <div />
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4 w-full items-center mb-4">
           <Button
@@ -631,6 +786,8 @@ export function SurfacesTab() {
         </div>
 
         <FullSettingJsonEditor />
+
+        <div className="mb-4" />
       </div>
     </div>
   );
