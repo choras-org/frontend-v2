@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.72](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.71...v0.0.72) (2026-01-18)
+
+### Features
+
+- add support for non-convolved audio playback and download in ConvolvedSoundPlayer ([326f431](https://github.com/ajatdarojat45/choras-frontend/commit/326f431356c4d0416e3bb0ab05139453fd25150b))
+
 ### [0.0.71](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.70...v0.0.71) (2026-01-17)
 
 ### Features
