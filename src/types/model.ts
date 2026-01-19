@@ -5,6 +5,7 @@ export interface Model {
   name: string;
   outputFileId: number;
   projectId: number;
+  imagePath?: string;
   sourceFileId: number;
   updatedAt: string;
 }

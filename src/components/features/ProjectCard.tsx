@@ -1,7 +1,7 @@
 import type { Project } from "@/types/project";
 import { Card, CardHeader, CardTitle, CardContent, CardAction } from "@/components/ui/card";
 import modelImg from "@/assets/model.png";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { simulationApi } from "@/store/simulationApi";
 import type { AppDispatch } from "@/store";
@@ -18,15 +18,21 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { ProjectForm } from "./ProjectForm";
 import { formatDateLong } from "@/helpers/datetime";
+import { sortModels } from "@/pages/ProjectDetailPage";
+import type { Model } from "@/types/model";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 type ProjectCardProps = {
   project: Project;
 };
+
 export function ProjectCard(props: ProjectCardProps) {
   const { project } = props;
   const dispatch: AppDispatch = useDispatch();
   const [deleteProject] = useDeleteProjectMutation();
   const simulationCount = useSelector(selectSimulationCountByProjectId(project.id));
+  const [models, setModels] = useState<Model[]>([]);
 
   useEffect(() => {
     if (project.models.length > 0) {
@@ -36,6 +42,14 @@ export function ProjectCard(props: ProjectCardProps) {
       });
     }
   }, [project, dispatch]);
+
+  useEffect(() => {
+    if (project?.models) {
+      const savedSortOption = localStorage.getItem("modelSortOption");
+      const sortedModels = sortModels(project.models, savedSortOption || "ASC");
+      setModels(sortedModels);
+    }
+  }, [project]);
 
   const handleDeleteProject = async () => {
     try {
@@ -109,7 +123,7 @@ export function ProjectCard(props: ProjectCardProps) {
         </CardHeader>
         <CardContent className="flex flex-col card-responsive-horizontal gap-4 pt-4">
           <div className="text-black/50 text-xs space-y-1 card-responsive-order-1">
-            <p>{project.models.length} model</p>
+            <p>{models.length} model</p>
             <p>{simulationCount} simulations</p>
             <p>Created: {formatDateLong(project.createdAt)}</p>
             <p>Updated: {formatDateLong(project.updatedAt)}</p>
@@ -117,18 +131,23 @@ export function ProjectCard(props: ProjectCardProps) {
 
           <div className="card-responsive-visible relative max-w-36 w-full aspect-[3/2] card-responsive-order-2 card-responsive-scale">
             {/* Stack of cards based on model length */}
-            {Array.from({ length: Math.min(project.models.length, 3) }, (_, index) => (
-              <img
-                key={index}
-                className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
-                src={modelImg}
-                alt="Model Illustration"
-                style={{
-                  transform: `rotate(${index * 15 - 5}deg) translate(${index * (project.models.length > 2 ? 15 : 30) - 30}px, ${index * -2}px)`,
-                  boxShadow: `0 ${2 + index * 2}px ${4 + index * 2}px rgba(0, 0, 0, 0.2), 0 ${1 + index}px ${2 + index}px rgba(0, 0, 0, 0.1)`,
-                }}
-              />
-            ))}
+            {models &&
+              models.length > 0 &&
+              models
+                .slice(0, 3)
+                .reverse()
+                .map((model, index) => (
+                  <img
+                    key={model.id}
+                    className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
+                    src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
+                    alt="Model Illustration"
+                    style={{
+                      transform: `rotate(${index * 15 - 5}deg) translate(${index * (models.length > 2 ? 15 : 30) - 30}px, ${index * -2}px)`,
+                      boxShadow: `0 ${2 + index * 2}px ${4 + index * 2}px rgba(0, 0, 0, 0.2), 0 ${1 + index}px ${2 + index}px rgba(0, 0, 0, 0.1)`,
+                    }}
+                  />
+                ))}
           </div>
         </CardContent>
       </div>

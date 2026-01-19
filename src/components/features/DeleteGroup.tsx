@@ -12,9 +12,10 @@ import { removeGroup } from "@/store/projectSlice";
 type DeleteGroupProps = {
   group: string;
   projectsCount: number; // Optional: number of projects in the group
+  projectIds?: number[]; // Optional: array of project IDs in the group
 };
 
-export function DeleteGroup({ group, projectsCount }: DeleteGroupProps) {
+export function DeleteGroup({ group, projectsCount, projectIds }: DeleteGroupProps) {
   const [open, setOpen] = useState(false);
   const [deleteProjectByGroup, { isLoading: isDeleting }] = useDeleteProjectsByGroupMutation();
   const [updateProjectsByGroup, { isLoading: isUpdating }] = useUpdateProjectsByGroupMutation();
@@ -22,9 +23,8 @@ export function DeleteGroup({ group, projectsCount }: DeleteGroupProps) {
 
   const handleUpdateProjects = async () => {
     try {
-      console.log(`Update group: ${group}`);
       // Update projects first (set group to empty)
-      await updateProjectsByGroup({ group, newGroup: "" }).unwrap();
+      await updateProjectsByGroup({ group, newGroup: "", projectIds }).unwrap();
       // Then remove group from Redux state (will sync to localStorage automatically)
       dispatch(removeGroup(group));
       setOpen(false);
@@ -35,8 +35,7 @@ export function DeleteGroup({ group, projectsCount }: DeleteGroupProps) {
   };
   const handleDeleteProjects = async () => {
     try {
-      console.log(`Delete all projects: ${group}`);
-      await deleteProjectByGroup(group === "NONE" ? "" : group).unwrap();
+      await deleteProjectByGroup({ group: group === "NONE" ? "" : group, projectIds }).unwrap();
       setOpen(false);
     } catch (error) {
       console.error("Failed to delete projects:", error);
