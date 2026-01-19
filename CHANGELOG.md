@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.70](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.69...v0.0.70) (2026-01-16)
+
+### Features
+
+- clear existing settings and update with new options from simulation ([1a7abeb](https://github.com/ajatdarojat45/choras-frontend/commit/1a7abeb109514ed25d86c98c9174569b9d2617f2))
+- implement orthographic camera adjustments in ViewportCanvas ([ed893f8](https://github.com/ajatdarojat45/choras-frontend/commit/ed893f81663bf10905d58d1b897c26699d2657cd))
+- simplify validation logic for numeric options in useJsonValidation ([f5dd870](https://github.com/ajatdarojat45/choras-frontend/commit/f5dd870acf831e48cf0b7dc2df100a2742db367f))
+
 ### [0.0.69](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.68...v0.0.69) (2026-01-15)
 
 ### Features

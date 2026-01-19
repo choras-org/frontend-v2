@@ -19,6 +19,7 @@ import { CustomAxesHelper } from "./CustomAxesHelper";
 import type { ViewportCanvasProps } from "@/types/modelViewport";
 import { OrbitControls as OrbitControlsType } from "three-stdlib";
 import { useSimulationRunnerContext } from "@/contexts/SimulationRunnerContext";
+import { OrthographicCamera } from "three";
 import {
   Select,
   SelectContent,
@@ -114,19 +115,26 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
             position: [-10, -10, 10],
             fov: 75,
             up: [0, 0, 1],
-            ...(cameraType === "orthographic" && {
-              zoom: 1,
-              left: -10,
-              right: 10,
-              top: 10,
-              bottom: -10,
-            }),
           }}
           orthographic={cameraType === "orthographic"}
           style={{ background: "#596B6B" }}
           gl={{ preserveDrawingBuffer: true }}
-          onCreated={({ gl }) => {
+          onCreated={({ gl, camera, size }) => {
             gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            if (cameraType === "orthographic") {
+              const aspect = size.width / size.height;
+              const height = 20;
+              const width = height * aspect;
+
+              const orthoCamera = camera as OrthographicCamera;
+              orthoCamera.left = -width / 2;
+              orthoCamera.right = width / 2;
+              orthoCamera.top = height / 2;
+              orthoCamera.bottom = -height / 2;
+              orthoCamera.zoom = 1;
+              orthoCamera.updateProjectionMatrix();
+            }
           }}
         >
           <ambientLight intensity={0.8} />
