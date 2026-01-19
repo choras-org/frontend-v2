@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.65](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.64...v0.0.65) (2026-01-10)
+
+### Features
+
+- add delete audio file mutation to auralizationApi ([03fbd95](https://github.com/ajatdarojat45/choras-frontend/commit/03fbd95bb7d10876e86b655bdb7fb3f9b2f11671))
+- add delete functionality for convolved sound with confirmation dialog ([d80b3bc](https://github.com/ajatdarojat45/choras-frontend/commit/d80b3bce4e1f084b0e7513d021a58270c9eb4e79))
+
 ### [0.0.64](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.63...v0.0.64) (2026-01-09)
 
 ### Features

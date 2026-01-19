@@ -7,7 +7,13 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { AudioLinesIcon, DownloadIcon, LoaderCircleIcon, PlayIcon } from "lucide-react";
+import {
+  AudioLinesIcon,
+  DownloadIcon,
+  EllipsisVerticalIcon,
+  LoaderCircleIcon,
+  PlayIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { http } from "@/libs/http";
@@ -23,6 +29,14 @@ import {
 } from "@/components/ui/select";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useDeleteAuralizationAudioFileMutation } from "@/store/auralizationApi";
 
 type ConvolvedSoundPlayerProps = {
   auralization: Auralization;
@@ -32,6 +46,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
   const [downloadLoading, setDownloadLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [simulationId, setSimulationId] = useState<string | null>(null);
+  const [deleteAuralizationAudioFile] = useDeleteAuralizationAudioFileMutation();
 
   const compareResults = useSelector((state: RootState) => state.simulation.compareResults);
 
@@ -130,8 +145,20 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await deleteAuralizationAudioFile({
+        simulationId: Number(simulationId),
+        auralizationId: auralization.id,
+      }).unwrap();
+      toast.success("Convolved sound deleted successfully");
+    } catch {
+      toast.error("Failed to delete convolved sound");
+    }
+  };
+
   return (
-    <Item variant="outline" className="bg-white">
+    <Item variant="outline" className="bg-white relative">
       <ItemMedia>
         <AudioLinesIcon />
       </ItemMedia>
@@ -182,14 +209,47 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
           </Button>
         </ItemActions>
       )}
-      <Button onClick={handleDownload} disabled={downloadLoading || !simulationId}>
-        {downloadLoading ? (
-          <LoaderCircleIcon className="size-4 animate-spin" />
-        ) : (
-          <DownloadIcon className="size-4" />
-        )}
-        {downloadLoading ? "Processing..." : "Download"}
-      </Button>
+
+      <ItemActions>
+        <Button onClick={handleDownload} disabled={downloadLoading || !simulationId}>
+          {downloadLoading ? (
+            <LoaderCircleIcon className="size-4 animate-spin" />
+          ) : (
+            <DownloadIcon className="size-4" />
+          )}
+          {downloadLoading ? "Processing..." : "Download"}
+        </Button>
+      </ItemActions>
+      {simulationId && auralization.isUserFile && (
+        <ItemActions className="justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="cursor-pointer">
+              <EllipsisVerticalIcon className="text-black/50" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              className="bg-white border rounded-md shadow-sm p-3 z-50"
+            >
+              <ConfirmDialog
+                title="Delete Convolved Sound"
+                description="Are you sure you want to delete this convolved sound? This action cannot be undone."
+                onConfirm={handleDelete}
+                confirmVariant="destructive"
+                confirmLabel="Delete Sound"
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-red-600 cursor-pointer"
+                  >
+                    Delete Sound
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ItemActions>
+      )}
     </Item>
   );
 }

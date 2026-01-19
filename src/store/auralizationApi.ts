@@ -40,6 +40,17 @@ export const auralizationApi = createApi({
         return [{ type: "Auralizations", id: formData.get("simulation_id") as string }];
       },
     }),
+
+    deleteAuralizationAudioFile: build.mutation<
+      void,
+      { simulationId: number; auralizationId: number }
+    >({
+      query: ({ auralizationId }) => ({
+        url: `/auralizations/audiofiles/${auralizationId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_, __, { simulationId }) => [{ type: "Auralizations", id: simulationId }],
+    }),
   }),
 });
 
@@ -50,4 +61,5 @@ export const {
   useGetAuralizationsBySimulationIdQuery,
   useLazyGetImpulseResponseBySimulationIdQuery,
   useUploadAudioFileMutation,
+  useDeleteAuralizationAudioFileMutation,
 } = auralizationApi;
