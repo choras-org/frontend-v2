@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, SquarePen, Copy } from "lucide-react";
+import { Search, SquarePen } from "lucide-react";
 import { useState } from "react";
 import {
   useCreateMaterialMutation,
@@ -63,11 +63,11 @@ export function SurfaceMaterialList({
   const handleUpdate = async (material: Omit<Material, "createdAt" | "updatedAt" | "id">) => {
     try {
       await updateMaterial({ id: selectedMaterialForEdit?.id as number, ...material }).unwrap();
-      toast.success("Material updated successfully!");
+      toast.success("Material edited successfully!");
       setIsOpenEditForm(false);
     } catch (error) {
-      toast.error("Failed to update material");
-      console.error("Error updating material:", error);
+      toast.error("Failed to edit material");
+      console.error("Error editing material:", error);
     }
   };
 
@@ -75,32 +75,34 @@ export function SurfaceMaterialList({
     try {
       const newMaterial = await createMaterial(material).unwrap();
 
-      const layerIdByMaterialId: Record<string, number> = {};
+      const layerIdByMaterialId: Record<string, number> = {
+        ...activeSimulation?.layerIdByMaterialId,
+      };
       for (const key in activeSimulation?.layerIdByMaterialId) {
         if (activeSimulation?.layerIdByMaterialId[key] === selectedMaterialForEdit?.id) {
           layerIdByMaterialId[key] = newMaterial.id;
-        } else {
-          layerIdByMaterialId[key] = activeSimulation?.layerIdByMaterialId[key];
         }
       }
 
-      const payload = {
-        id: activeSimulation?.id as number,
-        body: {
-          modelId: activeSimulation?.modelId as number,
-          name: activeSimulation?.name,
-          status: activeSimulation?.status,
-          hasBeenEdited: true,
-          layerIdByMaterialId: layerIdByMaterialId,
-        },
-      };
-      await updateSimulation(payload).unwrap();
+      if (Object.keys(layerIdByMaterialId).length > 0) {
+        const payload = {
+          id: activeSimulation?.id as number,
+          body: {
+            modelId: activeSimulation?.modelId as number,
+            name: activeSimulation?.name,
+            status: activeSimulation?.status,
+            hasBeenEdited: true,
+            layerIdByMaterialId: layerIdByMaterialId,
+          },
+        };
+        await updateSimulation(payload).unwrap();
+      }
 
-      toast.success("Material copied successfully!");
+      toast.success("Material edited successfully!");
       setIsOpenCopyForm(false);
     } catch (error) {
-      toast.error("Failed to copy material");
-      console.error("Error copying material:", error);
+      toast.error("Failed to edit material");
+      console.error("Error editing material:", error);
     }
   };
 
@@ -128,9 +130,9 @@ export function SurfaceMaterialList({
                 isOpen={isOpenEditForm}
                 onOpen={() => setIsOpenEditForm(!isOpenEditForm)}
                 material={selectedMaterialForEdit}
-                title="Update material"
-                label="Update material"
-                description={"Update the details of the material."}
+                title="Edit material"
+                label="Edit material"
+                description={"Modify the details of the material."}
                 onSubmit={handleUpdate}
                 isLoading={isUpdating}
                 isShownTrigger={false}
@@ -140,12 +142,14 @@ export function SurfaceMaterialList({
                 isOpen={isOpenCopyForm}
                 onOpen={() => setIsOpenCopyForm(!isOpenCopyForm)}
                 material={selectedMaterialForEdit}
-                title="Copy material"
-                label="Copy material"
-                description={"Copy the details of the material to create a new one."}
+                title="Edit material"
+                label="Edit material"
+                description={"Modify the details of the material."}
                 onSubmit={handleCopy}
                 isLoading={isUpdating}
                 isShownTrigger={false}
+                notes="The material you tried to edit is a factory material. The original material will not be overwritten, but all surfaces with this factory material assigned will now have the edited material assigned to them."
+                notesColor="red"
               />
             </div>
             <DialogDescription>Select a material to view its details</DialogDescription>
@@ -219,7 +223,7 @@ export function SurfaceMaterialList({
                               }}
                             />
                           ) : (
-                            <Copy
+                            <SquarePen
                               size={16}
                               onClick={(e) => {
                                 e.stopPropagation();
