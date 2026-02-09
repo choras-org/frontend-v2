@@ -20,7 +20,19 @@ export const materialsApi = createApi({
       }),
       invalidatesTags: [{ type: "Materials", id: "LIST" }],
     }),
+    updateMaterial: build.mutation<Material, Omit<Material, "createdAt" | "updatedAt">>({
+      query: ({ id, ...body }) => ({
+        url: `/materials/${id}`,
+        method: "PUT",
+        body: body,
+      }),
+      invalidatesTags: (_, __, { id }) => [
+        { type: "Materials", id: "LIST" },
+        { type: "Materials", id },
+      ],
+    }),
   }),
 });
 
-export const { useGetMaterialsQuery, useCreateMaterialMutation } = materialsApi;
+export const { useGetMaterialsQuery, useCreateMaterialMutation, useUpdateMaterialMutation } =
+  materialsApi;

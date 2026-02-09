@@ -25,6 +25,8 @@ import { useGetModelQuery } from "@/store/modelApi";
 import { ChooseModel } from "./ChooseModel";
 import { selectCompareResults, selectCompareSimulationIds } from "@/store/simulationSelector";
 import { useNavigate } from "react-router";
+import JSZip from "jszip";
+import { useJsonBuilder } from "@/hooks/useJsonBuilder";
 
 interface CompareResultItemProps {
   order: number;
@@ -61,6 +63,7 @@ export function CompareResultItem({
   const [getSimulationResult] = useLazyGetSimulationResultQuery();
   const simulationIds = useSelector(selectCompareSimulationIds);
   const compareResults = useSelector(selectCompareResults);
+  const { buildJsonStructure, stringifyWithHorizontalArrays } = useJsonBuilder();
 
   const selectedSimulation = simulations?.find((sim) => sim.id === simulationId);
   const selectedMethod = selectedSimulation
@@ -107,8 +110,13 @@ export function CompareResultItem({
         responseType: "blob",
       });
 
+      const zip = new JSZip();
+      zip.file("results.zip", data);
+      const settingsJson = stringifyWithHorizontalArrays(buildJsonStructure());
+      zip.file("settings.json", settingsJson);
+      const zipBlob = await zip.generateAsync({ type: "blob" });
       // Download the file
-      downloadFile(data, formatFilename(`simulation ${simulationId} results.zip`));
+      downloadFile(zipBlob, formatFilename(`simulation ${simulationId} results+settings.zip`));
 
       toast.success("Download started successfully");
     } catch {
@@ -179,6 +187,10 @@ export function CompareResultItem({
             </SelectTrigger>
             <SelectContent className="bg-choras-dark border-choras-gray">
               {simulations
+                ?.filter(
+                  (simulation) =>
+                    !simulationIds.includes(simulation.id) || simulation.id === simulationId,
+                )
                 ?.filter((simulation) => simulation.completedAt !== null)
                 .map((simulation) => (
                   <CustomSelectItem key={simulation.id} simulation={simulation} />

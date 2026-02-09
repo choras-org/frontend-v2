@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +20,9 @@ import { Loading } from "@/components/ui/loading";
 import { http } from "@/libs/http";
 import { downloadFile, formatFilename } from "@/helpers/file";
 import { cn } from "@/libs/style";
+import JSZip from "jszip";
+import { useJsonBuilder } from "@/hooks/useJsonBuilder";
+import { useDownloadPreferences } from "@/hooks/useDownloadPreferences";
 
 type DownloadResultProps = {
   simulationIds: number[];
@@ -44,39 +47,30 @@ export function DownloadResult({
     skip: simulationIds.length === 0,
   });
 
-  // Checkbox states
-  const [parameters, setParameters] = useState(false);
-  const [plots, setPlots] = useState(false);
-  const [auralizations, setAuralizations] = useState(false);
+  const enabledFrequencies = useMemo(() => {
+    if (!simulationResult?.length) return [];
+    return simulationResult[0].frequencies || [];
+  }, [simulationResult]);
 
-  // Sub-options for Parameters
-  const [parameterOptions, setParameterOptions] = useState({
-    edt: false,
-    t20: false,
-    t30: false,
-    c80: false,
-    d50: false,
-    ts: false,
-    spl_t0_freq: false,
-  });
+  const {
+    parameters,
+    setParameters,
+    plots,
+    setPlots,
+    auralizations,
+    setAuralizations,
+    parameterOptions,
+    updateParameterOptions,
+    plotOptions,
+    updatePlotOptions,
+    auralizationOptions,
+    updateAuralizationOptions,
+    settingJsonOptions,
+    updateSettingJsonOptions,
+    resetAll,
+  } = useDownloadPreferences(enabledFrequencies, visibleSections, allSelected);
 
-  // Sub-options for Plots
-  const [plotOptions, setPlotOptions] = useState({
-    "63Hz": false,
-    "125Hz": false,
-    "250Hz": false,
-    "500Hz": false,
-    "1000Hz": false,
-    "2000Hz": false,
-    "4000Hz": false,
-    "8000Hz": false,
-  });
-
-  // Sub-options for Auralizations
-  const [auralizationOptions, setAuralizationOptions] = useState({
-    wavIR: false,
-    csvIR: false,
-  });
+  const { buildJsonStructure, stringifyWithHorizontalArrays } = useJsonBuilder();
 
   const handleDownload = async () => {
     try {
@@ -123,8 +117,20 @@ export function DownloadResult({
         responseType: "blob",
       });
 
-      // Download the file
-      downloadFile(data, formatFilename(`simulation ${simulationIds.join(",")} results.zip`));
+      // If settings.json is requested, zip it together
+      if (settingJsonOptions) {
+        const zip = new JSZip();
+        zip.file("results.zip", data);
+        const settingsJson = stringifyWithHorizontalArrays(buildJsonStructure());
+        zip.file("settings.json", settingsJson);
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        downloadFile(
+          zipBlob,
+          formatFilename(`simulation ${simulationIds.join(",")} results+settings.zip`),
+        );
+      } else {
+        downloadFile(data, formatFilename(`simulation ${simulationIds.join(",")} results.zip`));
+      }
 
       toast.success("Download started successfully");
       setOpen(false);
@@ -136,83 +142,8 @@ export function DownloadResult({
   };
 
   const resetSelections = () => {
-    if (allSelected) return;
-
-    setParameters(false);
-    setPlots(false);
-    setAuralizations(false);
-    setParameterOptions({
-      edt: false,
-      t20: false,
-      t30: false,
-      c80: false,
-      d50: false,
-      ts: false,
-      spl_t0_freq: false,
-    });
-    setPlotOptions({
-      "63Hz": false,
-      "125Hz": false,
-      "250Hz": false,
-      "500Hz": false,
-      "1000Hz": false,
-      "2000Hz": false,
-      "4000Hz": false,
-      "8000Hz": false,
-    });
-    setAuralizationOptions({
-      wavIR: false,
-      csvIR: false,
-    });
+    resetAll();
   };
-
-  const enabledFrequencies = useMemo(() => {
-    const defaultFrequencies: number[] = [];
-
-    if (!simulationResult || !simulationResult.length) return defaultFrequencies;
-
-    const firstResult = simulationResult[0];
-    if (!firstResult.frequencies) return defaultFrequencies;
-
-    return firstResult.frequencies;
-  }, [simulationResult]);
-
-  useEffect(() => {
-    if (enabledFrequencies.length === 0) return;
-
-    // If allSelected is true, select all available options
-    if (allSelected) {
-      setParameters(visibleSections.includes("parameters"));
-      setPlots(visibleSections.includes("plots"));
-      setAuralizations(visibleSections.includes("auralizations"));
-
-      setParameterOptions({
-        edt: visibleSections.includes("parameters"),
-        t20: visibleSections.includes("parameters"),
-        t30: visibleSections.includes("parameters"),
-        c80: visibleSections.includes("parameters"),
-        d50: visibleSections.includes("parameters"),
-        ts: visibleSections.includes("parameters"),
-        spl_t0_freq: visibleSections.includes("parameters"),
-      });
-
-      setPlotOptions({
-        "63Hz": visibleSections.includes("plots") && enabledFrequencies.includes(63),
-        "125Hz": visibleSections.includes("plots") && enabledFrequencies.includes(125),
-        "250Hz": visibleSections.includes("plots") && enabledFrequencies.includes(250),
-        "500Hz": visibleSections.includes("plots") && enabledFrequencies.includes(500),
-        "1000Hz": visibleSections.includes("plots") && enabledFrequencies.includes(1000),
-        "2000Hz": visibleSections.includes("plots") && enabledFrequencies.includes(2000),
-        "4000Hz": visibleSections.includes("plots") && enabledFrequencies.includes(4000),
-        "8000Hz": visibleSections.includes("plots") && enabledFrequencies.includes(8000),
-      });
-
-      setAuralizationOptions({
-        wavIR: visibleSections.includes("auralizations"),
-        csvIR: visibleSections.includes("auralizations"),
-      });
-    }
-  }, [enabledFrequencies, visibleSections, allSelected]);
 
   if (isLoading) return <Loading />;
 
@@ -247,8 +178,7 @@ export function DownloadResult({
                 onCheckedChange={(checked) => {
                   const isChecked = !!checked;
                   setParameters(isChecked);
-                  // Check/uncheck all parameter options
-                  setParameterOptions({
+                  const options = {
                     edt: isChecked,
                     t20: isChecked,
                     t30: isChecked,
@@ -256,7 +186,8 @@ export function DownloadResult({
                     d50: isChecked,
                     ts: isChecked,
                     spl_t0_freq: isChecked,
-                  });
+                  };
+                  updateParameterOptions(options);
                 }}
               />
               <Label htmlFor="parameters" className="font-medium">
@@ -271,7 +202,7 @@ export function DownloadResult({
                     id={key}
                     checked={checked}
                     onCheckedChange={(value) =>
-                      setParameterOptions((prev) => ({ ...prev, [key]: !!value }))
+                      updateParameterOptions({ ...parameterOptions, [key]: !!value })
                     }
                   />
                   <Label htmlFor={key} className="text-sm">
@@ -291,8 +222,7 @@ export function DownloadResult({
                 onCheckedChange={(checked) => {
                   const isChecked = !!checked;
                   setPlots(isChecked);
-                  // Check/uncheck only enabled plot options
-                  setPlotOptions({
+                  const options = {
                     "63Hz": isChecked && enabledFrequencies.includes(63),
                     "125Hz": isChecked && enabledFrequencies.includes(125),
                     "250Hz": isChecked && enabledFrequencies.includes(250),
@@ -301,7 +231,8 @@ export function DownloadResult({
                     "2000Hz": isChecked && enabledFrequencies.includes(2000),
                     "4000Hz": isChecked && enabledFrequencies.includes(4000),
                     "8000Hz": isChecked && enabledFrequencies.includes(8000),
-                  });
+                  };
+                  updatePlotOptions(options);
                 }}
               />
               <Label htmlFor="plots" className="font-medium">
@@ -317,7 +248,7 @@ export function DownloadResult({
                     checked={checked}
                     disabled={!enabledFrequencies.includes(parseInt(key.replace("Hz", "")))}
                     onCheckedChange={(value) =>
-                      setPlotOptions((prev) => ({ ...prev, [key]: !!value }))
+                      updatePlotOptions({ ...plotOptions, [key]: !!value })
                     }
                   />
                   <Label htmlFor={`plot-${key}`} className="text-sm">
@@ -337,11 +268,11 @@ export function DownloadResult({
                 onCheckedChange={(checked) => {
                   const isChecked = !!checked;
                   setAuralizations(isChecked);
-                  // Check/uncheck all auralization options
-                  setAuralizationOptions({
+                  const options = {
                     wavIR: isChecked,
                     csvIR: isChecked,
-                  });
+                  };
+                  updateAuralizationOptions(options);
                 }}
               />
               <Label htmlFor="auralizations" className="font-medium">
@@ -355,7 +286,7 @@ export function DownloadResult({
                   id="wavIR"
                   checked={auralizationOptions.wavIR}
                   onCheckedChange={(value) =>
-                    setAuralizationOptions((prev) => ({ ...prev, wavIR: !!value }))
+                    updateAuralizationOptions({ ...auralizationOptions, wavIR: !!value })
                   }
                 />
                 <Label htmlFor="wavIR" className="text-sm">
@@ -367,7 +298,7 @@ export function DownloadResult({
                   id="csvIR"
                   checked={auralizationOptions.csvIR}
                   onCheckedChange={(value) =>
-                    setAuralizationOptions((prev) => ({ ...prev, csvIR: !!value }))
+                    updateAuralizationOptions({ ...auralizationOptions, csvIR: !!value })
                   }
                 />
                 <Label htmlFor="csvIR" className="text-sm">
@@ -376,17 +307,33 @@ export function DownloadResult({
               </div>
             </div>
           </div>
+
+          {/* Setting.json Section */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-settings-json"
+              checked={settingJsonOptions}
+              onCheckedChange={(checked) => {
+                updateSettingJsonOptions(!!checked);
+              }}
+            />
+            <Label htmlFor="include-settings-json" className="text-sm font-normal">
+              Settings.json
+            </Label>
+          </div>
         </div>
 
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" disabled={isDownloading}>
-              Cancel
+        <DialogFooter className="flex-col items-start gap-4">
+          <div className="flex w-full justify-end gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" disabled={isDownloading}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading ? "Downloading..." : "Download"}
             </Button>
-          </DialogClose>
-          <Button onClick={handleDownload} disabled={isDownloading}>
-            {isDownloading ? "Downloading..." : "Download"}
-          </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -17,3 +17,16 @@ export const RHINO3DM_PATH = "/node_modules/three/examples/jsm/libs/rhino3dm/";
 export const FREQUENCY_BANDS = [63, 125, 250, 500, 1000, 2000, 4000, 8000] as const;
 
 export const SIDEBAR_WIDTH = 332;
+
+export const COLORS_VARIANTS = [
+  COLORS.PRIMARY,
+  COLORS.SECONDARY,
+  COLORS.ACCENT,
+  "lightgreen",
+  "silver",
+  "lightpink",
+  "darkorange",
+  "lightyellow",
+  "tomato",
+  "gold",
+];

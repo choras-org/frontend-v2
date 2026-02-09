@@ -10,6 +10,7 @@ export interface SimulationSettingOption {
   startAdornment?: string;
   endAdornment?: string;
   options?: Record<string, string>;
+  description?: string;
 }
 
 export interface SimulationSettingsResponse {
@@ -23,6 +24,7 @@ export interface SimulationSettingsState {
   loading: boolean;
   error: string | null;
   selectedMethodType: string;
+  errors: Record<string, string>;
 }
 
 export interface SimulationMethod {

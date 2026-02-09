@@ -17,38 +17,40 @@ import type { Model } from "@/types/model";
 import { useDispatch } from "react-redux";
 import { removeAllReceivers, removeAllSources } from "@/store/sourceReceiverSlice";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
+// Reusable sorting function for models
+export const sortModels = (models: Model[], sortOption: string) => {
+  const sortedModels = [...models];
+
+  switch (sortOption) {
+    case "ASC":
+      return sortedModels.sort((a, b) => a.name.localeCompare(b.name));
+    case "DESC":
+      return sortedModels.sort((a, b) => b.name.localeCompare(a.name));
+    case "NEWEST_FIRST":
+      return sortedModels.sort((a, b) => {
+        const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        // If timestamps are the same, sort by ID (higher ID = newer)
+        return timeDiff !== 0 ? timeDiff : b.id - a.id;
+      });
+    case "LAST_MODIFIED":
+      return sortedModels.sort((a, b) => {
+        const timeDiff = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        // If timestamps are the same, sort by ID (higher ID = newer)
+        return timeDiff !== 0 ? timeDiff : b.id - a.id;
+      });
+    default:
+      return sortedModels.sort((a, b) => a.name.localeCompare(b.name));
+  }
+};
+
 export function ProjectDetailPage() {
   const { id } = useParams() as { id: string };
   const { data: project, isLoading, error, refetch } = useGetProjectQuery(id);
   const [sort, setSort] = useState<string>("ASC");
   const [models, setModels] = useState<Model[]>();
   const dispatch = useDispatch();
-
-  // Reusable sorting function for models
-  const sortModels = (models: Model[], sortOption: string) => {
-    const sortedModels = [...models];
-
-    switch (sortOption) {
-      case "ASC":
-        return sortedModels.sort((a, b) => a.name.localeCompare(b.name));
-      case "DESC":
-        return sortedModels.sort((a, b) => b.name.localeCompare(a.name));
-      case "NEWEST_FIRST":
-        return sortedModels.sort((a, b) => {
-          const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          // If timestamps are the same, sort by ID (higher ID = newer)
-          return timeDiff !== 0 ? timeDiff : b.id - a.id;
-        });
-      case "LAST_MODIFIED":
-        return sortedModels.sort((a, b) => {
-          const timeDiff = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-          // If timestamps are the same, sort by ID (higher ID = newer)
-          return timeDiff !== 0 ? timeDiff : b.id - a.id;
-        });
-      default:
-        return sortedModels.sort((a, b) => a.name.localeCompare(b.name));
-    }
-  };
 
   let content: React.ReactNode = null;
 
@@ -115,18 +117,23 @@ export function ProjectDetailPage() {
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 font-inter">
           {/* Stack of model images - Pindah ke atas untuk mobile */}
           <div className="relative w-48 h-32 flex-shrink-0 lg:order-2 self-start ml-6 lg:ml-0">
-            {Array.from({ length: Math.min(project.models?.length, 3) }, (_, index) => (
-              <img
-                key={index}
-                className="absolute w-32 h-24 rounded-lg bg-white/80"
-                src={modelImg}
-                alt="Model Illustration"
-                style={{
-                  transform: `rotate(${index * 15 - 5}deg) translate(${index * (project.models.length > 2 ? 15 : 30) - 30}px, ${index * -2}px)`,
-                  boxShadow: `0 ${2 + index * 2}px ${4 + index * 2}px rgba(0, 0, 0, 0.2), 0 ${1 + index}px ${2 + index}px rgba(0, 0, 0, 0.1)`,
-                }}
-              />
-            ))}
+            {models &&
+              models.length > 0 &&
+              models
+                .slice(0, 3)
+                .reverse()
+                .map((model, index) => (
+                  <img
+                    key={model.id}
+                    className="absolute w-32 h-24 rounded-lg bg-white/80"
+                    src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
+                    alt="Model Illustration"
+                    style={{
+                      transform: `rotate(${index * 15 - 5}deg) translate(${index * (models.length > 2 ? 15 : 30) - 30}px, ${index * -2}px)`,
+                      boxShadow: `0 ${2 + index * 2}px ${4 + index * 2}px rgba(0, 0, 0, 0.2), 0 ${1 + index}px ${2 + index}px rgba(0, 0, 0, 0.1)`,
+                    }}
+                  />
+                ))}
           </div>
 
           <div className="space-y-6 lg:order-1">

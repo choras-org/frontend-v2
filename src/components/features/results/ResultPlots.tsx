@@ -57,8 +57,6 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
     );
   }
 
-  console.log(seriesData, "<<<");
-
   return (
     <div className="h-full w-full p-8 space-y-4">
       <h1 className="text-2xl text-choras-secondary font-inter font-bold mb-8">Plots</h1>

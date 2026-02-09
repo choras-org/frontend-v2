@@ -1,8 +1,11 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useSurfaces } from "./useSurfaces";
 import { useGetSimulationByIdQuery } from "@/store/simulationApi";
 import { validateSourceOrReceiver, getModelBounds } from "@/helpers/sourceReceiverValidation";
+import { useEffect, useState } from "react";
+import { setErrors as setSimulationSettingsErrors } from "@/store/simulationSettingsSlice";
+import { useGetSimulationSettingsQuery } from "@/store/simulationSettingsApi";
 
 export interface ValidationError {
   type: "sources" | "receivers" | "materials" | "sourceValidity" | "receiverValidity";
@@ -14,6 +17,25 @@ export interface ValidationError {
 export function useSimulationValidation() {
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const surfaces = useSurfaces();
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [isValid, setIsValid] = useState<boolean>(true);
+  const { errors: simulationSettingsErrors, selectedMethodType } = useSelector(
+    (state: RootState) => state.simulationSettings,
+  );
+  const dispatch = useDispatch();
+  const { data: settingsData } = useGetSimulationSettingsQuery(selectedMethodType);
+  const { data: simulation, isLoading: simulationLoading } = useGetSimulationByIdQuery(
+    activeSimulation?.id ?? 0,
+    {
+      skip: !activeSimulation?.id,
+    },
+  );
+
+  useEffect(() => {
+    const { isValid, errors: validationErrors } = validateSimulation();
+    setIsValid(isValid);
+    setErrors(validationErrors);
+  }, [activeSimulation, surfaces]);
 
   // Get the current model's Object3D for raycaster validation
   const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
@@ -21,13 +43,6 @@ export function useSimulationValidation() {
     currentModelId ? state.model.rhinoFiles[currentModelId] : null,
   );
   const modelObject3D = currentModel?.object3D || null;
-
-  const { data: simulation, isLoading: simulationLoading } = useGetSimulationByIdQuery(
-    activeSimulation?.id ?? 0,
-    {
-      skip: !activeSimulation?.id,
-    },
-  );
 
   const validateSimulation = (): { isValid: boolean; errors: ValidationError[] } => {
     const errors: ValidationError[] = [];
@@ -140,5 +155,33 @@ export function useSimulationValidation() {
     };
   };
 
-  return validateSimulation();
+  const validateSimulationSettings = () => {
+    setSimulationSettingsErrors({});
+    const results: Record<string, string> = {};
+
+    if (simulation?.solverSettings?.simulationSettings && settingsData?.options) {
+      settingsData?.options.forEach((option) => {
+        const value = (simulation.solverSettings?.simulationSettings as Record<string, unknown>)[
+          option.id
+        ];
+        const isValid =
+          option.type === "string"
+            ? true
+            : typeof value === "number" &&
+              (option.min === undefined || value >= option.min) &&
+              (option.max === undefined || value <= option.max);
+
+        if (!isValid) {
+          results[option.id] = option.name;
+        } else {
+          delete results[option.id];
+        }
+      });
+    }
+
+    dispatch(setSimulationSettingsErrors(results));
+    return results;
+  };
+
+  return { isValid, errors, validateSimulationSettings, simulationSettingsErrors };
 }

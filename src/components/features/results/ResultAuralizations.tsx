@@ -20,8 +20,6 @@ export function ResultAuralizations({ simulationId }: ResultAuralizationsProps) 
   const compareResults = useSelector(selectCompareResults);
   const compareResultIds = useSelector(selectCompareSimulationIds);
 
-  console.log(compareResultIds, "<<<");
-
   if (isLoading) {
     return <Loading message="Loading audio files..." className="h-container justify-center" />;
   }

@@ -3,33 +3,38 @@ import { useThree } from "@react-three/fiber";
 import { useDispatch, useSelector } from "react-redux";
 import { useModelLoader } from "@/hooks/useModelLoader";
 import { useGeometrySelection } from "@/hooks/useGeometrySelection";
+import { useMeshHighlight } from "@/hooks/useMeshHighlight";
 import { createEdgeOutlineForObject3D } from "@/helpers/layerProcessor";
 import { selectSource, selectReceiver } from "@/store/sourceReceiverSlice";
+import { setActiveTab } from "@/store/tabSlice";
 import type { RootState } from "@/store";
 import * as THREE from "three";
 import type { ModelRendererProps } from "@/types/modelViewport";
 import type { ThreeEvent } from "@react-three/fiber";
+import { useApplySurfaceColors } from "@/hooks/useApplySurfaceColors";
 
 type MaterialWithUuid = THREE.Material & { uuid: string };
 
-const HIGHLIGHT_COLOR = 0x006600;
 const HOVER_COLOR = 0x888888;
-const ORIGINAL_COLOR_CACHE = new WeakMap<THREE.Material, number | THREE.Color>();
 
 export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
+  const { applySurfaceColors } = useApplySurfaceColors();
   const dispatch = useDispatch();
   const selectedSource = useSelector((state: RootState) => state.sourceReceiver.selectedSource);
   const selectedReceiver = useSelector((state: RootState) => state.sourceReceiver.selectedReceiver);
   const isTransforming = useSelector((state: RootState) => state.sourceReceiver.isTransforming);
   const { getCurrentModel, currentModelId } = useModelLoader();
   const {
-    selectedGeometry,
     selectGeometry,
     clearSelection,
     highlightedMeshes,
     addHighlightedMesh,
     removeHighlightedMesh,
+    selectedGeometries,
+    addSelectedGeometry,
+    removeSelectedGeometry,
   } = useGeometrySelection();
+  const { highlightMesh, restoreOriginalColor, HIGHLIGHT_COLOR } = useMeshHighlight();
   const { camera, raycaster, pointer, gl } = useThree();
   const groupRef = useRef<THREE.Group>(null);
   const [hoveredMesh, setHoveredMesh] = useState<THREE.Mesh | null>(null);
@@ -85,54 +90,25 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
   useEffect(() => {
     if (modelData?.object3D && currentModelId === modelId) {
       applyViewMode(modelData.object3D);
+
+      modelData.object3D.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((material) => {
+            if (
+              material instanceof THREE.MeshStandardMaterial ||
+              material instanceof THREE.MeshBasicMaterial
+            ) {
+              material.color.setHex(0xffffff);
+              material.needsUpdate = true;
+            }
+          });
+        }
+      });
+
+      applySurfaceColors();
     }
   }, [modelData?.object3D, currentModelId, modelId, applyViewMode]);
-
-  const highlightMesh = useCallback((mesh: THREE.Mesh, color: number) => {
-    if (!mesh.material) return;
-
-    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-
-    materials.forEach((material) => {
-      if (!ORIGINAL_COLOR_CACHE.has(material)) {
-        if (
-          material instanceof THREE.MeshStandardMaterial ||
-          material instanceof THREE.MeshBasicMaterial
-        ) {
-          ORIGINAL_COLOR_CACHE.set(material, material.color.getHex());
-        }
-      }
-
-      if (
-        material instanceof THREE.MeshStandardMaterial ||
-        material instanceof THREE.MeshBasicMaterial
-      ) {
-        material.color.setHex(color);
-      }
-    });
-  }, []);
-
-  const restoreOriginalColor = useCallback((mesh: THREE.Mesh) => {
-    if (!mesh.material) return;
-
-    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-
-    materials.forEach((material) => {
-      const originalColor = ORIGINAL_COLOR_CACHE.get(material);
-      if (originalColor !== undefined) {
-        if (
-          material instanceof THREE.MeshStandardMaterial ||
-          material instanceof THREE.MeshBasicMaterial
-        ) {
-          if (typeof originalColor === "number") {
-            material.color.setHex(originalColor);
-          } else {
-            material.color.copy(originalColor);
-          }
-        }
-      }
-    });
-  }, []);
 
   const handlePointerDown = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
@@ -213,17 +189,133 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
     ],
   );
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      if (!groupRef.current) return;
+
+      if (isDragging) {
+        return;
+      }
+
+      if (!isTransforming && (selectedSource || selectedReceiver)) {
+        dispatch(selectSource(null));
+        dispatch(selectReceiver(null));
+      }
+
+      const meshes: THREE.Mesh[] = [];
+      groupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          meshes.push(child);
+        }
+      });
+
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObjects(meshes);
+
+      const isMultiSelect = event.nativeEvent.ctrlKey || event.nativeEvent.metaKey;
+
+      if (intersects.length > 0) {
+        const intersection = intersects[0];
+        const mesh = intersection.object as THREE.Mesh;
+
+        if (mesh.visible === false) {
+          Object.keys(selectedGeometries).forEach((uuid) => {
+            const geo = selectedGeometries[uuid];
+            removeHighlightedMesh(geo.mesh);
+            restoreOriginalColor(geo.mesh);
+          });
+          clearSelection();
+          return;
+        }
+
+        const payload = {
+          mesh,
+          faceIndex: intersection.faceIndex || 0,
+          point: intersection.point,
+          materialId: mesh.material ? (mesh.material as MaterialWithUuid).uuid : undefined,
+        };
+
+        if (isMultiSelect) {
+          // Multiple select mode - toggle selection
+          const selectedGeo = selectedGeometries[mesh.uuid];
+          if (selectedGeo) {
+            removeSelectedGeometry(mesh.uuid);
+            removeHighlightedMesh(mesh);
+            restoreOriginalColor(mesh);
+
+            const remainingSelectedGeometries = Object.values(selectedGeometries).filter(
+              (geo) => geo.mesh.uuid !== mesh.uuid,
+            );
+            if (remainingSelectedGeometries.length > 0) {
+              const latestGeometry =
+                remainingSelectedGeometries[remainingSelectedGeometries.length - 1];
+              selectGeometry(latestGeometry);
+            } else {
+              clearSelection();
+            }
+          } else {
+            highlightMesh(mesh, HIGHLIGHT_COLOR);
+            addHighlightedMesh(mesh);
+            selectGeometry(payload);
+            addSelectedGeometry(payload);
+          }
+        } else {
+          // Single select mode - clear previous and select new
+          Object.keys(selectedGeometries).forEach((uuid) => {
+            const geo = selectedGeometries[uuid];
+            removeHighlightedMesh(geo.mesh);
+            restoreOriginalColor(geo.mesh);
+          });
+          clearSelection();
+
+          highlightMesh(mesh, HIGHLIGHT_COLOR);
+          addHighlightedMesh(mesh);
+          selectGeometry(payload);
+          addSelectedGeometry(payload);
+        }
+
+        if (!mesh.userData.meshId) {
+          let meshCount = 0;
+          groupRef.current?.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              if (!child.userData.meshId) {
+                child.userData.meshId = ++meshCount;
+              }
+            }
+          });
+        }
+      } else {
+        Object.keys(selectedGeometries).forEach((uuid) => {
+          const geo = selectedGeometries[uuid];
+          removeHighlightedMesh(geo.mesh);
+          restoreOriginalColor(geo.mesh);
+        });
+        clearSelection();
+      }
+    },
+    [
+      selectedGeometries,
+      removeHighlightedMesh,
+      restoreOriginalColor,
+      highlightMesh,
+      addHighlightedMesh,
+      selectGeometry,
+      clearSelection,
+      removeSelectedGeometry,
+      addSelectedGeometry,
+      dispatch,
+      selectedSource,
+      selectedReceiver,
+      isTransforming,
+      isDragging,
+      camera,
+      raycaster,
+      pointer,
+    ],
+  );
+
+  const handleDoubleClick = useCallback(() => {
     if (!groupRef.current) return;
-
-    if (isDragging) {
-      return;
-    }
-
-    if (!isTransforming && (selectedSource || selectedReceiver)) {
-      dispatch(selectSource(null));
-      dispatch(selectReceiver(null));
-    }
 
     const meshes: THREE.Mesh[] = [];
     groupRef.current.traverse((child) => {
@@ -236,58 +328,9 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
     const intersects = raycaster.intersectObjects(meshes);
 
     if (intersects.length > 0) {
-      const intersection = intersects[0];
-      const mesh = intersection.object as THREE.Mesh;
-
-      if (selectedGeometry?.mesh && selectedGeometry.mesh !== mesh) {
-        removeHighlightedMesh(selectedGeometry.mesh);
-        restoreOriginalColor(selectedGeometry.mesh);
-      }
-
-      highlightMesh(mesh, HIGHLIGHT_COLOR);
-      addHighlightedMesh(mesh);
-
-      selectGeometry({
-        mesh,
-        faceIndex: intersection.faceIndex || 0,
-        point: intersection.point,
-        materialId: mesh.material ? (mesh.material as MaterialWithUuid).uuid : undefined,
-      });
-
-      if (!mesh.userData.meshId) {
-        let meshCount = 0;
-        groupRef.current?.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            if (!child.userData.meshId) {
-              child.userData.meshId = ++meshCount;
-            }
-          }
-        });
-      }
-    } else {
-      if (selectedGeometry?.mesh) {
-        removeHighlightedMesh(selectedGeometry.mesh);
-        restoreOriginalColor(selectedGeometry.mesh);
-      }
-      clearSelection();
+      dispatch(setActiveTab("surfaces"));
     }
-  }, [
-    selectedGeometry,
-    removeHighlightedMesh,
-    restoreOriginalColor,
-    highlightMesh,
-    addHighlightedMesh,
-    selectGeometry,
-    clearSelection,
-    dispatch,
-    selectedSource,
-    selectedReceiver,
-    isTransforming,
-    isDragging,
-    camera,
-    raycaster,
-    pointer,
-  ]);
+  }, [dispatch, camera, raycaster, pointer]);
 
   if (currentModelId !== modelId || !modelData) {
     return null;
@@ -300,6 +343,7 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
       onPointerUp={handlePointerUp}
       onPointerMove={handlePointerMove}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
     >
       <mesh position={[0, 0, -1000]} visible={false}>
         <planeGeometry args={[10000, 10000]} />
