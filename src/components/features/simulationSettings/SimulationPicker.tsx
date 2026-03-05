@@ -77,7 +77,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
               name: currentSimulation.name,
               status: currentSimulation.status,
               hasBeenEdited: currentSimulation.hasBeenEdited,
-              taskType: methodType,
+              simulationMethod: methodType,
               solverSettings: currentSimulation.solverSettings,
             },
           }).unwrap();
@@ -107,8 +107,8 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
       if (currentSimulation) {
         dispatch(setActiveSimulation(currentSimulation));
 
-        if (currentSimulation.taskType && currentSimulation.taskType !== selectedMethodType) {
-          dispatch(setSelectedMethodType(currentSimulation.taskType));
+        if (currentSimulation.simulationMethod && currentSimulation.simulationMethod !== selectedMethodType) {
+          dispatch(setSelectedMethodType(currentSimulation.simulationMethod));
         }
 
         if (currentSimulation.sources.length > 0) {
