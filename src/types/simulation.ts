@@ -15,6 +15,7 @@ export interface Simulation {
   sources: Source[];
   status: string;
   simulationMethod: string;
+  resourceType: string;
   updatedAt: string;
 }
 
@@ -40,26 +41,6 @@ export interface SimulationRun {
   simulation: Simulation;
   solverSettings: SolverSettings;
   sources: Source2[];
-  status: string;
-  simulationMethod: string;
-  updatedAt: string;
-}
-
-export interface Simulation {
-  completedAt: string;
-  createdAt: string;
-  description: string;
-  hasBeenEdited: boolean;
-  id: number;
-  layerIdByMaterialId: Record<string, number>;
-  model: Model;
-  modelId: number;
-  name: string;
-  receivers: Receiver[];
-  settingsPreset: string;
-  simulationRunId: number;
-  solverSettings: SolverSettings;
-  sources: Source[];
   status: string;
   simulationMethod: string;
   updatedAt: string;

@@ -8,6 +8,7 @@ const initialState: SimulationSettingsState = {
   loading: false,
   error: null,
   selectedMethodType: "DE",
+  selectedResourceType: "LOCAL",
   errors: {},
 };
 
@@ -42,6 +43,9 @@ const simulationSettingsSlice = createSlice({
       state.options = [];
       state.values = {};
     },
+    setSelectedResourceType: (state, action: PayloadAction<string>) => {
+      state.selectedResourceType = action.payload;
+    },
     setErrors: (state, action: PayloadAction<Record<string, string>>) => {
       state.errors = action.payload;
     },
@@ -60,6 +64,7 @@ export const {
   resetValues,
   clearSettings,
   setSelectedMethodType,
+  setSelectedResourceType,
   setErrors,
   addError,
   removeError,
