@@ -67,7 +67,7 @@ export function CompareResultItem({
 
   const selectedSimulation = simulations?.find((sim) => sim.id === simulationId);
   const selectedMethod = selectedSimulation
-    ? methods?.find((method) => method.simulationType === selectedSimulation.taskType)
+    ? methods?.find((method) => method.simulationType === selectedSimulation.simulationMethod)
     : null;
 
   const handleUpdate = (field: string, value: unknown) => {

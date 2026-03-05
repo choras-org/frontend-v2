@@ -14,7 +14,7 @@ export interface Simulation {
   solverSettings: SolverSettings;
   sources: Source[];
   status: string;
-  taskType: string;
+  simulationMethod: string;
   updatedAt: string;
 }
 
@@ -41,7 +41,7 @@ export interface SimulationRun {
   solverSettings: SolverSettings;
   sources: Source2[];
   status: string;
-  taskType: string;
+  simulationMethod: string;
   updatedAt: string;
 }
 
@@ -61,7 +61,7 @@ export interface Simulation {
   solverSettings: SolverSettings;
   sources: Source[];
   status: string;
-  taskType: string;
+  simulationMethod: string;
   updatedAt: string;
 }
 
