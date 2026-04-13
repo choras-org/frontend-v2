@@ -42,7 +42,8 @@ export function useDuplicateSimulation() {
           modelId: currentSimulation.modelId,
           layerIdByMaterialId: currentSimulation.layerIdByMaterialId,
           solverSettings: currentSimulation.solverSettings,
-          taskType: currentSimulation.taskType,
+          simulationMethod: currentSimulation.simulationMethod,
+          resourceType: currentSimulation.resourceType,
         }).unwrap();
 
         await updateSimulation({
@@ -56,7 +57,8 @@ export function useDuplicateSimulation() {
             solverSettings: currentSimulation.solverSettings,
             sources: currentSimulation.sources,
             receivers: currentSimulation.receivers,
-            taskType: currentSimulation.taskType,
+            simulationMethod: currentSimulation.simulationMethod,
+            resourceType: currentSimulation.resourceType,
           },
         }).unwrap();
 

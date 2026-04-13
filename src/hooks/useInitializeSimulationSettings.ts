@@ -16,7 +16,7 @@ export function useInitializeSimulationSettings() {
       try {
         const settingsData = await dispatch(
           simulationSettingsApi.endpoints.getSimulationSettings.initiate(
-            methodType || simulation.taskType || "DE",
+            methodType || simulation.simulationMethod || "DE",
           ),
         ).unwrap();
 
