@@ -137,7 +137,7 @@ export function ProjectDetailPage() {
           </div>
 
           <div className="space-y-6 lg:order-1">
-            <h1 className="text-2xl text-choras-secondary font-inter font-bold mb-2">
+            <h1 className="text-2xl text-choras-primary font-inter font-bold mb-2">
               {project.name}
             </h1>
             <p className="text-xs text-black/50">
