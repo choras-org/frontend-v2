@@ -69,7 +69,7 @@ export function ResultParameters({ simulationId }: ResultParametersProps) {
 
   return (
     <div className="h-full w-full p-8 space-y-4">
-      <h1 className="text-2xl text-choras-secondary font-inter font-bold mb-8">Parameters</h1>
+      <h1 className="text-2xl text-choras-primary font-inter font-bold mb-8">Parameters</h1>
 
       <div className="flex justify-between">
         <Select
