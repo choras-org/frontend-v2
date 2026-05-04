@@ -156,7 +156,7 @@ export function DownloadResult({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outlineSecondary">
+        <Button variant="outline">
           <Download className="h-4 w-4" />
           {triggerLabel ?? "Download"}
         </Button>
