@@ -45,9 +45,9 @@ export function CustomAxesHelper({ size = 25 }: CustomAxesHelperProps) {
   const yGeometry = createAxisGeometry("y");
   const zGeometry = createAxisGeometry("z");
 
-  const xMaterial = new LineBasicMaterial({ color: "#f093fb", linewidth: 3 });
-  const yMaterial = new LineBasicMaterial({ color: "#4ecdc4", linewidth: 3 });
-  const zMaterial = new LineBasicMaterial({ color: "#667eea", linewidth: 3 });
+  const xMaterial = new LineBasicMaterial({ color: "#EF7305", linewidth: 3 });
+  const yMaterial = new LineBasicMaterial({ color: "#F4B183", linewidth: 3 });
+  const zMaterial = new LineBasicMaterial({ color: "#FBE5D6", linewidth: 3 });
 
   return (
     <group>
