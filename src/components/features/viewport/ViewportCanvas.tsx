@@ -173,7 +173,7 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
             zoomSpeed={0.5}
           />
           <GizmoHelper alignment="top-right" margin={[60, 150]}>
-            <GizmoViewport axisColors={["#f093fb", "#4ecdc4", "#667eea"]} labelColor="black" />
+            <GizmoViewport axisColors={["#EF7305", "#F4B183", "#FBE5D6"]} labelColor="black" />
           </GizmoHelper>
 
           {modelId && <ModelRenderer modelId={modelId} viewMode={viewMode} />}
