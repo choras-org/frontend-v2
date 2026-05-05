@@ -18,7 +18,7 @@ import { formatDate } from "@/helpers/datetime";
 import { CheckCircleIcon, EllipsisVerticalIcon, FileText, GithubIcon } from "lucide-react";
 import type { Simulation } from "@/types/simulation";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedMethodType } from "@/store/simulationSettingsSlice";
+import { setSelectedMethodType, setSelectedResourceType } from "@/store/simulationSettingsSlice";
 import { setActiveSimulation } from "@/store/simulationSlice";
 import type { RootState } from "@/store";
 import { useEffect, useState } from "react";
@@ -41,6 +41,7 @@ import {
 } from "@/store/sourceReceiverSlice";
 import { MethodInfoDialog } from "./MethodInfoDialog";
 import { useSimulationRunner } from "@/hooks/useSimulationRunner";
+import { RESOURCE_TYPES } from "@/constants";
 
 type SimulationPickerProps = {
   modelId: number;
@@ -61,6 +62,9 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const selectedMethodType = useSelector(
     (state: RootState) => state.simulationSettings.selectedMethodType,
   );
+  const selectedResourceType = useSelector(
+    (state: RootState) => state.simulationSettings.selectedResourceType,
+  );
   const { initializeSettings } = useInitializeSimulationSettings();
 
   const handleMethodChange = async (methodType: string) => {
@@ -77,12 +81,45 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
               name: currentSimulation.name,
               status: currentSimulation.status,
               hasBeenEdited: currentSimulation.hasBeenEdited,
-              taskType: methodType,
+              simulationMethod: methodType,
               solverSettings: currentSimulation.solverSettings,
+              resourceType: currentSimulation.resourceType,
             },
           }).unwrap();
 
           await initializeSettings(updatedSimulation, methodType);
+
+          toast.success("Method updated and settings initialized");
+        } catch (error) {
+          console.error("Failed to update simulation method:", error);
+          toast.error("Failed to update method");
+        }
+      }
+    }
+  };
+
+  const handleResourceChange = async (resourceType: string) => {
+    console.log("Selected resource type:", resourceType);
+    dispatch(setSelectedResourceType(resourceType));
+
+    if (simulationId && simulations) {
+      const currentSimulation = simulations.find((sim) => sim.id === simulationId);
+      if (currentSimulation) {
+        try {
+          const updatedSimulation = await updateSimulation({
+            id: simulationId,
+            body: {
+              modelId: currentSimulation.modelId,
+              name: currentSimulation.name,
+              status: currentSimulation.status,
+              hasBeenEdited: currentSimulation.hasBeenEdited,
+              simulationMethod: currentSimulation.simulationMethod,
+              solverSettings: currentSimulation.solverSettings,
+              resourceType: resourceType,
+            },
+          }).unwrap();
+
+          console.log("Updated simulation with new resource type:", updatedSimulation);
 
           toast.success("Method updated and settings initialized");
         } catch (error) {
@@ -107,8 +144,11 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
       if (currentSimulation) {
         dispatch(setActiveSimulation(currentSimulation));
 
-        if (currentSimulation.taskType && currentSimulation.taskType !== selectedMethodType) {
-          dispatch(setSelectedMethodType(currentSimulation.taskType));
+        if (
+          currentSimulation.simulationMethod &&
+          currentSimulation.simulationMethod !== selectedMethodType
+        ) {
+          dispatch(setSelectedMethodType(currentSimulation.simulationMethod));
         }
 
         if (currentSimulation.sources.length > 0) {
@@ -125,6 +165,10 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
           });
         } else {
           dispatch(removeAllReceivers());
+        }
+
+        if (currentSimulation.resourceType) {
+          dispatch(setSelectedResourceType(currentSimulation.resourceType));
         }
       }
     }
@@ -294,6 +338,30 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
             </SelectContent>
           </Select>
           <MethodInfoDialog method={selectedMethod} />
+        </div>
+        <label htmlFor="method" className="font-medium text-white">
+          Resource
+        </label>
+        <div className="col-span-2 flex">
+          <Select value={selectedResourceType} onValueChange={handleResourceChange}>
+            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray min-w-[calc(100%-36px)]">
+              <SelectValue>
+                {RESOURCE_TYPES.find((r) => r.value === selectedResourceType)?.label ||
+                  "Select a Resource"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-choras-dark border-choras-gray">
+              {RESOURCE_TYPES.map((resource) => (
+                <SelectItem
+                  key={resource.value}
+                  value={resource.value}
+                  className="bg-choras-dark hover:bg-choras-dark/90 active:bg-choras-dark/80 text-white"
+                >
+                  {resource.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-6 w-full items-center">

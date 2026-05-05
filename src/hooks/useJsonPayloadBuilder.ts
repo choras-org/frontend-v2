@@ -81,7 +81,7 @@ export function useJsonPayloadBuilder() {
           name: simulation?.name,
           status: simulation?.status,
           hasBeenEdited,
-          taskType: parsedData.simulation_method,
+          simulationMethod: parsedData.simulation_method,
           layerIdByMaterialId: surfaceMaterialMap,
           solverSettings: {
             simulationSettings: parsedData.simulation_settings ?? {},
