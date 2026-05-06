@@ -169,8 +169,19 @@ export function RunSimulationButton() {
                         ? "custom2"
                         : "default"
                 }
-                className="h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer relative z-10 bg-gradient-to-r from-choras-primary from-50% to-choras-secondary"
-                style={isCompleted ? { backgroundColor: "#f093fb" } : undefined}
+                className={
+                  `h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer relative z-10 ` +
+                  (isRunning
+                    ? ""
+                    : "bg-gradient-to-r from-choras-primary from-50% to-choras-secondary")
+                }
+                style={
+                  isRunning
+                    ? { backgroundColor: "#fff" }
+                    : isCompleted
+                      ? { backgroundColor: "#f093fb" }
+                      : undefined
+                }
               >
                 {isCompleted ? (
                   <ChartColumn className="h-5 w-5" />
