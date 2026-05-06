@@ -337,7 +337,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
                 <Button
                   onClick={handlePlayNonConvolved}
                   disabled={nonConvolvedLoading}
-                  variant="outlineSecondary"
+                  variant="outline"
                   size={"sm"}
                 >
                   {nonConvolvedLoading ? (
@@ -351,7 +351,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
               <Button
                 onClick={handleDownloadNonConvolved}
                 disabled={nonConvolvedDownloadLoading}
-                variant="outlineSecondary"
+                variant="outline"
                 size={"sm"}
               >
                 {nonConvolvedDownloadLoading ? (

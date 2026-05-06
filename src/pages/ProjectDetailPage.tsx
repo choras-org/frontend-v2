@@ -137,7 +137,7 @@ export function ProjectDetailPage() {
           </div>
 
           <div className="space-y-6 lg:order-1">
-            <h1 className="text-2xl text-choras-secondary font-inter font-bold mb-2">
+            <h1 className="text-2xl text-choras-primary font-inter font-bold mb-2">
               {project.name}
             </h1>
             <p className="text-xs text-black/50">
@@ -180,7 +180,7 @@ export function ProjectDetailPage() {
               dispatch(projectApi.util.invalidateTags([{ type: "Projects" }]));
             }}
             trigger={
-              <div className="min-h-[192px] border border-transparent bg-gradient-to-r from-choras-primary from-50% to-choras-secondary bg-clip-border p-0.5 rounded-lg">
+              <div className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-lg">
                 <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-lg h-full flex items-center justify-center">
                   <div className="flex flex-col items-center text-choras-secondary">
                     <img src={uploadIcon} alt="Upload Icon" className="h-16 w-16" />

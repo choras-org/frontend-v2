@@ -1,6 +1,6 @@
-import githubIcon from "@/assets/github-icon.png";
 import { Button } from "@/components/ui/button";
 import { CHORAS_DOCUMENTATION_URL } from "@/constants";
+import { GithubIcon } from "lucide-react";
 
 export function WelcomeSidebar() {
   return (
@@ -24,7 +24,7 @@ export function WelcomeSidebar() {
       <div className="flex gap-4 p-4 border-t border-stone-600">
         <Button variant="outline" asChild>
           <a target="_blank" href={CHORAS_DOCUMENTATION_URL.github}>
-            <img src={githubIcon} alt="GitHub" className="w-5 h-5" />
+            <GithubIcon size={16} className="flex-shrink-0" />
             <span>Repository</span>
           </a>
         </Button>

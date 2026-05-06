@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.74](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.73...v0.0.74) (2026-05-06)
+
+### [0.0.73](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.72...v0.0.73) (2026-05-04)
+
+### Features
+
+- add projectIds prop to EditGroup component for project updates ([82e637b](https://github.com/ajatdarojat45/choras-frontend/commit/82e637b91b92dadf3dcecd6fca84ceda821ea874))
+- enhance projectApi to support dynamic invalidation of project queries ([06874f9](https://github.com/ajatdarojat45/choras-frontend/commit/06874f9278f816a54d8aa813a1efd7c7769be24a))
+- pass projectIds to EditGroup and DeleteGroup components for improved functionality ([26699e8](https://github.com/ajatdarojat45/choras-frontend/commit/26699e817612e97f39b47c9555c82818cd7f7200))
+- update Choras color scheme with new primary, secondary, and tertiary colors ([8940358](https://github.com/ajatdarojat45/choras-frontend/commit/8940358eaacae84c8958292253ae32fe059b19b5))
+- update DeleteGroup component to include projectIds in update and delete operations ([120ba3a](https://github.com/ajatdarojat45/choras-frontend/commit/120ba3a1fef984524c5475c8f9dd1c585cf8c934))
+- update ProjectCard image styling for better responsiveness ([6b11e3b](https://github.com/ajatdarojat45/choras-frontend/commit/6b11e3beec7c1990eb233e319ae67ff68966864a))
+
+### Bug Fixes
+
+- add new plus and upload icons to assets ([8483fe9](https://github.com/ajatdarojat45/choras-frontend/commit/8483fe90134e8a06a68a12775b24127fd78c19e1))
+- change background color of project group trigger to solid primary color ([62db3af](https://github.com/ajatdarojat45/choras-frontend/commit/62db3afd285968fb93e7cbec25ab4a3f417340e5))
+- replace GitHub icon image with GithubIcon component in WelcomeSidebar ([05f41c2](https://github.com/ajatdarojat45/choras-frontend/commit/05f41c2600b309f777f60d1edd3729874925e893))
+- revert background gradient and update CardTitle color to primary ([40f467c](https://github.com/ajatdarojat45/choras-frontend/commit/40f467cadf4ac663beaacfd9c2a3eb67ea89560b))
+- update axis colors in GizmoViewport to match design specifications ([739f76d](https://github.com/ajatdarojat45/choras-frontend/commit/739f76da500325be2519d433f55d5111838ebd87))
+- update background color of RunSimulationButton to gradient from primary to secondary ([42db8c8](https://github.com/ajatdarojat45/choras-frontend/commit/42db8c8b279dd56c0dcbdbb8ae7daff7d5c0e8b2))
+- update button variant from outlineSecondary to outline in ConvolvedSoundPlayer ([2f9cd52](https://github.com/ajatdarojat45/choras-frontend/commit/2f9cd52909bfeaf99d9ffc55a13ac057ea82b1eb))
+- update button variant from outlineSecondary to outline in DownloadResult component ([92704e4](https://github.com/ajatdarojat45/choras-frontend/commit/92704e48a8ce66c86faa049ecf6780ef38e1b5a5))
+- update choras logo colors in SVG to match new design specifications ([4d1af78](https://github.com/ajatdarojat45/choras-frontend/commit/4d1af78d11834e7aee24ade19c04bc2b615c3a8b))
+- update COLORS constants to restore original primary, secondary, and accent colors ([2272161](https://github.com/ajatdarojat45/choras-frontend/commit/2272161daa04ba5d0b6f9e07f6dee91a9c95ff3d))
+- update default button variant background to solid primary color ([7c1e6ae](https://github.com/ajatdarojat45/choras-frontend/commit/7c1e6ae54723ac3c32f33ac46aa5311e0c759e05))
+- update header color in ProjectDetailPage to primary color ([ab13fbe](https://github.com/ajatdarojat45/choras-frontend/commit/ab13fbeefdaf11bbd63141ea00d6ea8d7c6db423))
+- update header color in ResultParameters component to primary color ([5ae73a2](https://github.com/ajatdarojat45/choras-frontend/commit/5ae73a27498ceade391b61a53c9a2a35fa89d468))
+- update header color in ResultPlots component to primary color ([aeead9b](https://github.com/ajatdarojat45/choras-frontend/commit/aeead9b6882d95bed7c867e716e6784bbae106d7))
+- update header colors in ResultAuralizations component to primary color ([adfeb4d](https://github.com/ajatdarojat45/choras-frontend/commit/adfeb4db4cab1ed56aee3efcbb56c4b9dede791f))
+- update line colors in CustomAxesHelper to match design specifications ([6113e37](https://github.com/ajatdarojat45/choras-frontend/commit/6113e375c2edf331d6772e013f5f852e8adb17fa))
+- update ProjectCard background color and CardTitle to primary color ([f5a2337](https://github.com/ajatdarojat45/choras-frontend/commit/f5a233775234f9a3b162d4cc3224d0e3cfa57e93))
+
 ### [0.0.72](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.71...v0.0.72) (2026-01-18)
 
 ### Features
