@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.74](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.73...v0.0.74) (2026-05-06)
+
 ### [0.0.73](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.72...v0.0.73) (2026-05-04)
 
 ### Features

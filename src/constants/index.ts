@@ -31,3 +31,14 @@ export const COLORS_VARIANTS = [
   "tomato",
   "gold",
 ];
+
+export const RESOURCE_TYPES = [
+  {
+    label: "Local",
+    value: "LOCAL",
+  },
+  {
+    label: "Cloud",
+    value: "CLOUD",
+  },
+];
