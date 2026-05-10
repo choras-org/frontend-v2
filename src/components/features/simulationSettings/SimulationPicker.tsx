@@ -371,7 +371,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
             selectedMethod?.repositoryURL && window.open(selectedMethod.repositoryURL, "_blank")
           }
           disabled={!selectedMethod?.repositoryURL}
-          className="h-auto whitespace-normal py-2"
+          className="h-auto whitespace-normal py-2 border-white text-white hover:bg-white/50 hover:text-white"
         >
           <div className="flex items-center gap-2 justify-center">
             <GithubIcon size={16} className="flex-shrink-0" />
@@ -385,7 +385,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
             window.open(selectedMethod.documentationURL, "_blank")
           }
           disabled={!selectedMethod?.documentationURL}
-          className="h-auto whitespace-normal py-2"
+          className="h-auto whitespace-normal py-2 border-white text-white hover:bg-white/50 hover:text-white"
         >
           <div className="flex items-center gap-2 justify-center">
             <FileText size={16} className="flex-shrink-0" />

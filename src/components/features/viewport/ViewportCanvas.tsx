@@ -89,7 +89,7 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
           value={viewMode}
           onValueChange={(value) => setViewMode(value as "solid" | "ghosted" | "wireframe")}
         >
-          <SelectTrigger className="absolute top-2 right-2 z-10 cursor-pointer text-sm w-30 border-choras-tertiary text-choras-tertiary [&>svg]:stroke-choras-secondary hover:text-choras-tertiary hover:bg-choras-secondary/50">
+          <SelectTrigger className="absolute top-2 right-2 z-10 cursor-pointer text-sm w-30 border-white text-white [&>svg]:stroke-white hover:text-white hover:bg-white/50">
             <SelectValue placeholder="View Mode" />
           </SelectTrigger>
           <SelectContent>
@@ -102,7 +102,7 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
           onClick={toggleCameraType}
           variant="outline"
           size="sm"
-          className="absolute top-14 right-2 z-10 cursor-pointer hover:bg-choras-secondary/50 border-choras-tertiary text-choras-tertiary hover:text-choras-tertiary"
+          className="absolute top-14 right-2 z-10 cursor-pointer hover:bg-white/50 border-white text-white hover:text-white"
         >
           <span className="hidden sm:inline">
             {cameraType === "perspective" ? "Perspective" : "Orthographic"}
