@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormField,
@@ -39,6 +40,7 @@ interface ModelRendererProps {
 
 const UploadModelSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
+  useGeometryPipeline: z.boolean().default(false), // whether to run the geometry pipeline, default to false
   // single File expected (only .obj or .dxf)
   file: z
     .instanceof(File, { message: "Please upload a file." })
@@ -248,6 +250,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
     defaultValues: {
       name: "",
       file: undefined,
+      useGeometryPipeline: false,
     },
   });
 
@@ -289,6 +292,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
         url: "/geometryCheck",
         params: {
           fileUploadId: uploadResult.id,
+          useGeometryPipeline: data.useGeometryPipeline || false, // pass the geometry pipeline option from the form
         },
       });
       console.log(createGeometryCheckResult, "<<< createGeometryCheckResult");
@@ -521,8 +525,26 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                   </FormItem>
                 )}
               />
-            </div>
 
+              <FormField
+                control={form.control}
+                name="useGeometryPipeline"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>use geometry validation & repair pipeline (prototype)</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
             <DialogFooter>
               <DialogClose asChild>
                 <Button disabled={isSubmitting} variant="outline">
