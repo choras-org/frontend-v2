@@ -89,7 +89,7 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
           value={viewMode}
           onValueChange={(value) => setViewMode(value as "solid" | "ghosted" | "wireframe")}
         >
-          <SelectTrigger className="absolute top-2 right-2 z-10 cursor-pointer text-sm w-30 border-choras-primary text-choras-primary [&>svg]:stroke-choras-primary hover:bg-accent">
+          <SelectTrigger className="absolute top-2 right-2 z-10 cursor-pointer text-sm w-30 border-white text-white [&>svg]:stroke-white hover:text-white hover:bg-white/50">
             <SelectValue placeholder="View Mode" />
           </SelectTrigger>
           <SelectContent>
@@ -102,7 +102,7 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
           onClick={toggleCameraType}
           variant="outline"
           size="sm"
-          className="absolute top-14 right-2 z-10 cursor-pointer hover:bg-accent"
+          className="absolute top-14 right-2 z-10 cursor-pointer hover:bg-white/50 border-white text-white hover:text-white"
         >
           <span className="hidden sm:inline">
             {cameraType === "perspective" ? "Perspective" : "Orthographic"}
@@ -173,7 +173,7 @@ export function ViewportCanvas({ modelUrl, modelId }: ViewportCanvasProps) {
             zoomSpeed={0.5}
           />
           <GizmoHelper alignment="top-right" margin={[60, 150]}>
-            <GizmoViewport axisColors={["#f093fb", "#4ecdc4", "#667eea"]} labelColor="black" />
+            <GizmoViewport axisColors={["#EF7305", "#F4B183", "#FBE5D6"]} labelColor="black" />
           </GizmoHelper>
 
           {modelId && <ModelRenderer modelId={modelId} viewMode={viewMode} />}

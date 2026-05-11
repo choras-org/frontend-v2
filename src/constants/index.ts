@@ -1,7 +1,8 @@
 export const COLORS = {
-  PRIMARY: "#4ecdc4",
-  SECONDARY: "#667eea",
-  ACCENT: "#f093fb",
+  PRIMARY: "#EF7305",
+  SECONDARY: "#F4B183",
+  TERTIARY: "#FBE5D6",
+  ACCENT: "#667eea",
   DARK: "#1a1d29",
   GRAY: "#64748b",
 } as const;
@@ -29,4 +30,15 @@ export const COLORS_VARIANTS = [
   "lightyellow",
   "tomato",
   "gold",
+];
+
+export const RESOURCE_TYPES = [
+  {
+    label: "Local",
+    value: "LOCAL",
+  },
+  {
+    label: "Cloud",
+    value: "CLOUD",
+  },
 ];
