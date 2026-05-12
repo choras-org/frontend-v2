@@ -5,12 +5,11 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { AppLayout } from "@/components/ui/app-layout";
 import { Loading } from "@/components/ui/loading";
 import { projectApi, useGetProjectQuery } from "@/store/projectApi";
-import { AlertCircleIcon, ChevronLeftIcon } from "lucide-react";
+import { AlertCircleIcon, ChevronLeftIcon, Upload } from "lucide-react";
 import type React from "react";
 import { useParams, Link } from "react-router";
 import modelImg from "@/assets/model.png";
 import { formatDateLong } from "@/helpers/datetime";
-import uploadIcon from "@/assets/upload-icon.png";
 import { SortPicker } from "@/components/features/SortPicker";
 import { useEffect, useState } from "react";
 import type { Model } from "@/types/model";
@@ -180,10 +179,10 @@ export function ProjectDetailPage() {
               dispatch(projectApi.util.invalidateTags([{ type: "Projects" }]));
             }}
             trigger={
-              <div className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-lg">
-                <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-lg h-full flex items-center justify-center">
+              <div className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-2xl card-container">
+                <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-xl h-full flex items-center justify-center">
                   <div className="flex flex-col items-center text-choras-secondary">
-                    <img src={uploadIcon} alt="Upload Icon" className="h-16 w-16" />
+                    <Upload size={67} strokeWidth={1.3} className="text-choras-primary" />
                   </div>
                 </div>
               </div>
