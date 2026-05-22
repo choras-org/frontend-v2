@@ -1,9 +1,8 @@
-name: Build and Push Docker Image (Linux only)
+name: Publish Docker Image on Main
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # Allow manual trigger
 
 env:
   IMAGE_NAME: silvinwillemsen/choras-frontend
@@ -40,7 +39,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ steps.gitvars.outputs.short_sha }}
+            type=raw,value=stable-${{ steps.gitvars.outputs.short_sha }}
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and Push Docker image
@@ -54,4 +53,4 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Show pushed images
-        run: docker buildx imagetools inspect ${IMAGE_NAME}:${{ steps.gitvars.outputs.short_sha }}
+        run: docker buildx imagetools inspect ${IMAGE_NAME}:stable-${{ steps.gitvars.outputs.short_sha }}
