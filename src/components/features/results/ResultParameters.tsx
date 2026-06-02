@@ -31,7 +31,7 @@ const getParameterLabel = (key: keyof Parameters) => {
     spl_t0_freq: "dB",
     t20: "s",
     t30: "s",
-    ts: "s",
+    ts: "ms",
   } as const;
 
   return `${key.toUpperCase()} (${units[key] || ""})`;
