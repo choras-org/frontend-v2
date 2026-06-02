@@ -44,7 +44,7 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Failed to load impulse response</AlertDescription>
+        <AlertDescription>Failed to load plot data</AlertDescription>
       </Alert>
     );
   }

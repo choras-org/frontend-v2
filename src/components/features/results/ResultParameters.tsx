@@ -50,7 +50,7 @@ export function ResultParameters({ simulationId }: ResultParametersProps) {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Failed to load impulse response</AlertDescription>
+        <AlertDescription>Failed to load room acoustic parameters</AlertDescription>
       </Alert>
     );
   }
