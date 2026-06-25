@@ -4,10 +4,9 @@ import {
   setRemainingIssues,
   setSelectedIssue,
   type GeometryIssue,
-  type GeometryIssueInputs,
 } from "@/store/geometryIssueSlice";
-import { useGetModelQuery } from "@/store/modelApi";
-import { useEffect, useState } from "react";
+import { useFetchModelIssuesQuery, useGetModelQuery } from "@/store/modelApi";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
@@ -30,247 +29,9 @@ const REPAIR_SUMMARY_EXAMPLE: RepairSummaryItem[] = [
   { category: "Intersection", fixed: 8, remaining: 5, unit: "issue" },
 ];
 
-const MODEL_DATA_EXAMPLE: {
-  hasGeometryIssues: boolean;
-  geometryIssues: GeometryIssueInputs;
-} = {
-  hasGeometryIssues: true,
-  geometryIssues: {
-    duplicate_vertices: [],
-    non_coplanar_faces: [],
-    "T-junctions": [],
-    possible_holes: [],
-    boundary_edges: [
-      {
-        elements: [
-          {
-            points: [
-              [3.21057, -2.700256, -0.211772],
-              [3.21057, 6.753312, -0.211774],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "eb737c768529",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [3.21057, -2.700256, -0.492757],
-              [3.21057, -2.700256, -0.211772],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "ebbea5265441",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-2.409125, -2.700256, -0.492757],
-              [-2.409125, -2.700256, -0.211772],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "61363bf62151",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-2.409125, -2.700256, -0.211772],
-              [-2.409125, 6.753312, -0.211774],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "8547a3ec5366",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 3.305226, 0.596426],
-              [4.073594, 3.305226, 0.596426],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "26dff7ee4529",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 3.987619, 0.596426],
-              [4.073594, 3.987619, 0.596426],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "27f19919d891",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 1.82002, 0.596427],
-              [4.073594, 1.82002, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "f63d736f8e1f",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 2.502413, 0.596427],
-              [4.073594, 2.502413, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "281b4d46b04d",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, -2.635593, 0.596427],
-              [4.073594, -2.635593, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "33344b3b0171",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, -1.953202, 0.596427],
-              [4.073594, -1.953202, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "52bb7889962f",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, -1.150388, 0.596427],
-              [4.073594, -1.150388, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "b971e5c19dce",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, -0.467997, 0.596427],
-              [4.073594, -0.467997, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "b339a074d311",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 0.334816, 0.596427],
-              [4.073594, 0.334816, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "7e8dc1c8c076",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 1.017206, 0.596427],
-              [4.073594, 1.017206, 0.596427],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "45f99f82b931",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 4.791205, 0.596426],
-              [4.073594, 4.791205, 0.596426],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "a11f01b63b04",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 5.473595, 0.596426],
-              [4.073594, 5.473595, 0.596426],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "73419dc12367",
-        severity: "medium",
-      },
-      {
-        elements: [
-          {
-            points: [
-              [-3.27215, 6.275636, 0.596426],
-              [4.073594, 6.275636, 0.596426],
-            ],
-            type: "edge",
-          },
-        ],
-        id: "bff7776e656a",
-        severity: "medium",
-      },
-    ],
-    degenerate_faces: [],
-    intersections: [],
-  },
-};
-
 export default function GeometryRepairSidebar() {
   const { modelId } = useParams() as { modelId: string };
-  useGetModelQuery(modelId);
+  const { data: model } = useGetModelQuery(modelId);
   const dispatch = useDispatch();
   const { remainingIssues, selectedIssue, expandedIssueGroups } = useSelector(
     (state: RootState) => {
@@ -278,9 +39,24 @@ export default function GeometryRepairSidebar() {
     },
   );
 
+  // Pick the issue report produced *after* the repair pipeline ran.
+  const modelIssue = useMemo(() => {
+    if (!model?.issues?.length) return undefined;
+    return model.issues.find((issue) => issue.detectionStage === "AfterRepair");
+  }, [model]);
+
+  const hasRemainingIssues = (modelIssue?.issueCount ?? 0) > 0;
+
+  // Only fetch the remaining-issue report when there are issues to display.
+  const { data: fetchedRemainingIssues } = useFetchModelIssuesQuery(modelIssue?.fileUrl ?? "", {
+    skip: !modelIssue || !hasRemainingIssues,
+  });
+
   useEffect(() => {
-    dispatch(setRemainingIssues(MODEL_DATA_EXAMPLE.geometryIssues));
-  }, []);
+    if (fetchedRemainingIssues) {
+      dispatch(setRemainingIssues(fetchedRemainingIssues));
+    }
+  }, [fetchedRemainingIssues, dispatch]);
 
   const toggleIssueGroup = (groupKey: string) => {
     dispatch(clearSelectedIssue());
