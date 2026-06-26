@@ -50,6 +50,21 @@ export const modelApi = createApi({
       query: (modelId) => `/models/${modelId}/simulation-compatibility`,
       providesTags: (_, __, modelId) => [{ type: "Models", id: `compatibility-${modelId}` }],
     }),
+
+    setRepairDecision: build.mutation<
+      ModelDetail,
+      { modelId: string | number; decision: "accept" | "reject" }
+    >({
+      query: ({ modelId, decision }) => ({
+        url: `/models/${modelId}/repair-decision`,
+        method: "POST",
+        body: { decision },
+      }),
+      invalidatesTags: (_, __, { modelId }) => [
+        { type: "Models", id: modelId },
+        { type: "Models", id: `compatibility-${modelId}` },
+      ],
+    }),
   }),
 });
 
@@ -59,5 +74,6 @@ export const {
   useFetchModelFileQuery,
   useFetchModelIssuesQuery,
   useGetModelSimulationCompatibilityQuery,
+  useSetRepairDecisionMutation,
   useUpdateModelMutation,
 } = modelApi;

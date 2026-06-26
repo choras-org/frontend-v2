@@ -31,6 +31,7 @@ export interface ModelDetail {
   projectName: string;
   projectTag: string;
   simulationCount: number;
+  repairStatus?: "Pending" | "Accepted" | "Rejected" | null;
   issues: ModelIssue[];
 }
 

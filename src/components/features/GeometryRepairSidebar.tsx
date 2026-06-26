@@ -5,11 +5,16 @@ import {
   setSelectedIssue,
   type GeometryIssue,
 } from "@/store/geometryIssueSlice";
-import { useFetchModelIssuesQuery, useGetModelQuery } from "@/store/modelApi";
+import {
+  useFetchModelIssuesQuery,
+  useGetModelQuery,
+  useSetRepairDecisionMutation,
+} from "@/store/modelApi";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
+import { toast } from "sonner";
 import type { RootState } from "@/store";
 import { SimulationForm } from "./SimulationForm";
 import { Button } from "../ui/button";
@@ -77,6 +82,22 @@ export default function GeometryRepairSidebar() {
     dispatch(setSelectedIssue(issue));
   };
 
+  const [setRepairDecision, { isLoading: isDeciding }] = useSetRepairDecisionMutation();
+  const repairStatus = model?.repairStatus ?? null;
+
+  const handleRepairDecision = async (decision: "accept" | "reject") => {
+    try {
+      await setRepairDecision({ modelId, decision }).unwrap();
+      toast.success(
+        decision === "accept"
+          ? "Repaired geometry accepted"
+          : "Repair undone, using original geometry",
+      );
+    } catch {
+      toast.error("Failed to update repair decision");
+    }
+  };
+
   const [isRepairSummaryExpanded, setIsRepairSummaryExpanded] = useState(true);
 
   return (
@@ -108,6 +129,18 @@ export default function GeometryRepairSidebar() {
               <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
                 <Button
                   variant="outline"
+                  onClick={() => handleRepairDecision("accept")}
+                  disabled={isDeciding || repairStatus === "Accepted" || repairStatus === null}
+                  className="w-full border-green-500 bg-white text-green-600 hover:bg-green-50 hover:text-green-700"
+                >
+                  {repairStatus === "Accepted" ? "Repair Accepted" : "Accept Repair"}
+                </Button>
+              </div>
+              <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => handleRepairDecision("reject")}
+                  disabled={isDeciding || repairStatus === "Rejected" || repairStatus === null}
                   className="w-full border-red-400 bg-white text-red-500 hover:bg-red-50 hover:text-red-600"
                 >
                   Undo Repair
