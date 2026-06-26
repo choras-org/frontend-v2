@@ -1,26 +1,35 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
-interface SimulationMethod {
-  id: string;
-  label: string;
-  description: string;
-  supported: boolean;
-}
+import { useParams } from "react-router";
+import { useGetModelSimulationCompatibilityQuery } from "@/store/modelApi";
+import type { CompatibilityStatus } from "@/types/model";
+import { SimulationMethodList, type SimulationMethodItem } from "./SimulationMethodList";
 
 interface IProps {
-  methods?: SimulationMethod[];
+  modelId?: string | number;
 }
 
-const DEFAULT_METHODS: SimulationMethod[] = [
-  { id: "DE", label: "DE", description: "Discontinuous Energy", supported: true },
-  { id: "DG", label: "DG", description: "Discontinuous Galerkin", supported: false },
-];
+const isSupported = (status: CompatibilityStatus) =>
+  status === "compatible" || status === "warning";
 
-export function PossibleSimulation({ methods = DEFAULT_METHODS }: IProps) {
+export function PossibleSimulation({ modelId: modelIdProp }: IProps) {
+  const params = useParams() as { modelId?: string };
+  const modelId = modelIdProp ?? params.modelId ?? "";
+
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const supportedCount = methods.filter((m) => m.supported).length;
+  const { data, isLoading, isError } = useGetModelSimulationCompatibilityQuery(modelId, {
+    skip: !modelId,
+  });
+
+  const methods: SimulationMethodItem[] = (data?.methods ?? []).map((method) => ({
+    id: method.simulationType,
+    label: method.label ?? method.simulationType,
+    description: "",
+    compatible: method.compatible,
+  }));
+
+  const supportedCount = methods.filter((m) => isSupported(m.compatible)).length;
 
   return (
     <div className="mb-3">
@@ -48,37 +57,17 @@ export function PossibleSimulation({ methods = DEFAULT_METHODS }: IProps) {
         </div>
       </button>
       {isExpanded && (
-        <ul className="mt-2 space-y-2 rounded-md border border-slate-200 bg-white/60 px-3 py-3">
-          {methods.map((method) => (
-            <li
-              key={method.id}
-              className={`flex items-center gap-3 rounded-md border px-3 py-2.5 ${
-                method.supported ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
-              }`}
-            >
-              <span
-                className={`h-3 w-3 shrink-0 rounded-full ${
-                  method.supported ? "bg-green-500" : "bg-red-400"
-                }`}
-              />
-              <span
-                className={`text-sm font-bold ${
-                  method.supported ? "text-slate-700" : "text-slate-400"
-                }`}
-              >
-                {method.label}
-              </span>
-              <span className="text-xs text-slate-500">{method.description}</span>
-              <span
-                className={`ml-auto text-xs font-semibold ${
-                  method.supported ? "text-green-600" : "text-red-400"
-                }`}
-              >
-                {method.supported ? "Supported" : "Not Supported"}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-2 rounded-md border border-slate-200 bg-white/60 px-3 py-3">
+          {isLoading ? (
+            <p className="text-xs text-slate-500">Loading compatibility…</p>
+          ) : isError ? (
+            <p className="text-xs text-red-500">Failed to load simulation compatibility.</p>
+          ) : methods.length === 0 ? (
+            <p className="text-xs text-slate-500">No simulation methods available.</p>
+          ) : (
+            <SimulationMethodList methods={methods} />
+          )}
+        </div>
       )}
     </div>
   );

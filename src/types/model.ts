@@ -32,3 +32,28 @@ export interface ModelDetail {
   simulationCount: number;
   issues: ModelIssue[];
 }
+
+export type CompatibilityStatus = "compatible" | "warning" | "incompatible" | "unknown";
+
+export interface MethodCompatibilityIssue {
+  kind: string;
+  label?: string | null;
+  compatibility?: string | null;
+  present: boolean;
+}
+
+export interface MethodCompatibility {
+  simulationType: string;
+  label?: string | null;
+  notes?: string | null;
+  compatible: CompatibilityStatus;
+  issues: MethodCompatibilityIssue[];
+}
+
+export interface ModelSimulationCompatibility {
+  version?: number | null;
+  compatibilityLevels?: Record<string, string>;
+  modelId: number;
+  detectionStage: string;
+  methods: MethodCompatibility[];
+}

@@ -42,32 +42,44 @@ const formatIssueCategoryLabel = (category: string) => {
 };
 
 const ISSUE_CATEGORY_INFO: Record<string, { description: string; docsUrl: string }> = {
-  duplicate_vertices: {
+  duplicate_vertex: {
     description: "Multiple vertices share the same position, causing redundant geometry data.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  non_coplanar_faces: {
+  non_planar_face: {
     description: "Face vertices do not lie on the same plane, leading to rendering artifacts.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  "T-junctions": {
+  t_junction: {
     description: "A vertex lies on the edge of another face without being connected, causing gaps.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  possible_holes: {
+  possible_hole: {
     description: "Open boundaries detected in the mesh that may indicate missing faces.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  boundary_edges: {
+  boundary_edge: {
     description: "Edges shared by only one face, indicating an open or incomplete mesh.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  degenerate_faces: {
+  degenerate_face: {
     description: "Faces with zero area or collinear vertices that cannot be rendered correctly.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  intersections: {
+  intersection: {
     description: "Faces that intersect each other, creating invalid overlapping geometry.",
+    docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
+  },
+  overlapping_face: {
+    description: "Two or more faces occupy the same space, causing potential simulation issues.",
+    docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
+  },
+  small_face: {
+    description: "A face whose area is below the recommended size threshold.",
+    docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
+  },
+  inverted_normal: {
+    description: "A face is wound so its normal points the wrong way.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
 };

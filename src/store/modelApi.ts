@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Model, ModelDetail } from "@/types/model";
+import type { Model, ModelDetail, ModelSimulationCompatibility } from "@/types/model";
 import type { GeometryIssueInputs } from "@/store/geometryIssueSlice";
 
 export const modelApi = createApi({
@@ -45,6 +45,11 @@ export const modelApi = createApi({
       }),
       providesTags: (_, __, fileUrl) => [{ type: "Models", id: `issues-${fileUrl}` }],
     }),
+
+    getModelSimulationCompatibility: build.query<ModelSimulationCompatibility, string | number>({
+      query: (modelId) => `/models/${modelId}/simulation-compatibility`,
+      providesTags: (_, __, modelId) => [{ type: "Models", id: `compatibility-${modelId}` }],
+    }),
   }),
 });
 
@@ -53,5 +58,6 @@ export const {
   useGetModelQuery,
   useFetchModelFileQuery,
   useFetchModelIssuesQuery,
+  useGetModelSimulationCompatibilityQuery,
   useUpdateModelMutation,
 } = modelApi;
