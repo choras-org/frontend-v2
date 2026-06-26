@@ -8,6 +8,7 @@ import {
 import {
   useFetchModelIssuesQuery,
   useGetModelQuery,
+  useReprocessGeometryMutation,
   useSetRepairDecisionMutation,
 } from "@/store/modelApi";
 import { useEffect, useMemo, useState } from "react";
@@ -108,6 +109,17 @@ export default function GeometryRepairSidebar() {
   const isFailed = geometryStatus === "Failed";
   const geometryProgress = model?.geometryProgress ?? 0;
 
+  const [reprocessGeometry, { isLoading: isReprocessing }] = useReprocessGeometryMutation();
+
+  const handleReprocess = async () => {
+    try {
+      await reprocessGeometry(modelId).unwrap();
+      toast.success("Re-running geometry processing…");
+    } catch {
+      toast.error("Failed to restart geometry processing");
+    }
+  };
+
   useEffect(() => {
     setPollingInterval(isProcessing ? 2000 : 0);
   }, [isProcessing]);
@@ -137,6 +149,14 @@ export default function GeometryRepairSidebar() {
                 The inspect &amp; repair pipeline could not complete for this model. Please try
                 re-uploading the geometry.
               </p>
+              <Button
+                variant="outline"
+                onClick={handleReprocess}
+                disabled={isReprocessing}
+                className="mt-3 w-full border-red-400 bg-white text-red-600 hover:bg-red-50"
+              >
+                {isReprocessing ? "Retrying…" : "Retry processing"}
+              </Button>
             </div>
           ) : (
             <div className="mb-4 rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-3 shadow-[0_8px_18px_rgba(15,23,42,0.12)]">

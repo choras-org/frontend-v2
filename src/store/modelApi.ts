@@ -65,6 +65,17 @@ export const modelApi = createApi({
         { type: "Models", id: `compatibility-${modelId}` },
       ],
     }),
+
+    reprocessGeometry: build.mutation<ModelDetail, string | number>({
+      query: (modelId) => ({
+        url: `/models/${modelId}/reprocess-geometry`,
+        method: "POST",
+      }),
+      invalidatesTags: (_, __, modelId) => [
+        { type: "Models", id: modelId },
+        { type: "Models", id: `compatibility-${modelId}` },
+      ],
+    }),
   }),
 });
 
@@ -75,5 +86,6 @@ export const {
   useFetchModelIssuesQuery,
   useGetModelSimulationCompatibilityQuery,
   useSetRepairDecisionMutation,
+  useReprocessGeometryMutation,
   useUpdateModelMutation,
 } = modelApi;
