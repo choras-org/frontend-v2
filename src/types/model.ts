@@ -14,6 +14,7 @@ export interface ModelIssue {
   id: number;
   modelId: number;
   fileUrl: string;
+  modelFileUrl?: string | null;
   issueCount: number;
   detectionStage: string;
   createdAt: string;

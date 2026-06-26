@@ -10,6 +10,7 @@ export function ModelViewer({
   useClone = false,
   isRepair = false,
   showGeometrySelectionInfo = true,
+  source,
 }: ModelViewerProps) {
   const { data: model, isLoading, error } = useGetModelQuery(modelId);
 
@@ -40,11 +41,26 @@ export function ModelViewer({
     );
   }
 
+  const detectionStage =
+    source === "InitialIssue"
+      ? "AfterUpload"
+      : source === "RepairedIssue"
+        ? "AfterRepair"
+        : undefined;
+
+  const modelUrl = detectionStage
+    ? (model.issues?.find((issue) => issue.detectionStage === detectionStage)?.modelFileUrl ??
+      model.modelUrl)
+    : model.modelUrl;
+
+  const cacheKey = source ? `${model.id}:${source}` : String(model.id);
+
   return (
     <div className="h-full" style={{ height: "calc(100vh - 4rem)" }}>
       <ViewportCanvas
-        modelUrl={model.modelUrl}
+        modelUrl={modelUrl}
         modelId={model.id}
+        cacheKey={cacheKey}
         useClone={useClone}
         isRepair={isRepair}
         showGeometrySelectionInfo={showGeometrySelectionInfo}

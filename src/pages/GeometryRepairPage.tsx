@@ -46,7 +46,7 @@ export function GeometryRepairPage() {
     >
       <div className="h-full w-full flex">
         <div className="flex-1 h-full">
-          <ModelViewer modelId={modelId} showGeometrySelectionInfo={false} />
+          <ModelViewer modelId={modelId} showGeometrySelectionInfo={false} source="InitialIssue" />
         </div>
         <div className="w-px bg-border h-full" />
         <div className="flex-1 h-full">
@@ -55,6 +55,7 @@ export function GeometryRepairPage() {
             useClone
             isRepair={true}
             showGeometrySelectionInfo={false}
+            source="RepairedIssue"
           />
         </div>
       </div>

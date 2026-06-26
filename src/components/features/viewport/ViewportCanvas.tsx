@@ -33,6 +33,7 @@ import { useCameraFocusOnIssue } from "@/hooks/useCameraFocusOnIssue";
 export function ViewportCanvas({
   modelUrl,
   modelId,
+  cacheKey,
   useClone = false,
   isRepair = false,
   showGeometrySelectionInfo = true,
@@ -50,15 +51,17 @@ export function ViewportCanvas({
 
   useCameraFocusOnIssue(orbitControlsRef);
 
+  const modelCacheKey = cacheKey ?? (modelId !== undefined ? String(modelId) : undefined);
+
   useEffect(() => {
-    if (modelUrl && modelId) {
-      if (!isModelLoaded(modelId)) {
-        loadModelFromUrl(modelId, modelUrl).catch(console.error);
+    if (modelUrl && modelId && modelCacheKey) {
+      if (!isModelLoaded(modelCacheKey)) {
+        loadModelFromUrl(modelCacheKey, modelId, modelUrl).catch(console.error);
       } else {
         setActiveModel(modelId);
       }
     }
-  }, [modelUrl, modelId, loadModelFromUrl, isModelLoaded, setActiveModel]);
+  }, [modelUrl, modelId, modelCacheKey, loadModelFromUrl, isModelLoaded, setActiveModel]);
 
   const toggleCameraType = () => {
     setCameraType((prev) => (prev === "perspective" ? "orthographic" : "perspective"));
@@ -83,7 +86,7 @@ export function ViewportCanvas({
   return (
     <div className="overflow-hidden relative touch-none h-container">
       <div className="h-full w-full relative">
-        {isLoading(modelId) && (
+        {isLoading(modelCacheKey) && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black bg-opacity-50 text-white px-4 py-2 rounded">
             Loading model...
           </div>
@@ -186,7 +189,14 @@ export function ViewportCanvas({
             <GizmoViewport axisColors={["#EF7305", "#F4B183", "#FBE5D6"]} labelColor="black" />
           </GizmoHelper>
 
-          {modelId && <ModelRenderer modelId={modelId} viewMode={viewMode} useClone={useClone} />}
+          {modelId && (
+            <ModelRenderer
+              modelId={modelId}
+              cacheKey={modelCacheKey}
+              viewMode={viewMode}
+              useClone={useClone}
+            />
+          )}
           <GeometryIssueLayer isRepair={isRepair} />
           <SourceVisualization orbitControlsRef={orbitControlsRef} />
           <ReceiverVisualization orbitControlsRef={orbitControlsRef} />

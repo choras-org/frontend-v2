@@ -28,6 +28,7 @@ export async function processModelFromUrl(
 
     const rhinoFileData: RhinoFileData = {
       modelId,
+      cacheKey: String(modelId),
       fileName: firstFile.name,
       rawData: firstFile.data,
       object3D,
@@ -60,6 +61,7 @@ export async function processModelFromData(
 
     const rhinoFileData: RhinoFileData = {
       modelId,
+      cacheKey: String(modelId),
       fileName,
       rawData: fileData,
       object3D,

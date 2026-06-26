@@ -12,6 +12,7 @@ export interface LayerInfo {
 
 export interface RhinoFileData {
   modelId: number;
+  cacheKey: string;
   fileName: string;
   rawData: ArrayBuffer;
   object3D: THREE.Object3D;
@@ -20,7 +21,7 @@ export interface RhinoFileData {
 }
 
 export interface LayerState {
-  rhinoFiles: Record<number, RhinoFileData>;
+  rhinoFiles: Record<string, RhinoFileData>;
   currentModelId: number | null;
   loading: boolean;
   error: string | null;
