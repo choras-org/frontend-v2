@@ -32,6 +32,8 @@ export interface ModelDetail {
   projectTag: string;
   simulationCount: number;
   repairStatus?: "Pending" | "Accepted" | "Rejected" | null;
+  geometryStatus?: "Pending" | "Processing" | "Completed" | "Failed" | null;
+  geometryProgress?: number | null;
   issues: ModelIssue[];
 }
 
