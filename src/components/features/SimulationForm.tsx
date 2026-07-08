@@ -49,6 +49,7 @@ type SimulationFormProps = {
   trigger?: React.ReactNode;
   onSuccess?: () => void;
   className?: string;
+  disabled?: boolean;
 };
 export function SimulationForm({
   modelId,
@@ -57,6 +58,7 @@ export function SimulationForm({
   trigger,
   onSuccess,
   className,
+  disabled,
 }: SimulationFormProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -133,6 +135,7 @@ export function SimulationForm({
         {trigger ?? (
           <Button
             variant="secondary"
+            disabled={disabled}
             className={cn(
               "bg-choras-dark border border-choras-primary text-choras-primary hover:bg-white hover:text-choras-dark cursor-pointer",
               className,

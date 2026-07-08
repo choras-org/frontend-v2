@@ -10,16 +10,48 @@ const severityColor = {
   high: "red",
 };
 
-function VertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const [x, y, z] = issue.points[0];
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
-
+function VertexMarker({ position, color }: { position: [number, number, number]; color: string }) {
   return (
-    <mesh position={[x, y, z]}>
+    <mesh position={position}>
       <sphereGeometry args={[0.05]} />
-      <meshBasicMaterial color={issueColor} />
+      <meshBasicMaterial color={color} />
     </mesh>
   );
+}
+
+function VertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
+  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const [x, y, z] = issue.points[0];
+
+  return <VertexMarker position={[x, y, z]} color={issueColor} />;
+}
+
+// Highlight a single vertex of a face (its first vertex).
+function FaceVertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
+  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  if (issue.points.length === 0) return null;
+  const [x, y, z] = issue.points[0];
+
+  return <VertexMarker position={[x, y, z]} color={issueColor} />;
+}
+
+// Highlight a single vertex at the centroid (middle) of a face.
+function FaceCentroidIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
+  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const pts = issue.points;
+  if (pts.length === 0) return null;
+
+  let sx = 0;
+  let sy = 0;
+  let sz = 0;
+  for (const p of pts) {
+    sx += p[0];
+    sy += p[1];
+    sz += p[2];
+  }
+  const position: [number, number, number] = [sx / pts.length, sy / pts.length, sz / pts.length];
+
+  return <VertexMarker position={position} color={issueColor} />;
 }
 
 function EdgeIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
@@ -27,6 +59,22 @@ function EdgeIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: bo
 
   return (
     <Line points={issue.points as [number, number, number][]} color={issueColor} lineWidth={2} />
+  );
+}
+
+// Highlight every edge of a face (closed loop of the face's vertices).
+function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
+  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const pts = issue.points as [number, number, number][];
+  if (pts.length < 2) return null;
+
+  return (
+    <>
+      {pts.map((point, index) => {
+        const next = pts[(index + 1) % pts.length];
+        return <Line key={index} points={[point, next]} color={issueColor} lineWidth={2} />;
+      })}
+    </>
   );
 }
 
@@ -67,11 +115,27 @@ function FaceIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: bo
   );
 }
 
+// Per-issue-kind highlight overrides. A kind listed here is rendered with the
+// given strategy instead of its raw element geometry. Kinds NOT listed fall
+// back to the element's own type (vertex / edge / face) — i.e. current behaviour.
+//   - "face-vertex":   one sphere at the face's first vertex
+//   - "face-centroid": one sphere at the middle of the face
+//   - "face-edges":    a line for every edge of the face
+type HighlightMode = "face-vertex" | "face-centroid" | "face-edges";
+
+const ISSUE_HIGHLIGHT_OVERRIDES: Record<string, HighlightMode> = {
+  degenerate_face: "face-vertex",
+  small_face: "face-centroid",
+  collinear_face: "face-edges",
+};
+
 function IssueRenderer({
   issue,
+  kind,
   selectedIssue,
 }: {
   issue: GeometryIssue;
+  kind: string;
   selectedIssue: GeometryIssue | null;
 }) {
   const isSelected =
@@ -79,6 +143,18 @@ function IssueRenderer({
       ? selectedIssue.id === issue.id
       : selectedIssue?.type === issue.type &&
         JSON.stringify(selectedIssue?.points) === JSON.stringify(issue.points);
+
+  const override = ISSUE_HIGHLIGHT_OVERRIDES[kind];
+  if (override) {
+    switch (override) {
+      case "face-vertex":
+        return <FaceVertexIssue issue={issue} isSelected={isSelected} />;
+      case "face-centroid":
+        return <FaceCentroidIssue issue={issue} isSelected={isSelected} />;
+      case "face-edges":
+        return <FaceEdgesIssue issue={issue} isSelected={isSelected} />;
+    }
+  }
 
   switch (issue.type) {
     case "vertex":
@@ -112,6 +188,7 @@ export function GeometryIssueLayer({ isRepair = false }: { isRepair: boolean }) 
               <IssueRenderer
                 key={`${issueType}-${index}`}
                 issue={issue}
+                kind={issueType}
                 selectedIssue={selectedIssue}
               />
             );

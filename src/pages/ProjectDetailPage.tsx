@@ -167,7 +167,7 @@ export function ProjectDetailPage() {
           {models &&
             models.length > 0 &&
             models.map((model) => (
-              <Link key={model.id} to={`/editor/${model.id}`}>
+              <Link key={model.id} to={`/repair/${model.id}`}>
                 <ModelCard key={model.id} model={model} />
               </Link>
             ))}

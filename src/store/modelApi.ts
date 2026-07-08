@@ -76,6 +76,13 @@ export const modelApi = createApi({
         { type: "Models", id: `compatibility-${modelId}` },
       ],
     }),
+
+    downloadRepairedModel: build.query<Blob, string | number>({
+      query: (modelId) => ({
+        url: `/models/${modelId}/download/repaired`,
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
@@ -87,5 +94,6 @@ export const {
   useGetModelSimulationCompatibilityQuery,
   useSetRepairDecisionMutation,
   useReprocessGeometryMutation,
+  useLazyDownloadRepairedModelQuery,
   useUpdateModelMutation,
 } = modelApi;

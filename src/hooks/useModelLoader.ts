@@ -19,6 +19,7 @@ export function useModelLoader() {
 
         const optimizedData = optimizeModelForRendering(rhinoFileData);
         optimizedData.cacheKey = cacheKey;
+        optimizedData.sourceUrl = modelUrl;
 
         dispatch(storeRhinoFile(optimizedData));
         dispatch(setCurrentModelId(modelId));

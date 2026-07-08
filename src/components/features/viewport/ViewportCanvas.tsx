@@ -45,7 +45,7 @@ export function ViewportCanvas({
   const [minorGridSize, setMinorGridSize] = useState(1);
   const [tempMajorGridSize, setTempMajorGridSize] = useState(5);
   const [tempMinorGridSize, setTempMinorGridSize] = useState(1);
-  const { loadModelFromUrl, isModelLoaded, isLoading, error, setActiveModel } = useModelLoader();
+  const { loadModelFromUrl, getModel, isLoading, error, setActiveModel } = useModelLoader();
   const { isRunning } = useSimulationRunnerContext();
   const orbitControlsRef = useRef<OrbitControlsType | null>(null);
 
@@ -55,13 +55,18 @@ export function ViewportCanvas({
 
   useEffect(() => {
     if (modelUrl && modelId && modelCacheKey) {
-      if (!isModelLoaded(modelCacheKey)) {
+      const existing = getModel(modelCacheKey);
+      // Reload when nothing is cached for this key yet, OR when the cached
+      // model was loaded from a different URL (e.g. the repaired file becomes
+      // available after the repair finishes). Keying only on cacheKey would
+      // keep showing the stale (initial) model until a hard refresh.
+      if (!existing || existing.sourceUrl !== modelUrl) {
         loadModelFromUrl(modelCacheKey, modelId, modelUrl).catch(console.error);
       } else {
         setActiveModel(modelId);
       }
     }
-  }, [modelUrl, modelId, modelCacheKey, loadModelFromUrl, isModelLoaded, setActiveModel]);
+  }, [modelUrl, modelId, modelCacheKey, loadModelFromUrl, getModel, setActiveModel]);
 
   const toggleCameraType = () => {
     setCameraType((prev) => (prev === "perspective" ? "orthographic" : "perspective"));

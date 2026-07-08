@@ -78,6 +78,10 @@ const ISSUE_CATEGORY_INFO: Record<string, { description: string; docsUrl: string
     description: "A face whose area is below the recommended size threshold.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
+  collinear_face: {
+    description: "A face whose vertices are collinear or nearly collinear (collapsed to a line).",
+    docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
+  },
   inverted_normal: {
     description: "A face is wound so its normal points the wrong way.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",

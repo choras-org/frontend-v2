@@ -13,6 +13,7 @@ export interface LayerInfo {
 export interface RhinoFileData {
   modelId: number;
   cacheKey: string;
+  sourceUrl?: string;
   fileName: string;
   rawData: ArrayBuffer;
   object3D: THREE.Object3D;

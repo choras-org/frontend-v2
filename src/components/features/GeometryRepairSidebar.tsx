@@ -8,11 +8,12 @@ import {
 import {
   useFetchModelIssuesQuery,
   useGetModelQuery,
+  useLazyDownloadRepairedModelQuery,
   useReprocessGeometryMutation,
   useSetRepairDecisionMutation,
 } from "@/store/modelApi";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -21,19 +22,7 @@ import { SimulationForm } from "./SimulationForm";
 import { Button } from "../ui/button";
 import { GeometryIssueList } from "./GeometryIssueList";
 import { PossibleSimulation } from "./PossibleSimulation";
-
-type RepairSummaryItem = {
-  category: string;
-  fixed: number;
-  remaining: number;
-  unit: string;
-};
-
-const REPAIR_SUMMARY_EXAMPLE: RepairSummaryItem[] = [
-  { category: "Deduplication", fixed: 100, remaining: 10, unit: "vertex" },
-  { category: "T-Junction", fixed: 30, remaining: 0, unit: "issue" },
-  { category: "Intersection", fixed: 8, remaining: 5, unit: "issue" },
-];
+import { downloadFile } from "@/helpers/file";
 
 export default function GeometryRepairSidebar() {
   const { modelId } = useParams() as { modelId: string };
@@ -102,14 +91,24 @@ export default function GeometryRepairSidebar() {
     }
   };
 
-  const [isRepairSummaryExpanded, setIsRepairSummaryExpanded] = useState(true);
-
   const geometryStatus = model?.geometryStatus ?? null;
   const isProcessing = geometryStatus === "Pending" || geometryStatus === "Processing";
   const isFailed = geometryStatus === "Failed";
   const geometryProgress = model?.geometryProgress ?? 0;
 
   const [reprocessGeometry, { isLoading: isReprocessing }] = useReprocessGeometryMutation();
+
+  const [downloadRepairedModel, { isFetching: isDownloading }] =
+    useLazyDownloadRepairedModelQuery();
+
+  const handleDownloadFixedModel = async () => {
+    try {
+      const blob = await downloadRepairedModel(modelId).unwrap();
+      downloadFile(blob, `${model?.modelName ?? "model"}_repaired.obj`);
+    } catch {
+      toast.error("Failed to download the fixed model");
+    }
+  };
 
   const handleReprocess = async () => {
     try {
@@ -153,7 +152,7 @@ export default function GeometryRepairSidebar() {
                 variant="outline"
                 onClick={handleReprocess}
                 disabled={isReprocessing}
-                className="mt-3 w-full border-red-400 bg-white text-red-600 hover:bg-red-50"
+                className="mt-3 w-full cursor-pointer border-red-400 bg-white text-red-600 hover:bg-red-50"
               >
                 {isReprocessing ? "Retrying…" : "Retry processing"}
               </Button>
@@ -170,15 +169,18 @@ export default function GeometryRepairSidebar() {
                 <div className="mx-auto flex w-full max-w-md justify-center">
                   <SimulationForm
                     modelId={Number(modelId)}
-                    className="w-full border-choras-primary/45 bg-white text-choras-primary hover:bg-choras-primary/10"
+                    disabled={repairStatus !== "Accepted" && repairStatus !== "Rejected"}
+                    className="w-full cursor-pointer border-choras-primary bg-choras-primary text-white hover:bg-choras-primary/90"
                   />
                 </div>
                 <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
                   <Button
                     variant="outline"
-                    className="w-full border-red-400 bg-white text-choras-primary hover:bg-choras-primary/10"
+                    onClick={handleDownloadFixedModel}
+                    disabled={isDownloading || repairStatus === null}
+                    className="w-full cursor-pointer border-red-400 bg-white text-choras-primary hover:bg-choras-primary/10"
                   >
-                    Download Fixed Model
+                    {isDownloading ? "Downloading…" : "Download Fixed Model"}
                   </Button>
                 </div>
                 <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
@@ -186,7 +188,7 @@ export default function GeometryRepairSidebar() {
                     variant="outline"
                     onClick={() => handleRepairDecision("accept")}
                     disabled={isDeciding || repairStatus === "Accepted" || repairStatus === null}
-                    className="w-full border-green-500 bg-white text-green-600 hover:bg-green-50 hover:text-green-700"
+                    className="w-full cursor-pointer border-green-500 bg-white text-green-600 hover:bg-green-50 hover:text-green-700"
                   >
                     {repairStatus === "Accepted" ? "Repair Accepted" : "Accept Repair"}
                   </Button>
@@ -196,49 +198,15 @@ export default function GeometryRepairSidebar() {
                     variant="outline"
                     onClick={() => handleRepairDecision("reject")}
                     disabled={isDeciding || repairStatus === "Rejected" || repairStatus === null}
-                    className="w-full border-red-400 bg-white text-red-500 hover:bg-red-50 hover:text-red-600"
+                    className="w-full cursor-pointer border-red-400 bg-white text-red-500 hover:bg-red-50 hover:text-red-600"
                   >
-                    Undo Repair
+                    Decline Repair
                   </Button>
                 </div>
               </div>
             </div>
           )}
-          <div className="mb-4 rounded-md border border-slate-300 bg-white/75 p-3">
-            <button
-              onClick={() => setIsRepairSummaryExpanded((prev) => !prev)}
-              className="mb-2 flex w-full items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-left"
-            >
-              <h4 className="text-base font-semibold tracking-wide text-choras-primary">
-                Repair Summary
-              </h4>
-              {isRepairSummaryExpanded ? (
-                <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-              )}
-            </button>
-            {isRepairSummaryExpanded && (
-              <ul className="space-y-1.5 px-1">
-                {REPAIR_SUMMARY_EXAMPLE.map((item) => (
-                  <li key={item.category} className="text-[12px] text-slate-600">
-                    <span className="font-semibold text-slate-700">{item.category}:</span>{" "}
-                    {item.fixed} {item.unit} removed &amp;
-                    <span
-                      className={
-                        item.remaining > 0
-                          ? "text-amber-600 font-semibold"
-                          : "text-green-600 font-semibold"
-                      }
-                    >
-                      {" "}
-                      {item.remaining} remain
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+
           <GeometryIssueList
             issues={remainingIssues}
             selectedIssue={selectedIssue}

@@ -48,10 +48,25 @@ export function ModelViewer({
         ? "AfterRepair"
         : undefined;
 
-  const modelUrl = detectionStage
-    ? (model.issues?.find((issue) => issue.detectionStage === detectionStage)?.modelFileUrl ??
-      model.modelUrl)
-    : model.modelUrl;
+  const stageIssue = detectionStage
+    ? model.issues?.find((issue) => issue.detectionStage === detectionStage)
+    : undefined;
+
+  // For the repaired view, wait until the repaired file actually exists.
+  // Before the repair finishes there is no AfterRepair file, and showing the
+  // initial model here would be misleading (it looks like nothing was fixed).
+  if (source === "RepairedIssue" && !stageIssue?.modelFileUrl) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center h-full min-h-[300px]"
+        style={{ height: "calc(100vh - 4rem)" }}
+      >
+        <Loading message="Repair in progress…" />
+      </div>
+    );
+  }
+
+  const modelUrl = detectionStage ? (stageIssue?.modelFileUrl ?? model.modelUrl) : model.modelUrl;
 
   const cacheKey = source ? `${model.id}:${source}` : String(model.id);
 
