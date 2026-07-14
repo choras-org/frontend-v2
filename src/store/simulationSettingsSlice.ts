@@ -1,6 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { SimulationSettingsState, SimulationSettingOption } from "@/types/simulationSettings";
+import type {
+  SimulationSettingsState,
+  SimulationSettingOption,
+  SelectedSimulationMethod,
+  MethodCompatibilityData,
+} from "@/types/simulationSettings";
 
 const initialState: SimulationSettingsState = {
   options: [],
@@ -10,6 +15,8 @@ const initialState: SimulationSettingsState = {
   selectedMethodType: "DE",
   selectedResourceType: "LOCAL",
   errors: {},
+  selectedSimulationMethod: null,
+  compatibilityData: null,
 };
 
 const simulationSettingsSlice = createSlice({
@@ -55,6 +62,15 @@ const simulationSettingsSlice = createSlice({
     removeError: (state, action: PayloadAction<string>) => {
       delete state.errors[action.payload];
     },
+    setSelectedSimulationMethod: (
+      state,
+      action: PayloadAction<SelectedSimulationMethod | null>,
+    ) => {
+      state.selectedSimulationMethod = action.payload;
+    },
+    setCompatibilityData: (state, action: PayloadAction<MethodCompatibilityData[] | null>) => {
+      state.compatibilityData = action.payload;
+    },
   },
 });
 
@@ -68,6 +84,8 @@ export const {
   setErrors,
   addError,
   removeError,
+  setSelectedSimulationMethod,
+  setCompatibilityData,
 } = simulationSettingsSlice.actions;
 
 export const simulationSettingsReducer = simulationSettingsSlice.reducer;

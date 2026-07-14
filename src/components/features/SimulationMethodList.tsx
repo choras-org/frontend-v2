@@ -1,4 +1,9 @@
 import type { CompatibilityStatus } from "@/types/model";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedSimulationMethod } from "@/store/simulationSettingsSlice";
+import type { RootState } from "@/store";
+import type { SelectedSimulationMethod } from "@/types/simulationSettings";
+import { CheckCircle2 } from "lucide-react";
 
 export interface SimulationMethodItem {
   id: string;
@@ -46,17 +51,40 @@ const STATUS_STYLES: Record<
 };
 
 export function SimulationMethodList({ methods }: SimulationMethodListProps) {
+  const dispatch = useDispatch();
+  const selectedMethod = useSelector(
+    (state: RootState) => state.simulationSettings.selectedSimulationMethod,
+  );
+
+  const handleMethodClick = (method: SimulationMethodItem) => {
+    const newSelection: SelectedSimulationMethod = {
+      id: method.id,
+      label: method.label,
+      compatible: method.compatible,
+    };
+    dispatch(setSelectedSimulationMethod(newSelection));
+  };
+
   return (
     <ul className="space-y-2">
       {methods.map((method) => {
         const styles = STATUS_STYLES[method.compatible] ?? STATUS_STYLES.unknown;
+        const isSelected = selectedMethod?.id === method.id;
 
         return (
           <li
             key={method.id}
-            className={`flex items-center gap-3 rounded-md border px-3 py-2.5 ${styles.row}`}
+            onClick={() => handleMethodClick(method)}
+            className={`flex items-center gap-3 rounded-md border px-3 py-2.5 cursor-pointer transition-all ${
+              isSelected
+                ? "ring-2 ring-choras-primary/50 border-choras-primary bg-choras-primary/5"
+                : styles.row
+            } hover:border-slate-300 hover:shadow-sm`}
           >
-            <span className={`h-3 w-3 shrink-0 rounded-full ${styles.dot}`} />
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`h-3 w-3 shrink-0 rounded-full ${styles.dot}`} />
+              {isSelected && <CheckCircle2 size={16} className="text-choras-primary" />}
+            </div>
             <div className="flex min-w-0 flex-col">
               <span className={`text-sm font-bold ${styles.label}`}>{method.label}</span>
               {method.description && (

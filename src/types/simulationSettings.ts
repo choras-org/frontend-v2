@@ -18,6 +18,30 @@ export interface SimulationSettingsResponse {
   options: SimulationSettingOption[];
 }
 
+export interface CompatibilityIssue {
+  kind: string;
+  label?: string | null;
+  compatibility?: string | null;
+  present: boolean;
+}
+
+export interface MethodCompatibilityData {
+  simulationType: string;
+  label: string | null;
+  compatible: "compatible" | "warning" | "incompatible" | "unknown";
+  issues: Record<string, { compatibility: string; label: string; present: boolean }>;
+}
+
+export interface SimulationCompatibilityBlock {
+  methods: MethodCompatibilityData[];
+}
+
+export interface SelectedSimulationMethod {
+  id: string;
+  label: string;
+  compatible: "compatible" | "warning" | "incompatible" | "unknown";
+}
+
 export interface SimulationSettingsState {
   options: SimulationSettingOption[];
   values: Record<string, string | number>;
@@ -26,6 +50,8 @@ export interface SimulationSettingsState {
   selectedMethodType: string;
   selectedResourceType: string;
   errors: Record<string, string>;
+  selectedSimulationMethod: SelectedSimulationMethod | null;
+  compatibilityData: MethodCompatibilityData[] | null;
 }
 
 export interface SimulationMethod {

@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useParams } from "react-router";
 import { useGetModelSimulationCompatibilityQuery } from "@/store/modelApi";
 import type { CompatibilityStatus } from "@/types/model";
 import { SimulationMethodList, type SimulationMethodItem } from "./SimulationMethodList";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedSimulationMethod, setCompatibilityData } from "@/store/simulationSettingsSlice";
+import type { RootState } from "@/store";
+import type { MethodCompatibilityData, CompatibilityIssue } from "@/types/simulationSettings";
 
 interface IProps {
   modelId?: string | number;
@@ -23,6 +27,14 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
   const modelId = modelIdProp ?? params.modelId ?? "";
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const dispatch = useDispatch();
+
+  const selectedMethod = useSelector(
+    (state: RootState) => state.simulationSettings.selectedSimulationMethod,
+  );
+  const storedCompatibilityData = useSelector(
+    (state: RootState) => state.simulationSettings.compatibilityData,
+  );
 
   const { data, isLoading, isError } = useGetModelSimulationCompatibilityQuery(modelId, {
     skip: !modelId || Boolean(skip),
@@ -36,6 +48,50 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
     description: "",
     compatible: method.compatible,
   }));
+
+  // Store compatibility data in Redux when fetched
+  useEffect(() => {
+    if (block?.methods && !storedCompatibilityData) {
+      const compatData: MethodCompatibilityData[] = block.methods.map((method) => {
+        // Convert issues array to Record indexed by kind
+        const issuesRecord: Record<
+          string,
+          { compatibility: string; label: string; present: boolean }
+        > = {};
+        if (Array.isArray(method.issues)) {
+          method.issues.forEach((issue: CompatibilityIssue) => {
+            issuesRecord[issue.kind] = {
+              compatibility: issue.compatibility || "unknown",
+              label: issue.label || "Unknown",
+              present: issue.present,
+            };
+          });
+        }
+
+        return {
+          simulationType: method.simulationType,
+          label: method.label ?? null,
+          compatible: method.compatible,
+          issues: issuesRecord,
+        };
+      });
+      dispatch(setCompatibilityData(compatData));
+    }
+  }, [block, dispatch, storedCompatibilityData]);
+
+  // Auto-select first method if not already selected
+  useEffect(() => {
+    if (methods.length > 0 && !selectedMethod) {
+      const firstMethod = methods[0];
+      dispatch(
+        setSelectedSimulationMethod({
+          id: firstMethod.id,
+          label: firstMethod.label,
+          compatible: firstMethod.compatible,
+        }),
+      );
+    }
+  }, [methods, selectedMethod, dispatch]);
 
   const supportedCount = methods.filter((m) => isSupported(m.compatible)).length;
 
