@@ -93,7 +93,7 @@ export default function GeometryIssueSidebar() {
         </div>{" "}
         <div className="min-h-0 flex flex-1 flex-col pr-1">
           <div className="mb-4 rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-3 shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
-            <PossibleSimulation />
+            <PossibleSimulation stage="initial" />
             <div className="rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-2.5">
               <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
                 <Button

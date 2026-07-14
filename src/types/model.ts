@@ -54,10 +54,15 @@ export interface MethodCompatibility {
   issues: MethodCompatibilityIssue[];
 }
 
+export interface ModelCompatibilityBlock {
+  detectionStage: string;
+  methods: MethodCompatibility[];
+}
+
 export interface ModelSimulationCompatibility {
   version?: number | null;
   compatibilityLevels?: Record<string, string>;
   modelId: number;
-  detectionStage: string;
-  methods: MethodCompatibility[];
+  initialCompatibility: ModelCompatibilityBlock;
+  repairedCompatibility: ModelCompatibilityBlock;
 }

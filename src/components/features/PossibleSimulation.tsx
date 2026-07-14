@@ -7,12 +7,15 @@ import { SimulationMethodList, type SimulationMethodItem } from "./SimulationMet
 
 interface IProps {
   modelId?: string | number;
+  /** Which compatibility block to display: the initial (pre-repair) geometry
+   * or the repaired geometry. Defaults to "repaired". */
+  stage?: "initial" | "repaired";
 }
 
 const isSupported = (status: CompatibilityStatus) =>
   status === "compatible" || status === "warning";
 
-export function PossibleSimulation({ modelId: modelIdProp }: IProps) {
+export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired" }: IProps) {
   const params = useParams() as { modelId?: string };
   const modelId = modelIdProp ?? params.modelId ?? "";
 
@@ -22,7 +25,9 @@ export function PossibleSimulation({ modelId: modelIdProp }: IProps) {
     skip: !modelId,
   });
 
-  const methods: SimulationMethodItem[] = (data?.methods ?? []).map((method) => ({
+  const block = stage === "initial" ? data?.initialCompatibility : data?.repairedCompatibility;
+
+  const methods: SimulationMethodItem[] = (block?.methods ?? []).map((method) => ({
     id: method.simulationType,
     label: method.label ?? method.simulationType,
     description: "",
