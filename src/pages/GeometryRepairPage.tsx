@@ -22,13 +22,7 @@ export function GeometryRepairPage() {
     <AppLayout
       title="Repair Page"
       headerVariant="light"
-      sidebar={
-        <GeometryIssueSidebar
-          showPossibleSimulation={false}
-          showQuickAction={false}
-          showRepairButton={false}
-        />
-      }
+      sidebar={<GeometryIssueSidebar />}
       rightSidebar={<GeometryRepairSidebar />}
       showLeftSidebarToggle={true}
       showRightSidebarToggle={true}
