@@ -50,6 +50,7 @@ type SimulationFormProps = {
   onSuccess?: () => void;
   className?: string;
   disabled?: boolean;
+  defaultOpen?: boolean;
 };
 export function SimulationForm({
   modelId,
@@ -59,9 +60,10 @@ export function SimulationForm({
   onSuccess,
   className,
   disabled,
+  defaultOpen = false,
 }: SimulationFormProps) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const form = useForm<SimulationFormData>({
     resolver: zodResolver(SimulationFormSchema),
     defaultValues: defaultValues ?? {
