@@ -42,7 +42,9 @@ export function ModelCard({ model }: ModelCardProps) {
     }
   };
 
-  const goToEditor = (simulations && simulations.length >= 1) || model.repairStatus !== "Pending";
+  const goToEditor =
+    (simulations && simulations.length >= 1) ||
+    (model.repairStatus !== "Pending" && model.repairStatus);
 
   return (
     <Link key={model.id} to={goToEditor ? `/editor/${model.id}` : `/repair/${model.id}`}>

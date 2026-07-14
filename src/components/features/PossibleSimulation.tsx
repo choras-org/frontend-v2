@@ -10,19 +10,22 @@ interface IProps {
   /** Which compatibility block to display: the initial (pre-repair) geometry
    * or the repaired geometry. Defaults to "repaired". */
   stage?: "initial" | "repaired";
+  /** Skip fetching compatibility (e.g. while the repair pipeline is still
+   * running and the repaired report does not exist yet). */
+  skip?: boolean;
 }
 
 const isSupported = (status: CompatibilityStatus) =>
   status === "compatible" || status === "warning";
 
-export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired" }: IProps) {
+export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", skip }: IProps) {
   const params = useParams() as { modelId?: string };
   const modelId = modelIdProp ?? params.modelId ?? "";
 
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data, isLoading, isError } = useGetModelSimulationCompatibilityQuery(modelId, {
-    skip: !modelId,
+    skip: !modelId || Boolean(skip),
   });
 
   const block = stage === "initial" ? data?.initialCompatibility : data?.repairedCompatibility;

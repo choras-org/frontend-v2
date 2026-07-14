@@ -86,7 +86,14 @@ export default function GeometryRepairSidebar() {
   const repairStatus = model?.repairStatus ?? null;
 
   const { data: compatibility } = useGetModelSimulationCompatibilityQuery(modelId, {
-    skip: !modelId,
+    // Wait until the geometry pipeline has finished: while it is still
+    // Pending/Processing the AfterRepair report does not exist yet and the
+    // backend would report every method as "unknown".
+    skip: !modelId || model?.geometryStatus === "Pending" || model?.geometryStatus === "Processing",
+    // The Issue sidebar shares this cache and may have fetched a partial
+    // (repair-still-running) result, so force a fresh fetch when this query
+    // becomes active after the pipeline completes.
+    refetchOnMountOrArgChange: true,
   });
 
   // The repaired model can only be accepted if at least one simulation method
