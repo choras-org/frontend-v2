@@ -122,12 +122,9 @@ export function GeometryIssueList({
   return (
     <div className="rounded-md border border-slate-300 bg-white/75 p-2 flex flex-col min-h-0 flex-1 h-full">
       <div className="mb-3 mt-1 flex shrink-0 items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2">
-        <h4 className="text-lg font-semibold tracking-wide text-choras-primary">
-          {label ? label : "Issue"}
+        <h4 className="font-semibold tracking-wide text-choras-primary">
+          {label ? label : "Issues"}
         </h4>
-        <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-          Geometry
-        </span>
       </div>
       <div className="flex-1 min-h-0 w-full relative">
         <div className="absolute inset-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-400/80 scrollbar-track-transparent scrollbar-thumb-rounded-full">

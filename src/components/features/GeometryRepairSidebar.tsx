@@ -18,7 +18,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
-import { SimulationForm } from "./SimulationForm";
 import { Button } from "../ui/button";
 import { GeometryIssueList } from "./GeometryIssueList";
 import { PossibleSimulation } from "./PossibleSimulation";
@@ -55,6 +54,11 @@ export default function GeometryRepairSidebar() {
       dispatch(setRemainingIssues(fetchedRemainingIssues));
     }
   }, [fetchedRemainingIssues, dispatch]);
+
+  const hasAnyRemainingIssues = useMemo(() => {
+    if (!remainingIssues) return false;
+    return Object.values(remainingIssues).some((arr) => Array.isArray(arr) && arr.length > 0);
+  }, [remainingIssues]);
 
   const toggleIssueGroup = (groupKey: string) => {
     dispatch(clearSelectedIssue());
@@ -126,6 +130,13 @@ export default function GeometryRepairSidebar() {
   return (
     <div className="h-container flex flex-col border border-slate-300 bg-[#DCDCDC] p-1">
       <div className="h-full flex flex-col rounded-md bg-white/65 text-slate-700 font-inter p-2">
+        <div className="mb-3">
+          <div className="flex w-full items-center justify-between rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left">
+            <h4 className="text-lg font-semibold tracking-wide text-choras-primary">
+              Repaired Model
+            </h4>
+          </div>
+        </div>
         <div className="min-h-0 flex flex-1 flex-col pr-1">
           {isProcessing ? (
             <div className="mb-4 rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-4">
@@ -161,17 +172,21 @@ export default function GeometryRepairSidebar() {
             <div className="mb-4 rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-3 shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
               <PossibleSimulation />
               <div className="rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-2.5">
-                <div className="mb-2 flex items-center justify-between rounded-md border border-slate-300 bg-white/80 px-2.5 py-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    Quick Action
-                  </span>
-                </div>
-                <div className="mx-auto flex w-full max-w-md justify-center">
+                {/* <div className="mx-auto flex w-full max-w-md justify-center">
                   <SimulationForm
                     modelId={Number(modelId)}
                     disabled={repairStatus !== "Accepted" && repairStatus !== "Rejected"}
                     className="w-full cursor-pointer border-choras-primary bg-choras-primary text-white hover:bg-choras-primary/90"
                   />
+                </div> */}
+                <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
+                  <Button
+                    onClick={() => handleRepairDecision("accept")}
+                    disabled={isDeciding || repairStatus === "Accepted" || repairStatus === null}
+                    className="w-full font-semibold cursor-pointer border-green-500 bg-green-500 text-white hover:bg-green-400 hover:text-white"
+                  >
+                    {repairStatus === "Accepted" ? "Repair Accepted" : "Accept Repaired Model"}
+                  </Button>
                 </div>
                 <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
                   <Button
@@ -183,38 +198,20 @@ export default function GeometryRepairSidebar() {
                     {isDownloading ? "Downloading…" : "Download Fixed Model"}
                   </Button>
                 </div>
-                <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleRepairDecision("accept")}
-                    disabled={isDeciding || repairStatus === "Accepted" || repairStatus === null}
-                    className="w-full cursor-pointer border-green-500 bg-white text-green-600 hover:bg-green-50 hover:text-green-700"
-                  >
-                    {repairStatus === "Accepted" ? "Repair Accepted" : "Accept Repair"}
-                  </Button>
-                </div>
-                <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleRepairDecision("reject")}
-                    disabled={isDeciding || repairStatus === "Rejected" || repairStatus === null}
-                    className="w-full cursor-pointer border-red-400 bg-white text-red-500 hover:bg-red-50 hover:text-red-600"
-                  >
-                    Decline Repair
-                  </Button>
-                </div>
               </div>
             </div>
           )}
 
-          <GeometryIssueList
-            issues={remainingIssues}
-            selectedIssue={selectedIssue}
-            expandedIssueGroups={expandedIssueGroups}
-            onToggleGroup={toggleIssueGroup}
-            onIssueClick={handleIssueClick}
-            label="Remaining Issue"
-          />
+          {hasAnyRemainingIssues && (
+            <GeometryIssueList
+              issues={remainingIssues}
+              selectedIssue={selectedIssue}
+              expandedIssueGroups={expandedIssueGroups}
+              onToggleGroup={toggleIssueGroup}
+              onIssueClick={handleIssueClick}
+              label="Remaining Issues"
+            />
+          )}
         </div>
       </div>
     </div>
