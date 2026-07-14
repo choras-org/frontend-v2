@@ -31,12 +31,6 @@ const formatIssuePoints = (points: number[][]) => {
   return `${firstPoint} | ${secondPoint}`;
 };
 
-const getSeverityClassName = (severity: string) => {
-  if (severity === "high") return "bg-red-500/15 text-red-400 border border-red-500/20";
-  if (severity === "medium") return "bg-amber-500/15 text-amber-500 border border-amber-500/20";
-  return "bg-sky-500/15 text-sky-500 border border-sky-500/20";
-};
-
 const formatIssueCategoryLabel = (category: string) => {
   return category.replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 };
@@ -259,13 +253,6 @@ export function GeometryIssueList({
                                     </span>
                                     <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-slate-600 uppercase">
                                       {issueRow.types.join(" + ")}
-                                    </span>
-                                    <span
-                                      className={`ml-auto shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-sm ${getSeverityClassName(
-                                        issueRow.issue.severity,
-                                      )}`}
-                                    >
-                                      {issueRow.issue.severity}
                                     </span>
                                   </div>
                                   <div className="relative w-full">

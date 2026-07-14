@@ -3,7 +3,6 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 export type GeometryIssueCategory = string;
 export type GeometryIssueType = "vertex" | "edge" | "face";
-export type GeometryIssueSeverity = "high" | "medium" | "low";
 
 export type GeometryIssueElements = {
   type: GeometryIssueType;
@@ -14,7 +13,6 @@ export type GeometryIssue = {
   id?: string;
   type: GeometryIssueType;
   points: number[][];
-  severity: GeometryIssueSeverity;
   label?: string;
   message?: string;
 };
@@ -22,7 +20,6 @@ export type GeometryIssue = {
 export type GeometryIssueInput = {
   id: string;
   elements: GeometryIssueElements[];
-  severity: GeometryIssueSeverity;
   label?: string;
   message?: string;
 };
@@ -50,7 +47,6 @@ const normalizePoints = (points: number[] | number[][]) => {
 
 const normalizeIssue = (
   issue: GeometryIssueElements,
-  severity: GeometryIssueSeverity,
   label?: string,
   message?: string,
   id?: string,
@@ -59,7 +55,6 @@ const normalizeIssue = (
     id,
     type: issue.type,
     points: normalizePoints(issue.points),
-    severity,
     label,
     message,
   };
@@ -68,7 +63,7 @@ const normalizeIssue = (
 const normalizeIssueGroup = (issue: GeometryIssue | GeometryIssueInput): GeometryIssue[] => {
   if ("elements" in issue) {
     return issue.elements.map((element) =>
-      normalizeIssue(element, issue.severity, issue.label, issue.message, issue.id),
+      normalizeIssue(element, issue.label, issue.message, issue.id),
     );
   }
 
@@ -100,7 +95,6 @@ const geometryIssueSlice = createSlice({
         state.selectedIssue = firstElement
           ? normalizeIssue(
               firstElement,
-              action.payload.severity,
               action.payload.label,
               action.payload.message,
               action.payload.id,

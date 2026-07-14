@@ -4,11 +4,8 @@ import { Line } from "@react-three/drei";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
-const severityColor = {
-  low: "yellow",
-  medium: "orange",
-  high: "red",
-};
+const ISSUE_COLOR = "red";
+const HIGHLIGHT_COLOR = "orange";
 
 function VertexMarker({ position, color }: { position: [number, number, number]; color: string }) {
   return (
@@ -20,7 +17,7 @@ function VertexMarker({ position, color }: { position: [number, number, number];
 }
 
 function VertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
   const [x, y, z] = issue.points[0];
 
   return <VertexMarker position={[x, y, z]} color={issueColor} />;
@@ -28,7 +25,7 @@ function VertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: 
 
 // Highlight a single vertex of a face (its first vertex).
 function FaceVertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
   if (issue.points.length === 0) return null;
   const [x, y, z] = issue.points[0];
 
@@ -37,7 +34,7 @@ function FaceVertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelect
 
 // Highlight a single vertex at the centroid (middle) of a face.
 function FaceCentroidIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
   const pts = issue.points;
   if (pts.length === 0) return null;
 
@@ -55,7 +52,7 @@ function FaceCentroidIssue({ issue, isSelected }: { issue: GeometryIssue; isSele
 }
 
 function EdgeIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
 
   return (
     <Line points={issue.points as [number, number, number][]} color={issueColor} lineWidth={2} />
@@ -64,7 +61,7 @@ function EdgeIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: bo
 
 // Highlight every edge of a face (closed loop of the face's vertices).
 function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
   const pts = issue.points as [number, number, number][];
   if (pts.length < 2) return null;
 
@@ -81,7 +78,7 @@ function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelecte
 function FaceIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array(issue.points.flat());
-  const issueColor = isSelected ? "green" : severityColor[issue.severity];
+  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
   const opacity = isSelected ? 0.5 : 0.1;
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
