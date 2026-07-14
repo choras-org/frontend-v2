@@ -77,9 +77,12 @@ export const modelApi = createApi({
       ],
     }),
 
-    downloadRepairedModel: build.query<Blob, string | number>({
-      query: (modelId) => ({
-        url: `/models/${modelId}/download/repaired`,
+    downloadModel: build.query<
+      Blob,
+      { modelId: string | number; variant?: "repaired" | "initial" }
+    >({
+      query: ({ modelId, variant }) => ({
+        url: `/models/${modelId}/download${variant ? `?variant=${variant}` : ""}`,
         responseHandler: (response) => response.blob(),
       }),
     }),
@@ -94,6 +97,6 @@ export const {
   useGetModelSimulationCompatibilityQuery,
   useSetRepairDecisionMutation,
   useReprocessGeometryMutation,
-  useLazyDownloadRepairedModelQuery,
+  useLazyDownloadModelQuery,
   useUpdateModelMutation,
 } = modelApi;

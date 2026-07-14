@@ -9,7 +9,7 @@ import {
   useFetchModelIssuesQuery,
   useGetModelQuery,
   useGetModelSimulationCompatibilityQuery,
-  useLazyDownloadRepairedModelQuery,
+  useLazyDownloadModelQuery,
   useReprocessGeometryMutation,
   useSetRepairDecisionMutation,
 } from "@/store/modelApi";
@@ -126,15 +126,14 @@ export default function GeometryRepairSidebar() {
 
   const [reprocessGeometry, { isLoading: isReprocessing }] = useReprocessGeometryMutation();
 
-  const [downloadRepairedModel, { isFetching: isDownloading }] =
-    useLazyDownloadRepairedModelQuery();
+  const [downloadModel, { isFetching: isDownloading }] = useLazyDownloadModelQuery();
 
   const handleDownloadFixedModel = async () => {
     try {
-      const blob = await downloadRepairedModel(modelId).unwrap();
+      const blob = await downloadModel({ modelId, variant: "repaired" }).unwrap();
       downloadFile(blob, `${model?.modelName ?? "model"}_repaired.obj`);
     } catch {
-      toast.error("Failed to download the fixed model");
+      toast.error("Failed to download the model");
     }
   };
 
