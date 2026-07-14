@@ -8,6 +8,9 @@ export interface Model {
   imagePath?: string;
   sourceFileId: number;
   updatedAt: string;
+  repairStatus?: "Pending" | "Accepted" | "Rejected" | null;
+  geometryStatus?: "Pending" | "Processing" | "Completed" | "Failed" | null;
+  geometryProgress?: number | null;
 }
 
 export interface ModelIssue {

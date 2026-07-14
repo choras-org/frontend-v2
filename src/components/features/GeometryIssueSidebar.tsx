@@ -8,21 +8,24 @@ import {
 import {
   useFetchModelIssuesQuery,
   useGetModelQuery,
+  useGetModelSimulationCompatibilityQuery,
   useSetRepairDecisionMutation,
 } from "@/store/modelApi";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
 import { Button } from "../ui/button";
 import { GeometryIssueList } from "./GeometryIssueList";
 import { PossibleSimulation } from "./PossibleSimulation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function GeometryIssueSidebar() {
   const { modelId } = useParams() as { modelId: string };
   const { data: model } = useGetModelQuery(modelId);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { geometryIssues, selectedIssue, expandedIssueGroups } = useSelector((state: RootState) => {
     return state.geometryIssue;
   });
@@ -68,6 +71,19 @@ export default function GeometryIssueSidebar() {
   const [setRepairDecision, { isLoading: isDeciding }] = useSetRepairDecisionMutation();
   const repairStatus = model?.repairStatus ?? null;
 
+  const { data: compatibility } = useGetModelSimulationCompatibilityQuery(modelId, {
+    skip: !modelId,
+  });
+
+  // The initial model can only be used if at least one simulation method
+  // supports its (pre-repair) geometry. When every method is unsupported the
+  // "Use Initial Model" action is pointless, so we disable it.
+  const noSupportedInitialMethod = useMemo(() => {
+    const methods = compatibility?.initialCompatibility?.methods ?? [];
+    if (methods.length === 0) return false;
+    return methods.every((m) => m.compatible !== "compatible" && m.compatible !== "warning");
+  }, [compatibility]);
+
   const handleRepairDecision = async (decision: "accept" | "reject") => {
     try {
       await setRepairDecision({ modelId, decision }).unwrap();
@@ -76,6 +92,7 @@ export default function GeometryIssueSidebar() {
           ? "Repaired geometry accepted"
           : "Repair undone, using original geometry",
       );
+      navigate(`/editor/${modelId}`);
     } catch {
       toast.error("Failed to update repair decision");
     }
@@ -96,13 +113,36 @@ export default function GeometryIssueSidebar() {
             <PossibleSimulation stage="initial" />
             <div className="rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-2.5">
               <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
-                <Button
-                  onClick={() => handleRepairDecision("reject")}
-                  disabled={isDeciding || repairStatus === "Rejected" || repairStatus === null}
-                  className="w-full cursor-pointer border-red-400 bg-red-400 text-white hover:bg-red-500 hover:text-white"
-                >
-                  {repairStatus === "Rejected" ? "Using Initial Model" : "Use Initial Model"}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="w-full">
+                        <Button
+                          onClick={() => handleRepairDecision("reject")}
+                          disabled={
+                            isDeciding ||
+                            repairStatus === "Rejected" ||
+                            repairStatus === null ||
+                            noSupportedInitialMethod
+                          }
+                          className="w-full cursor-pointer border-red-400 bg-red-400 text-white hover:bg-red-500 hover:text-white disabled:cursor-not-allowed"
+                        >
+                          {repairStatus === "Rejected"
+                            ? "Using Initial Model"
+                            : "Use Initial Model"}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {noSupportedInitialMethod && (
+                      <TooltipContent>
+                        <p>
+                          Can&apos;t use the initial model — none of the simulation methods support
+                          its geometry.
+                        </p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>

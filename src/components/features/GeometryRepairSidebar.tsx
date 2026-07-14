@@ -8,6 +8,7 @@ import {
 import {
   useFetchModelIssuesQuery,
   useGetModelQuery,
+  useGetModelSimulationCompatibilityQuery,
   useLazyDownloadRepairedModelQuery,
   useReprocessGeometryMutation,
   useSetRepairDecisionMutation,
@@ -15,16 +16,18 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
 import { Button } from "../ui/button";
 import { GeometryIssueList } from "./GeometryIssueList";
 import { PossibleSimulation } from "./PossibleSimulation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { downloadFile } from "@/helpers/file";
 
 export default function GeometryRepairSidebar() {
   const { modelId } = useParams() as { modelId: string };
+  const navigate = useNavigate();
   // Poll while the background geometry pipeline is still running so the sidebar
   // refreshes automatically once issues + repair become available.
   const [pollingInterval, setPollingInterval] = useState(0);
@@ -82,6 +85,19 @@ export default function GeometryRepairSidebar() {
   const [setRepairDecision, { isLoading: isDeciding }] = useSetRepairDecisionMutation();
   const repairStatus = model?.repairStatus ?? null;
 
+  const { data: compatibility } = useGetModelSimulationCompatibilityQuery(modelId, {
+    skip: !modelId,
+  });
+
+  // The repaired model can only be accepted if at least one simulation method
+  // supports its geometry. When every method is unsupported the "Accept
+  // Repaired Model" action is pointless, so we disable it.
+  const noSupportedRepairedMethod = useMemo(() => {
+    const methods = compatibility?.repairedCompatibility?.methods ?? [];
+    if (methods.length === 0) return false;
+    return methods.every((m) => m.compatible !== "compatible" && m.compatible !== "warning");
+  }, [compatibility]);
+
   const handleRepairDecision = async (decision: "accept" | "reject") => {
     try {
       await setRepairDecision({ modelId, decision }).unwrap();
@@ -90,6 +106,7 @@ export default function GeometryRepairSidebar() {
           ? "Repaired geometry accepted"
           : "Repair undone, using original geometry",
       );
+      navigate(`/editor/${modelId}`);
     } catch {
       toast.error("Failed to update repair decision");
     }
@@ -172,21 +189,39 @@ export default function GeometryRepairSidebar() {
             <div className="mb-4 rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-3 shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
               <PossibleSimulation stage="repaired" />
               <div className="rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-2.5">
-                {/* <div className="mx-auto flex w-full max-w-md justify-center">
-                  <SimulationForm
-                    modelId={Number(modelId)}
-                    disabled={repairStatus !== "Accepted" && repairStatus !== "Rejected"}
-                    className="w-full cursor-pointer border-choras-primary bg-choras-primary text-white hover:bg-choras-primary/90"
-                  />
-                </div> */}
                 <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
-                  <Button
-                    onClick={() => handleRepairDecision("accept")}
-                    disabled={isDeciding || repairStatus === "Accepted" || repairStatus === null}
-                    className="w-full font-semibold cursor-pointer border-green-500 bg-green-500 text-white hover:bg-green-400 hover:text-white"
-                  >
-                    {repairStatus === "Accepted" ? "Repair Accepted" : "Accept Repaired Model"}
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="w-full">
+                          <Button
+                            onClick={() => handleRepairDecision("accept")}
+                            disabled={
+                              isDeciding ||
+                              repairStatus === "Accepted" ||
+                              repairStatus === null ||
+                              noSupportedRepairedMethod
+                            }
+                            className="w-full font-semibold cursor-pointer border-green-500 bg-green-500 text-white hover:bg-green-400 hover:text-white disabled:cursor-not-allowed"
+                          >
+                            {repairStatus === "Accepted"
+                              ? "Repair Accepted"
+                              : "Accept Repaired Model"}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {noSupportedRepairedMethod && (
+                        <TooltipContent>
+                          <p>
+                            Can&apos;t accept the repaired model &mdash; none of the simulation
+                            methods support its geometry.
+                            <br />
+                            Please fixed the remaining issues in your modelling tools.
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <div className="mx-auto mt-2 flex w-full max-w-md justify-center">
                   <Button
