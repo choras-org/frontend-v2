@@ -242,6 +242,15 @@ export function GeometryIssueList({
                                 </span>
                                 <span>{formatIssueCategoryLabel(issueType)}</span>
                                 <span className="ml-auto flex items-center gap-2">
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                      hasIssues
+                                        ? "bg-slate-200 text-slate-600"
+                                        : "bg-slate-100 text-slate-400"
+                                    }`}
+                                  >
+                                    {issueRows.length}
+                                  </span>
                                   {compatibilityData &&
                                     (() => {
                                       const compatInfo = getCompatibilityIconInfo(
@@ -261,15 +270,6 @@ export function GeometryIssueList({
                                         </Tooltip>
                                       ) : null;
                                     })()}
-                                  <span
-                                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                                      hasIssues
-                                        ? "bg-slate-200 text-slate-600"
-                                        : "bg-slate-100 text-slate-400"
-                                    }`}
-                                  >
-                                    {issueRows.length}
-                                  </span>
                                 </span>
                               </button>
                               {ISSUE_CATEGORY_INFO[issueType] && (
