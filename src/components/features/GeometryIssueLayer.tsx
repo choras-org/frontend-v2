@@ -2,39 +2,65 @@ import type { GeometryIssue } from "@/store/geometryIssueSlice";
 import * as THREE from "three";
 import { Line } from "@react-three/drei";
 import { useSelector } from "react-redux";
+import { useMemo } from "react";
 import type { RootState } from "@/store";
 
 const ISSUE_COLOR = "red";
-const HIGHLIGHT_COLOR = "orange";
 
-function VertexMarker({ position, color }: { position: [number, number, number]; color: string }) {
+// Get highlight color from CSS variable
+function getHighlightColorFromCSS(): string {
+  if (typeof window !== "undefined") {
+    const root = document.documentElement;
+    const chroras_primary = getComputedStyle(root)
+      .getPropertyValue("--color-choras-primary")
+      .trim();
+    if (chroras_primary) return chroras_primary;
+  }
+  return "#ef7305"; // CHORAS brand orange
+}
+
+function VertexMarker({
+  position,
+  color,
+  size = 0.05,
+}: {
+  position: [number, number, number];
+  color: string;
+  size?: number;
+}) {
   return (
     <mesh position={position}>
-      <sphereGeometry args={[0.05]} />
+      <sphereGeometry args={[size]} />
       <meshBasicMaterial color={color} />
     </mesh>
   );
 }
 
 function VertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
+  const highlightColor = useMemo(() => getHighlightColorFromCSS(), []);
+  const issueColor = isSelected ? highlightColor : ISSUE_COLOR;
+  const size = isSelected ? 0.1 : 0.05;
   const [x, y, z] = issue.points[0];
 
-  return <VertexMarker position={[x, y, z]} color={issueColor} />;
+  return <VertexMarker position={[x, y, z]} color={issueColor} size={size} />;
 }
 
 // Highlight a single vertex of a face (its first vertex).
 function FaceVertexIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
+  const highlightColor = useMemo(() => getHighlightColorFromCSS(), []);
+  const issueColor = isSelected ? highlightColor : ISSUE_COLOR;
+  const size = isSelected ? 0.1 : 0.05;
   if (issue.points.length === 0) return null;
   const [x, y, z] = issue.points[0];
 
-  return <VertexMarker position={[x, y, z]} color={issueColor} />;
+  return <VertexMarker position={[x, y, z]} color={issueColor} size={size} />;
 }
 
 // Highlight a single vertex at the centroid (middle) of a face.
 function FaceCentroidIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
+  const highlightColor = useMemo(() => getHighlightColorFromCSS(), []);
+  const issueColor = isSelected ? highlightColor : ISSUE_COLOR;
+  const size = isSelected ? 0.1 : 0.05;
   const pts = issue.points;
   if (pts.length === 0) return null;
 
@@ -48,20 +74,28 @@ function FaceCentroidIssue({ issue, isSelected }: { issue: GeometryIssue; isSele
   }
   const position: [number, number, number] = [sx / pts.length, sy / pts.length, sz / pts.length];
 
-  return <VertexMarker position={position} color={issueColor} />;
+  return <VertexMarker position={position} color={issueColor} size={size} />;
 }
 
 function EdgeIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
+  const highlightColor = useMemo(() => getHighlightColorFromCSS(), []);
+  const issueColor = isSelected ? highlightColor : ISSUE_COLOR;
+  const lineWidth = isSelected ? 6 : 2;
 
   return (
-    <Line points={issue.points as [number, number, number][]} color={issueColor} lineWidth={2} />
+    <Line
+      points={issue.points as [number, number, number][]}
+      color={issueColor}
+      lineWidth={lineWidth}
+    />
   );
 }
 
 // Highlight every edge of a face (closed loop of the face's vertices).
 function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
-  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
+  const highlightColor = useMemo(() => getHighlightColorFromCSS(), []);
+  const issueColor = isSelected ? highlightColor : ISSUE_COLOR;
+  const lineWidth = isSelected ? 6 : 2;
   const pts = issue.points as [number, number, number][];
   if (pts.length < 2) return null;
 
@@ -69,7 +103,7 @@ function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelecte
     <>
       {pts.map((point, index) => {
         const next = pts[(index + 1) % pts.length];
-        return <Line key={index} points={[point, next]} color={issueColor} lineWidth={2} />;
+        return <Line key={index} points={[point, next]} color={issueColor} lineWidth={lineWidth} />;
       })}
     </>
   );
@@ -78,7 +112,8 @@ function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelecte
 function FaceIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array(issue.points.flat());
-  const issueColor = isSelected ? HIGHLIGHT_COLOR : ISSUE_COLOR;
+  const highlightColor = useMemo(() => getHighlightColorFromCSS(), []);
+  const issueColor = isSelected ? highlightColor : ISSUE_COLOR;
   const opacity = isSelected ? 0.5 : 0.1;
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 

@@ -142,7 +142,7 @@ const getCompatibilityIconInfo = (
         icon: <TriangleAlert size={14} className="text-amber-600" />,
         status: "Warning",
         color: "text-amber-600",
-        tooltip: "This issue type may or may not break the selected method",
+        tooltip: "This issue type may break the selected method",
       };
     case "incompatible":
       return {

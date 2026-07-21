@@ -18,6 +18,7 @@ export interface ModelIssue {
   modelId: number;
   fileUrl: string;
   modelFileUrl?: string | null;
+  geometryPath?: string | null;
   issueCount: number;
   detectionStage: string;
   createdAt: string;
