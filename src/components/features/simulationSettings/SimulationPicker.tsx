@@ -12,6 +12,7 @@ import {
   useUpdateSimulationMutation,
 } from "@/store/simulationApi";
 import { useGetSimulationMethodsQuery } from "@/store/simulationSettingsApi";
+import { useGetModelQuery } from "@/store/modelApi";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helpers/datetime";
@@ -21,7 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedMethodType, setSelectedResourceType } from "@/store/simulationSettingsSlice";
 import { setActiveSimulation } from "@/store/simulationSlice";
 import type { RootState } from "@/store";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +54,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const [deleteSimulation] = useDeleteSimulationMutation();
   const { data: simulations, isLoading } = useGetSimulationsByModelIdQuery(modelId);
   const { data: methods, isLoading: methodsLoading } = useGetSimulationMethodsQuery();
+  const { data: model } = useGetModelQuery(modelId.toString());
   const [getSimulationsByModelId] = useLazyGetSimulationsByModelIdQuery();
   const { duplicateSimulation } = useDuplicateSimulation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,7 +67,44 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const selectedResourceType = useSelector(
     (state: RootState) => state.simulationSettings.selectedResourceType,
   );
+  const initialCompatibilityData = useSelector(
+    (state: RootState) => state.simulationSettings.initialCompatibilityData,
+  );
+  const repairedCompatibilityData = useSelector(
+    (state: RootState) => state.simulationSettings.repairedCompatibilityData,
+  );
   const { initializeSettings } = useInitializeSimulationSettings();
+
+  // Determine which compatibility data to use based on repairStatus
+  const getApplicableCompatibilityData = () => {
+    if (!model?.repairStatus || model.repairStatus === "Pending") {
+      return null; // Disable all methods if repairStatus is Pending or null
+    }
+    if (model.repairStatus === "Accepted") {
+      return repairedCompatibilityData;
+    }
+    if (model.repairStatus === "Rejected") {
+      return initialCompatibilityData;
+    }
+    return null;
+  };
+
+  const applicableCompatibilityData = getApplicableCompatibilityData();
+
+  // Check if a method is disabled based on compatibility
+  const isMethodDisabled = useCallback(
+    (methodType: string): boolean => {
+      if (!model?.repairStatus || model.repairStatus === "Pending") {
+        return true; // All methods disabled if repairStatus is Pending or null
+      }
+      if (!applicableCompatibilityData) {
+        return false;
+      }
+      const methodCompat = applicableCompatibilityData.find((m) => m.simulationType === methodType);
+      return methodCompat ? methodCompat.compatible === "incompatible" : false;
+    },
+    [model?.repairStatus, applicableCompatibilityData],
+  );
 
   const handleMethodChange = async (methodType: string) => {
     dispatch(setSelectedMethodType(methodType));
@@ -173,6 +212,19 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
       }
     }
   }, [simulationId, simulations, dispatch, selectedMethodType]);
+
+  // Auto-select first available method based on compatibility
+  useEffect(() => {
+    if (methods && methods.length > 0 && model) {
+      const firstAvailableMethod = methods.find(
+        (method) => !isMethodDisabled(method.simulationType),
+      );
+
+      if (firstAvailableMethod && (!selectedMethodType || isMethodDisabled(selectedMethodType))) {
+        dispatch(setSelectedMethodType(firstAvailableMethod.simulationType));
+      }
+    }
+  }, [methods, model, isMethodDisabled, selectedMethodType, dispatch]);
 
   if (!simulations || simulations.length === 0 || isLoading || methodsLoading) {
     return (
@@ -330,7 +382,8 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
                 <SelectItem
                   key={method.simulationType}
                   value={method.simulationType}
-                  className="bg-choras-dark hover:bg-choras-dark/90 active:bg-choras-dark/80 text-white"
+                  disabled={isMethodDisabled(method.simulationType)}
+                  className="bg-choras-dark hover:bg-choras-dark/90 active:bg-choras-dark/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {method.label.replace("method", "")}
                 </SelectItem>

@@ -8,16 +8,31 @@ import { useNavigate, useParams } from "react-router";
 import { SimulationPicker } from "@/components/features/simulationSettings/SimulationPicker";
 import { SidebarContent, SidebarTabs } from "@/components/features/simulationSettings/SidebarTabs";
 import { ModelViewer } from "@/components/features/viewport/ModelViewer";
-import { useGetModelQuery } from "@/store/modelApi";
+import { useGetModelQuery, useGetModelSimulationCompatibilityQuery } from "@/store/modelApi";
+import type { CompatibilityStatus } from "@/types/model";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { EditorNav } from "@/components/features/viewport/EditorNav";
 import { clearSelection } from "@/store/geometrySelectionSlice";
+import { setCompatibilityData } from "@/store/simulationSettingsSlice";
+import type { CompatibilityIssue } from "@/types/simulationSettings";
+
+type CompatibilityMethod = {
+  simulationType: string;
+  label?: string | null;
+  compatible: string;
+  issues: CompatibilityIssue[];
+};
+
+type CompatibilityBlock = {
+  methods: CompatibilityMethod[];
+};
 
 export function EditorPage() {
   const navigate = useNavigate();
   const { modelId, simulationId } = useParams() as { modelId: string; simulationId?: string };
   const { data: simulations } = useGetSimulationsByModelIdQuery(+modelId);
   const { data: model } = useGetModelQuery(modelId);
+  const { data: compatibilityData } = useGetModelSimulationCompatibilityQuery(modelId);
   const dispatch = useDispatch();
 
   // If no simulationId is provided, redirect to the first simulation
@@ -43,7 +58,47 @@ export function EditorPage() {
     return () => {
       dispatch(clearSelection());
     };
-  }, []);
+  }, [dispatch]);
+
+  // Setup compatibility data for both initial and repaired stages
+  useEffect(() => {
+    if (compatibilityData) {
+      const processBlockData = (block: CompatibilityBlock) => {
+        return block.methods.map((method: CompatibilityMethod) => {
+          const issuesRecord: Record<
+            string,
+            { compatibility: string; label: string; present: boolean }
+          > = {};
+          if (Array.isArray(method.issues)) {
+            method.issues.forEach((issue: CompatibilityIssue) => {
+              issuesRecord[issue.kind] = {
+                compatibility: issue.compatibility || "unknown",
+                label: issue.label || "Unknown",
+                present: issue.present,
+              };
+            });
+          }
+
+          return {
+            simulationType: method.simulationType,
+            label: method.label ?? null,
+            compatible: method.compatible as CompatibilityStatus,
+            issues: issuesRecord,
+          };
+        });
+      };
+
+      if (compatibilityData.initialCompatibility) {
+        const initialCompatData = processBlockData(compatibilityData.initialCompatibility);
+        dispatch(setCompatibilityData({ stage: "initial", data: initialCompatData }));
+      }
+
+      if (compatibilityData.repairedCompatibility) {
+        const repairedCompatData = processBlockData(compatibilityData.repairedCompatibility);
+        dispatch(setCompatibilityData({ stage: "repaired", data: repairedCompatData }));
+      }
+    }
+  }, [compatibilityData, dispatch]);
 
   return (
     <AppLayout
