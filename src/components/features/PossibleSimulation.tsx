@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, OctagonAlert } from "lucide-react";
 import { useParams } from "react-router";
 import { useGetModelSimulationCompatibilityQuery } from "@/store/modelApi";
-import type { CompatibilityStatus } from "@/types/model";
+import type { CompatibilityStatus, MethodCompatibility } from "@/types/model";
 import { SimulationMethodList, type SimulationMethodItem } from "./SimulationMethodList";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedSimulationMethod, setCompatibilityData } from "@/store/simulationSettingsSlice";
 import type { RootState } from "@/store";
 import type { MethodCompatibilityData, CompatibilityIssue } from "@/types/simulationSettings";
+import { toast } from "sonner";
 
 interface IProps {
   modelId?: string | number;
@@ -32,9 +33,6 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
   const selectedMethod = useSelector(
     (state: RootState) => state.simulationSettings.selectedSimulationMethod,
   );
-  const storedCompatibilityData = useSelector(
-    (state: RootState) => state.simulationSettings.compatibilityData,
-  );
 
   const { data, isLoading, isError } = useGetModelSimulationCompatibilityQuery(modelId, {
     skip: !modelId || Boolean(skip),
@@ -42,16 +40,19 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
 
   const block = stage === "initial" ? data?.initialCompatibility : data?.repairedCompatibility;
 
-  const methods: SimulationMethodItem[] = (block?.methods ?? []).map((method) => ({
-    id: method.simulationType,
-    label: method.label ?? method.simulationType,
-    description: "",
-    compatible: method.compatible,
-  }));
+  const methods: SimulationMethodItem[] = (block?.methods ?? []).map(
+    (method: MethodCompatibility) => ({
+      id: method.simulationType,
+      label: method.label ?? method.simulationType,
+      description: "",
+      compatible: method.compatible,
+      reason: method.reason ?? undefined,
+    }),
+  );
 
   // Store compatibility data in Redux when fetched
   useEffect(() => {
-    if (block?.methods && !storedCompatibilityData) {
+    if (block?.methods) {
       const compatData: MethodCompatibilityData[] = block.methods.map((method) => {
         // Convert issues array to Record indexed by kind
         const issuesRecord: Record<
@@ -75,9 +76,9 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
           issues: issuesRecord,
         };
       });
-      dispatch(setCompatibilityData(compatData));
+      dispatch(setCompatibilityData({ stage, data: compatData }));
     }
-  }, [block, dispatch, storedCompatibilityData]);
+  }, [block, dispatch, stage]);
 
   // Auto-select first method if not already selected
   useEffect(() => {
@@ -93,31 +94,52 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
     }
   }, [methods, selectedMethod, dispatch]);
 
+  // Show toast when method is selected
+  useEffect(() => {
+    if (selectedMethod) {
+      toast.info(
+        <div className="flex items-center gap-2">
+          <div>
+            <p className="font-semibold">"{selectedMethod.label}" selected</p>
+            <p className="text-sm">
+              Check issue types with <OctagonAlert size={14} className="inline text-red-600 mx-1" />{" "}
+              to see which incompatible issues need attention.
+            </p>
+          </div>
+        </div>,
+        {
+          duration: 5000,
+        },
+      );
+    }
+  }, [selectedMethod?.id]);
+
   const supportedCount = methods.filter((m) => isSupported(m.compatible)).length;
 
   return (
     <div className="mb-3">
       <button
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left"
+        className="flex w-full flex-col items-start rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left"
       >
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-choras-primary">
-            Possible Simulation
-          </h4>
-          <p className="mt-0.5 text-[11px] text-slate-500">
-            Choose algorithm then run a new simulation.
+        <h4 className="mb-2 text-sm font-semibold tracking-wide text-choras-primary">
+          Simulation Method Compatibility
+        </h4>
+        <div className="flex w-full items-center justify-between">
+          <p className="text-[11px] text-slate-500">
+            Select a simulation method to view its{" "}
+            <span className="font-bold text-red-500">high-severity</span> issue types.
           </p>
-        </div>
-        <div className="ml-3 flex shrink-0 items-center gap-1.5">
-          <span className="rounded-full bg-choras-primary/10 px-2 py-0.5 text-[10px] font-bold text-choras-primary">
-            {supportedCount} of {methods.length}
-          </span>
-          {isExpanded ? (
-            <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-          )}
+          <div className="ml-3 flex shrink-0 items-center gap-1.5">
+            <span className="rounded-full bg-choras-primary/10 px-2 py-0.5 text-[10px] font-bold text-choras-primary">
+              {supportedCount} of {methods.length}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+            )}
+          </div>
         </div>
       </button>
       {isExpanded && (
@@ -129,7 +151,7 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
           ) : methods.length === 0 ? (
             <p className="text-xs text-slate-500">No simulation methods available.</p>
           ) : (
-            <SimulationMethodList methods={methods} />
+            <SimulationMethodList methods={methods} stage={stage} />
           )}
         </div>
       )}

@@ -54,6 +54,7 @@ export interface MethodCompatibility {
   simulationType: string;
   label?: string | null;
   notes?: string | null;
+  reason?: string | null;
   compatible: CompatibilityStatus;
   issues: MethodCompatibilityIssue[];
 }

@@ -16,7 +16,8 @@ const initialState: SimulationSettingsState = {
   selectedResourceType: "LOCAL",
   errors: {},
   selectedSimulationMethod: null,
-  compatibilityData: null,
+  initialCompatibilityData: null,
+  repairedCompatibilityData: null,
 };
 
 const simulationSettingsSlice = createSlice({
@@ -68,8 +69,18 @@ const simulationSettingsSlice = createSlice({
     ) => {
       state.selectedSimulationMethod = action.payload;
     },
-    setCompatibilityData: (state, action: PayloadAction<MethodCompatibilityData[] | null>) => {
-      state.compatibilityData = action.payload;
+    setCompatibilityData: (
+      state,
+      action: PayloadAction<{
+        stage: "initial" | "repaired";
+        data: MethodCompatibilityData[] | null;
+      }>,
+    ) => {
+      if (action.payload.stage === "initial") {
+        state.initialCompatibilityData = action.payload.data;
+      } else {
+        state.repairedCompatibilityData = action.payload.data;
+      }
     },
   },
 });

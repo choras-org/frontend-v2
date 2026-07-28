@@ -229,6 +229,7 @@ export default function GeometryIssueSidebar() {
                   expandedIssueGroups={expandedIssueGroups}
                   onToggleGroup={toggleIssueGroup}
                   onIssueClick={handleIssueClick}
+                  stage="initial"
                 />
               )}
             </>

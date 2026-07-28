@@ -3,17 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedSimulationMethod } from "@/store/simulationSettingsSlice";
 import type { RootState } from "@/store";
 import type { SelectedSimulationMethod } from "@/types/simulationSettings";
-import { CheckCircle2 } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export interface SimulationMethodItem {
   id: string;
   label: string;
   description: string;
   compatible: CompatibilityStatus;
+  reason?: string;
 }
 
 interface SimulationMethodListProps {
   methods: SimulationMethodItem[];
+  stage?: "initial" | "repaired";
 }
 
 const STATUS_STYLES: Record<
@@ -50,10 +52,15 @@ const STATUS_STYLES: Record<
   },
 };
 
-export function SimulationMethodList({ methods }: SimulationMethodListProps) {
+export function SimulationMethodList({ methods, stage = "repaired" }: SimulationMethodListProps) {
   const dispatch = useDispatch();
   const selectedMethod = useSelector(
     (state: RootState) => state.simulationSettings.selectedSimulationMethod,
+  );
+  const compatibilityData = useSelector((state: RootState) =>
+    stage === "initial"
+      ? state.simulationSettings.initialCompatibilityData
+      : state.simulationSettings.repairedCompatibilityData,
   );
 
   const handleMethodClick = (method: SimulationMethodItem) => {
@@ -63,6 +70,26 @@ export function SimulationMethodList({ methods }: SimulationMethodListProps) {
       compatible: method.compatible,
     };
     dispatch(setSelectedSimulationMethod(newSelection));
+  };
+
+  const hasHighSeverityIssues = (method: SimulationMethodItem): boolean => {
+    if (!compatibilityData || compatibilityData.length === 0) return false;
+
+    // Find the current method's data
+    const methodData = compatibilityData.find((m) => m.simulationType === method.id);
+    if (!methodData || !methodData.issues) return false;
+
+    // Check if any issue type is incompatible AND actually present in the geometry
+    return Object.values(methodData.issues).some(
+      (issue) => issue.compatibility === "incompatible" && issue.present,
+    );
+  };
+
+  const shouldShowUnknownReasonIcon = (method: SimulationMethodItem): boolean => {
+    // Show icon if method is not compatible and there are no high-severity issues
+    const isNotCompatible = method.compatible == "incompatible";
+    const hasHighSeverity = hasHighSeverityIssues(method);
+    return isNotCompatible && !hasHighSeverity;
   };
 
   return (
@@ -83,7 +110,6 @@ export function SimulationMethodList({ methods }: SimulationMethodListProps) {
           >
             <div className="flex items-center gap-2 shrink-0">
               <span className={`h-3 w-3 shrink-0 rounded-full ${styles.dot}`} />
-              {isSelected && <CheckCircle2 size={16} className="text-choras-primary" />}
             </div>
             <div className="flex min-w-0 flex-col">
               <span className={`text-sm font-bold ${styles.label}`}>{method.label}</span>
@@ -92,6 +118,24 @@ export function SimulationMethodList({ methods }: SimulationMethodListProps) {
               )}
               <span className={`text-xs font-semibold ${styles.status}`}>{styles.text}</span>
             </div>
+            {shouldShowUnknownReasonIcon(method) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-[11px] font-bold text-slate-400 hover:border-choras-primary hover:text-choras-primary transition-colors"
+                  >
+                    ?
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center" className="max-w-56">
+                  <p>
+                    {method.reason ||
+                      "This method has compatibility issues not related to detected geometry problems"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </li>
         );
       })}

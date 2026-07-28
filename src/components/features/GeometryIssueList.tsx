@@ -13,6 +13,7 @@ type GeometryIssueListProps = {
   onToggleGroup: (groupKey: string) => void;
   onIssueClick: (isSelected: boolean, issue: GeometryIssue) => void;
   label?: string;
+  stage?: "initial" | "repaired";
 };
 
 const formatIssuePoints = (points: number[][]) => {
@@ -163,9 +164,12 @@ export function GeometryIssueList({
   onToggleGroup,
   onIssueClick,
   label,
+  stage = "repaired",
 }: GeometryIssueListProps) {
-  const compatibilityData = useSelector(
-    (state: RootState) => state.simulationSettings.compatibilityData,
+  const compatibilityData = useSelector((state: RootState) =>
+    stage === "initial"
+      ? state.simulationSettings.initialCompatibilityData
+      : state.simulationSettings.repairedCompatibilityData,
   );
 
   return (

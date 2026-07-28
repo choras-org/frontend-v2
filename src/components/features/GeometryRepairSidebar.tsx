@@ -263,6 +263,7 @@ export default function GeometryRepairSidebar() {
               onToggleGroup={toggleIssueGroup}
               onIssueClick={handleIssueClick}
               label="Remaining Issues"
+              stage="repaired"
             />
           )}
         </div>

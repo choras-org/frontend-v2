@@ -51,7 +51,8 @@ export interface SimulationSettingsState {
   selectedResourceType: string;
   errors: Record<string, string>;
   selectedSimulationMethod: SelectedSimulationMethod | null;
-  compatibilityData: MethodCompatibilityData[] | null;
+  initialCompatibilityData: MethodCompatibilityData[] | null;
+  repairedCompatibilityData: MethodCompatibilityData[] | null;
 }
 
 export interface SimulationMethod {
