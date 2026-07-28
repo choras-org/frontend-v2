@@ -59,7 +59,7 @@ const ISSUE_CATEGORY_INFO: Record<string, { description: string; docsUrl: string
     description: "Edges shared by only one face, indicating an open or incomplete mesh.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },
-  degenerate_face: {
+  zero_area_face: {
     description: "Faces with zero area or collinear vertices that cannot be rendered correctly.",
     docsUrl: "https://choras.readthedocs.io/en/latest/includes/setup/setup_user.html",
   },

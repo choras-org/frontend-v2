@@ -156,7 +156,7 @@ function FaceIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: bo
 type HighlightMode = "face-vertex" | "face-centroid" | "face-edges";
 
 const ISSUE_HIGHLIGHT_OVERRIDES: Record<string, HighlightMode> = {
-  degenerate_face: "face-vertex",
+  zero_area_face: "face-vertex",
   small_face: "face-centroid",
   collinear_face: "face-edges",
 };

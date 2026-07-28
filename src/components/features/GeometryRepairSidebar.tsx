@@ -23,6 +23,14 @@ import { Button } from "../ui/button";
 import { GeometryIssueList } from "./GeometryIssueList";
 import { PossibleSimulation } from "./PossibleSimulation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { downloadFile } from "@/helpers/file";
 
 export default function GeometryRepairSidebar() {
@@ -31,6 +39,7 @@ export default function GeometryRepairSidebar() {
   // Poll while the background geometry pipeline is still running so the sidebar
   // refreshes automatically once issues + repair become available.
   const [pollingInterval, setPollingInterval] = useState(0);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { data: model } = useGetModelQuery(modelId, { pollingInterval });
   const dispatch = useDispatch();
   const { remainingIssues, selectedIssue, expandedIssueGroups } = useSelector(
@@ -119,6 +128,11 @@ export default function GeometryRepairSidebar() {
     }
   };
 
+  const handleAcceptRepair = async () => {
+    setShowConfirmDialog(false);
+    await handleRepairDecision("accept");
+  };
+
   const geometryStatus = model?.geometryStatus ?? null;
   const isProcessing = geometryStatus === "Pending" || geometryStatus === "Processing";
   const isFailed = geometryStatus === "Failed";
@@ -152,15 +166,13 @@ export default function GeometryRepairSidebar() {
 
   return (
     <div className="h-container flex flex-col border border-slate-300 bg-[#DCDCDC] p-1">
-      <div className="h-full flex flex-col rounded-md bg-white/65 text-slate-700 font-inter p-2">
+      <div className="h-full flex flex-col rounded-md bg-white/65 text-slate-700 font-inter">
         <div className="mb-3">
-          <div className="flex w-full items-center justify-between rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left">
-            <h4 className="text-lg font-semibold tracking-wide text-choras-primary">
-              Repaired Model
-            </h4>
+          <div className="flex w-full items-center justify-between border border-slate-300 rounded-t-md bg-choras-primary px-3 py-2 text-left">
+            <h4 className="text-lg font-semibold tracking-wide text-white">Repaired Model</h4>
           </div>
         </div>
-        <div className="min-h-0 flex flex-1 flex-col pr-1">
+        <div className="min-h-0 flex flex-1 flex-col p-2">
           {isProcessing ? (
             <div className="mb-4 rounded-md border border-slate-300 bg-gradient-to-b from-white to-slate-100 p-4">
               <div className="flex items-center gap-2 text-slate-700">
@@ -201,7 +213,7 @@ export default function GeometryRepairSidebar() {
                       <TooltipTrigger asChild>
                         <span className="w-full">
                           <Button
-                            onClick={() => handleRepairDecision("accept")}
+                            onClick={() => setShowConfirmDialog(true)}
                             disabled={
                               isDeciding ||
                               repairStatus === "Accepted" ||
@@ -234,9 +246,9 @@ export default function GeometryRepairSidebar() {
                     variant="outline"
                     onClick={handleDownloadFixedModel}
                     disabled={isDownloading || repairStatus === null}
-                    className="w-full cursor-pointer border-red-400 bg-white text-choras-primary hover:bg-choras-primary/10"
+                    className="w-full cursor-pointer border border-choras-primary bg-white text-choras-primary hover:bg-choras-primary hover:text-white disabled:cursor-not-allowed"
                   >
-                    {isDownloading ? "Downloading…" : "Download Fixed Model"}
+                    {isDownloading ? "Downloading…" : "Download Repaired Model"}
                   </Button>
                 </div>
               </div>
@@ -255,6 +267,34 @@ export default function GeometryRepairSidebar() {
           )}
         </div>
       </div>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Accept Repaired Model</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to accept the repaired model? Please make sure that your
+              preferred simulation method is supported in the Possible Simulation Methods.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAcceptRepair}
+              disabled={isDeciding}
+              className="cursor-pointer bg-green-500 hover:bg-green-600 text-white"
+            >
+              {isDeciding ? "Accepting..." : "Accept"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

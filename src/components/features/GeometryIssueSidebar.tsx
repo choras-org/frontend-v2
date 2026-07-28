@@ -22,10 +22,19 @@ import { Button } from "../ui/button";
 import { GeometryIssueList } from "./GeometryIssueList";
 import { PossibleSimulation } from "./PossibleSimulation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function GeometryIssueSidebar() {
   const { modelId } = useParams() as { modelId: string };
   const [pollingInterval, setPollingInterval] = useState(0);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { data: model } = useGetModelQuery(modelId, { pollingInterval });
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -130,14 +139,17 @@ export default function GeometryIssueSidebar() {
     }
   };
 
+  const handleUseInitialModel = async () => {
+    setShowConfirmDialog(false);
+    await handleRepairDecision("reject");
+  };
+
   return (
     <div className="h-container flex flex-col border border-slate-300 bg-[#DCDCDC] p-1">
       <div className="h-full flex flex-col rounded-md bg-white/65 text-slate-700 font-inter p-2">
         <div className="mb-3">
-          <div className="flex w-full items-center justify-between rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left">
-            <h4 className="text-lg font-semibold tracking-wide text-choras-primary">
-              Initial Model
-            </h4>
+          <div className="flex w-full items-center justify-between border border-slate-300 rounded-t-md bg-choras-primary px-3 py-2 text-left">
+            <h4 className="text-lg font-semibold tracking-wide text-white">Initial Model</h4>
           </div>
         </div>{" "}
         <div className="min-h-0 flex flex-1 flex-col pr-1">
@@ -182,14 +194,14 @@ export default function GeometryIssueSidebar() {
                         <TooltipTrigger asChild>
                           <span className="w-full">
                             <Button
-                              onClick={() => handleRepairDecision("reject")}
+                              onClick={() => setShowConfirmDialog(true)}
                               disabled={
                                 isDeciding ||
                                 repairStatus === "Rejected" ||
                                 repairStatus === null ||
                                 noSupportedInitialMethod
                               }
-                              className="w-full cursor-pointer border-red-400 bg-red-400 text-white hover:bg-red-500 hover:text-white disabled:cursor-not-allowed"
+                              className="w-full cursor-pointer border border-choras-primary bg-white text-choras-primary hover:bg-choras-primary hover:text-white disabled:cursor-not-allowed"
                             >
                               {repairStatus === "Rejected"
                                 ? "Using Initial Model"
@@ -223,6 +235,35 @@ export default function GeometryIssueSidebar() {
           )}
         </div>
       </div>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Use Initial Model</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to use the initial model instead of the repaired one? Please
+              make sure that your preferred simulation method is supported in the Possible
+              Simulation Methods.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUseInitialModel}
+              disabled={isDeciding}
+              className="cursor-pointer bg-choras-primary hover:bg-choras-primary/80 text-white"
+            >
+              {isDeciding ? "Confirming..." : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
