@@ -81,34 +81,36 @@ export function GeometrySelectionInfo() {
 
   if (!selectedGeometry || selectedGeometry.mesh?.visible === false) {
     return (
-      <Card className="w-80 border border-choras-gray gap-1">
-        <CardHeader>
-          <CardTitle className="text-xs">Geometry information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <span className="font-medium">Total volume:</span>
+      <>
+        <Card className="w-80 border border-choras-gray gap-1">
+          <CardHeader>
+            <CardTitle className="text-xs">Geometry information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="font-medium">Total volume:</span>
+              </div>
+              <div className="text-muted-foreground">{totalModelVolume.toFixed(2)} m³</div>
+              <div>
+                <span className="font-medium">Total surface area:</span>
+              </div>
+              <div className="text-muted-foreground">{totalSurfaceArea.toFixed(2)} m²</div>
             </div>
-            <div className="text-muted-foreground">{totalModelVolume.toFixed(2)} m³</div>
-            <div>
-              <span className="font-medium">Total surface area:</span>
-            </div>
-            <div className="text-muted-foreground">{totalSurfaceArea.toFixed(2)} m²</div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            Click on a face in the model to select it for material assignment.
-          </p>
-          <Button
-            variant="outline"
-            onClick={handleDownloadGeometry}
-            disabled={!modelId || isDownloading}
-            className="mt-3 w-full cursor-pointer border-choras-primary bg-white text-choras-primary hover:bg-choras-primary/10"
-          >
-            {isDownloading ? "Downloading…" : "Download Geometry Model"}
-          </Button>
-        </CardContent>
-      </Card>
+            <p className="text-xs text-muted-foreground mt-3">
+              Click on a face in the model to select it for material assignment.
+            </p>
+          </CardContent>
+        </Card>
+        <Button
+          variant="outline"
+          onClick={handleDownloadGeometry}
+          disabled={!modelId || isDownloading}
+          className="mt-3 w-full cursor-pointer border-choras-primary bg-white text-choras-primary hover:bg-choras-primary/10"
+        >
+          {isDownloading ? "Downloading…" : "Download Geometry Model"}
+        </Button>
+      </>
     );
   }
 
