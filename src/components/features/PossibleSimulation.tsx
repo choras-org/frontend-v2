@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, OctagonAlert } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useParams } from "react-router";
 import { useGetModelSimulationCompatibilityQuery } from "@/store/modelApi";
 import type { CompatibilityStatus, MethodCompatibility } from "@/types/model";
@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedSimulationMethod, setCompatibilityData } from "@/store/simulationSettingsSlice";
 import type { RootState } from "@/store";
 import type { MethodCompatibilityData, CompatibilityIssue } from "@/types/simulationSettings";
-import { toast } from "sonner";
 
 interface IProps {
   modelId?: string | number;
@@ -94,33 +93,13 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
     }
   }, [methods, selectedMethod, dispatch]);
 
-  // Show toast when method is selected
-  useEffect(() => {
-    if (selectedMethod) {
-      toast.info(
-        <div className="flex items-center gap-2">
-          <div>
-            <p className="font-semibold">"{selectedMethod.label}" selected</p>
-            <p className="text-sm">
-              Check issue types with <OctagonAlert size={14} className="inline text-red-600 mx-1" />{" "}
-              to see which incompatible issues need attention.
-            </p>
-          </div>
-        </div>,
-        {
-          duration: 5000,
-        },
-      );
-    }
-  }, [selectedMethod?.id]);
-
   const supportedCount = methods.filter((m) => isSupported(m.compatible)).length;
 
   return (
     <div className="mb-3">
       <button
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="flex w-full flex-col items-start rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left"
+        className="flex w-full flex-col cursor-pointer items-start rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-left"
       >
         <h4 className="mb-2 text-sm font-semibold tracking-wide text-choras-primary">
           Simulation Method Compatibility

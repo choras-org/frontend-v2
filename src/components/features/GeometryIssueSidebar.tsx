@@ -192,7 +192,16 @@ export default function GeometryIssueSidebar() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="w-full">
+                          <span
+                            className={`w-full ${
+                              isDeciding ||
+                              repairStatus === "Rejected" ||
+                              repairStatus === null ||
+                              noSupportedInitialMethod
+                                ? "cursor-not-allowed"
+                                : ""
+                            }`}
+                          >
                             <Button
                               onClick={() => setShowConfirmDialog(true)}
                               disabled={
@@ -201,7 +210,7 @@ export default function GeometryIssueSidebar() {
                                 repairStatus === null ||
                                 noSupportedInitialMethod
                               }
-                              className="w-full cursor-pointer border border-choras-primary bg-white text-choras-primary hover:bg-choras-primary hover:text-white disabled:cursor-not-allowed"
+                              className="w-full cursor-pointer border border-choras-primary bg-white text-choras-primary hover:bg-choras-primary hover:text-white disabled:pointer-events-none disabled:opacity-50"
                             >
                               {repairStatus === "Rejected"
                                 ? "Using Initial Model"

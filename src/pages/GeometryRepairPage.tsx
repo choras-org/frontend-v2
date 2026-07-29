@@ -3,13 +3,32 @@ import GeometryRepairSidebar from "@/components/features/GeometryRepairSidebar";
 import { ModelViewer } from "@/components/features/viewport/ModelViewer";
 import { AppLayout } from "@/components/ui/app-layout";
 import { useParams } from "react-router";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
+import { OctagonAlert } from "lucide-react";
+import { toast } from "sonner";
 import { clearGeometryIssues, clearRemainingIssues } from "@/store/geometryIssueSlice";
+import { useGetModelQuery } from "@/store/modelApi";
+import type { RootState } from "@/store";
 
 export function GeometryRepairPage() {
   const { modelId } = useParams() as { modelId: string };
   const dispatch = useDispatch();
+
+  const { data: model } = useGetModelQuery(modelId);
+  const selectedMethod = useSelector(
+    (state: RootState) => state.simulationSettings.selectedSimulationMethod,
+  );
+
+  const geometryStatus = model?.geometryStatus ?? null;
+  // Treat "model not yet loaded" as processing so we don't toast prematurely
+  // while the query resolves (which would otherwise fire once before the status
+  // is known and again after the repair completes).
+  const isProcessing = !model || geometryStatus === "Pending" || geometryStatus === "Processing";
+
+  // Track the last method we toasted for so a single selection never toasts
+  // twice (e.g. from transient status transitions or StrictMode remounts).
+  const lastToastedMethodId = useRef<string | number | null>(null);
 
   useEffect(() => {
     return () => {
@@ -17,6 +36,26 @@ export function GeometryRepairPage() {
       dispatch(clearRemainingIssues());
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedMethod && !isProcessing && lastToastedMethodId.current !== selectedMethod.id) {
+      lastToastedMethodId.current = selectedMethod.id;
+      toast.info(
+        <div className="flex items-center gap-2">
+          <div>
+            <p className="font-semibold">"{selectedMethod.label}" selected</p>
+            <p className="text-sm">
+              Check issue types with <OctagonAlert size={14} className="inline text-red-600 mx-1" />{" "}
+              to see which incompatible issues need attention.
+            </p>
+          </div>
+        </div>,
+        {
+          duration: 5000,
+        },
+      );
+    }
+  }, [selectedMethod?.id, isProcessing]);
 
   return (
     <AppLayout

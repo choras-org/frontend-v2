@@ -211,7 +211,16 @@ export default function GeometryRepairSidebar() {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="w-full">
+                        <span
+                          className={`w-full ${
+                            isDeciding ||
+                            repairStatus === "Accepted" ||
+                            repairStatus === null ||
+                            noSupportedRepairedMethod
+                              ? "cursor-not-allowed"
+                              : ""
+                          }`}
+                        >
                           <Button
                             onClick={() => setShowConfirmDialog(true)}
                             disabled={
@@ -220,7 +229,7 @@ export default function GeometryRepairSidebar() {
                               repairStatus === null ||
                               noSupportedRepairedMethod
                             }
-                            className="w-full font-semibold cursor-pointer border-green-500 bg-green-500 text-white hover:bg-green-400 hover:text-white disabled:cursor-not-allowed"
+                            className="w-full font-semibold cursor-pointer border-green-500 bg-green-500 text-white hover:bg-green-400 hover:text-white disabled:pointer-events-none disabled:opacity-50"
                           >
                             {repairStatus === "Accepted"
                               ? "Repair Accepted"
