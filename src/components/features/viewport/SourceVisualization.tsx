@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { Text, TransformControls, Billboard } from "@react-three/drei";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
 import type { RootState } from "@/store";
@@ -128,34 +128,43 @@ export function SourceVisualization({ orbitControlsRef }: SourceVisualizationPro
   const selectedSource = useSelector((state: RootState) => state.sourceReceiver.selectedSource);
   const { updateSimulationData } = useSourceReceiverApi();
 
-  const handleSourceClick = (sourceId: string, event: ThreeEvent<MouseEvent>) => {
-    event.stopPropagation();
-    dispatch(selectSource(selectedSource === sourceId ? null : sourceId));
-  };
+  const handleSourceClick = useCallback(
+    (sourceId: string, event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      dispatch(selectSource(selectedSource === sourceId ? null : sourceId));
+    },
+    [selectedSource, dispatch],
+  );
 
-  const handleSourceDoubleClick = (sourceId: string, event: ThreeEvent<MouseEvent>) => {
-    event.stopPropagation();
-    dispatch(selectSource(sourceId));
-    dispatch(setActiveTab("sources"));
-  };
+  const handleSourceDoubleClick = useCallback(
+    (sourceId: string, event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      dispatch(selectSource(sourceId));
+      dispatch(setActiveTab("sources"));
+    },
+    [dispatch],
+  );
 
-  const handleTransformEnd = (sourceId: string, position: THREE.Vector3) => {
-    dispatch(updateSource({ id: sourceId, field: "x", value: Number(position.x.toFixed(2)) }));
-    dispatch(updateSource({ id: sourceId, field: "y", value: Number(position.y.toFixed(2)) }));
-    dispatch(updateSource({ id: sourceId, field: "z", value: Number(position.z.toFixed(2)) }));
+  const handleTransformEnd = useCallback(
+    (sourceId: string, position: THREE.Vector3) => {
+      dispatch(updateSource({ id: sourceId, field: "x", value: Number(position.x.toFixed(2)) }));
+      dispatch(updateSource({ id: sourceId, field: "y", value: Number(position.y.toFixed(2)) }));
+      dispatch(updateSource({ id: sourceId, field: "z", value: Number(position.z.toFixed(2)) }));
 
-    const updatedSources = sources.map((source) =>
-      source.id === sourceId
-        ? {
-            ...source,
-            x: Number(position.x.toFixed(2)),
-            y: Number(position.y.toFixed(2)),
-            z: Number(position.z.toFixed(2)),
-          }
-        : source,
-    );
-    updateSimulationData(updatedSources);
-  };
+      const updatedSources = sources.map((source) =>
+        source.id === sourceId
+          ? {
+              ...source,
+              x: Number(position.x.toFixed(2)),
+              y: Number(position.y.toFixed(2)),
+              z: Number(position.z.toFixed(2)),
+            }
+          : source,
+      );
+      updateSimulationData(updatedSources);
+    },
+    [sources, dispatch, updateSimulationData],
+  );
 
   return (
     <>

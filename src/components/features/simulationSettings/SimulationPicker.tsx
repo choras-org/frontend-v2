@@ -185,7 +185,8 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
 
         if (
           currentSimulation.simulationMethod &&
-          currentSimulation.simulationMethod !== selectedMethodType
+          currentSimulation.simulationMethod !== selectedMethodType &&
+          !isMethodDisabled(currentSimulation.simulationMethod)
         ) {
           dispatch(setSelectedMethodType(currentSimulation.simulationMethod));
         }
@@ -211,7 +212,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
         }
       }
     }
-  }, [simulationId, simulations, dispatch, selectedMethodType]);
+  }, [simulationId, simulations, dispatch, selectedMethodType, isMethodDisabled]);
 
   // Auto-select first available method based on compatibility
   useEffect(() => {
