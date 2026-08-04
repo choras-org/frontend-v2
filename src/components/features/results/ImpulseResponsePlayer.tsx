@@ -146,13 +146,13 @@ const renderFunction: (
         }
       }
 
-      ctx.stroke();
+      // ctx.stroke();
 
-      // Draw center line
-      ctx.strokeStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(0, offsetY);
-      ctx.lineTo(width, offsetY);
+      // // Draw center line
+      // ctx.strokeStyle = color;
+      // ctx.beginPath();
+      // ctx.moveTo(0, offsetY);
+      // ctx.lineTo(width, offsetY);
       ctx.stroke();
     });
   };

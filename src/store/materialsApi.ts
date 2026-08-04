@@ -12,7 +12,10 @@ export const materialsApi = createApi({
       query: () => "/materials",
       providesTags: [{ type: "Materials", id: "LIST" }],
     }),
-    createMaterial: build.mutation<Material, Omit<Material, "id" | "createdAt" | "updatedAt">>({
+    createMaterial: build.mutation<
+      Material,
+      Omit<Material, "id" | "category" | "createdAt" | "updatedAt">
+    >({
       query: (newMaterial) => ({
         url: "/materials",
         method: "POST",
@@ -20,7 +23,10 @@ export const materialsApi = createApi({
       }),
       invalidatesTags: [{ type: "Materials", id: "LIST" }],
     }),
-    updateMaterial: build.mutation<Material, Omit<Material, "createdAt" | "updatedAt">>({
+    updateMaterial: build.mutation<
+      Material,
+      Omit<Material, "category" | "createdAt" | "updatedAt">
+    >({
       query: ({ id, ...body }) => ({
         url: `/materials/${id}`,
         method: "PUT",

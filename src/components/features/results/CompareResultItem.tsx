@@ -178,14 +178,17 @@ export function CompareResultItem({
           {order}
         </div>
         <span className="text-white text-base font-inter font-normal ml-3">Simulation</span>
-        <div className="flex-1 ml-8">
+        <div className="flex-1 ml-8 min-w-0">
           <Select value={simulationId?.toString()} onValueChange={handleSimulationIdChange}>
-            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray w-full">
+            <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray w-full overflow-hidden">
               <SelectValue placeholder="Select simulation">
-                {selectedSimulation ? selectedSimulation.name : "Select simulation"}
+                <span className="block truncate text-left w-full">
+                  {selectedSimulation ? selectedSimulation.name : "Select simulation"}
+                </span>
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="bg-choras-dark border-choras-gray">
+
+            <SelectContent className="bg-choras-dark border-choras-gray w-max min-w-[var(--radix-select-trigger-width)] max-w-[400px]">
               {simulations
                 ?.filter(
                   (simulation) =>

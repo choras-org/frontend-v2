@@ -1,4 +1,4 @@
-import { AudioLinesIcon } from "lucide-react";
+import { AudioLinesIcon, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,10 @@ import {
 import { cn } from "@/libs/style";
 import { formatBytes } from "@/helpers/file";
 import { http } from "@/libs/http";
+import { useFetchExampleModelsQuery } from "@/store/modelApi";
+import type { ExampleModel } from "@/types/model";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 // 3D Model renderer component
 interface ModelRendererProps {
@@ -39,7 +43,6 @@ interface ModelRendererProps {
 
 const UploadModelSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
-  // single File expected (only .obj or .dxf)
   file: z
     .instanceof(File, { message: "Please upload a file." })
     .refine((file: File) => file.size <= 100_000_000, { message: "Max file size is 100MB." })
@@ -69,15 +72,12 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Setup Three.js scene
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x596b6b);
 
-        // Use 3:2 aspect ratio to match ModelCard display (720x480)
         const width = 720;
         const height = 480;
 
-        // Use lower FOV for less distortion and more isometric look
         const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 10000);
         camera.position.set(0, 0, 100);
 
@@ -90,7 +90,6 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-        // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
         scene.add(ambientLight);
 
@@ -106,28 +105,20 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
         const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
         if (fileExtension === "obj") {
-          // Read file as text
           const reader = new FileReader();
           reader.onload = async (e) => {
             try {
               const fileContent = e.target?.result as string;
               const loader = new OBJLoader();
-
-              // Parse OBJ content directly
               const object = loader.parse(fileContent);
-
-              // Create a container for the model
               const modelGroup = new THREE.Group();
 
-              // Process all geometries
               object.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
-                  // Compute vertex normals if not present
                   if (!child.geometry.attributes.normal) {
                     child.geometry.computeVertexNormals();
                   }
 
-                  // Create a proper material if missing or default
                   const material = new THREE.MeshPhongMaterial({
                     color: 0xffffff,
                     emissive: 0x555555,
@@ -145,25 +136,21 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
               modelGroup.add(object);
               scene.add(modelGroup);
 
-              // Compute bounding box
               const box = new THREE.Box3().setFromObject(modelGroup);
               const center = box.getCenter(new THREE.Vector3());
               const size = box.getSize(new THREE.Vector3());
 
-              // Check if model has actual geometry
               const maxDim = Math.max(size.x, size.y, size.z);
               if (maxDim === 0 || maxDim === Infinity) {
                 throw new Error("Model has no valid geometry");
               }
 
-              // Fit camera to geometry with better positioning for isometric-like view
               const fov = camera.fov * (Math.PI / 180);
               let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2));
               cameraDistance *= 1.8;
 
-              // Position camera at an angle for better 3D view with more top-down perspective
-              const horizontalAngle = Math.PI / 5; // ~36 degrees horizontal
-              const verticalAngle = Math.PI / 8; // ~22.5 degrees from horizontal
+              const horizontalAngle = Math.PI / 5;
+              const verticalAngle = Math.PI / 8;
 
               camera.position.set(
                 center.x + cameraDistance * Math.sin(horizontalAngle) * Math.cos(verticalAngle),
@@ -173,7 +160,6 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
               camera.lookAt(center);
               camera.updateProjectionMatrix();
 
-              // Render and capture
               renderer.render(scene, camera);
 
               setTimeout(() => {
@@ -202,8 +188,6 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
 
           reader.readAsText(file);
         } else if (fileExtension === "dxf") {
-          // For DXF, we would need dxf-parser and conversion to Three.js
-          // For now, show a placeholder
           toast.warning("DXF preview not yet supported. Screenshot will be blank.");
           setTimeout(() => {
             renderer.render(scene, camera);
@@ -224,16 +208,7 @@ function ModelRenderer({ file, onScreenshotReady }: ModelRendererProps) {
     processModel();
   }, [file, onScreenshotReady]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        display: "none",
-      }}
-      width={720}
-      height={480}
-    />
-  );
+  return <canvas ref={canvasRef} style={{ display: "none" }} width={720} height={480} />;
 }
 
 export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps) {
@@ -241,6 +216,9 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [screenshot, setScreenshot] = useState<Blob | null>(null);
   const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
+  const [selectedExampleId, setSelectedExampleId] = useState<string | null>(null);
+  const [isLoadingExample, setIsLoadingExample] = useState(false);
+  const { data: exampleModels } = useFetchExampleModelsQuery();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const form = useForm({
@@ -251,57 +229,69 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
     },
   });
 
+  const handleSelectExampleModel = async (example: ExampleModel) => {
+    if (selectedExampleId === example.id) return;
+
+    try {
+      setIsLoadingExample(true);
+      setIsCapturingScreenshot(false); // Reset current capture trigger state to clean old cycle
+      setSelectedExampleId(example.id);
+
+      form.setValue("name", example.name, { shouldValidate: true });
+
+      const response = await fetch(example.modelUrl);
+      if (!response.ok) throw new Error("Failed to download example file.");
+
+      const blob = await response.blob();
+      const fileObject = new File([blob], example.fileName, { type: "text/plain" });
+
+      setIsCapturingScreenshot(true); // Fire up capturing mode just before assigning file
+      form.setValue("file", fileObject, { shouldValidate: true });
+      toast.success(`Loaded ${example.name} successfully.`);
+    } catch (error) {
+      console.error("Error loading example model:", error);
+      toast.error("Failed to load example model. Please try again.");
+      setSelectedExampleId(null);
+      setIsCapturingScreenshot(false);
+    } finally {
+      setIsLoadingExample(false);
+    }
+  };
+
   const handleUploadModelImage = async () => {
     const formData = new FormData();
     formData.append("file", screenshot as Blob, `model-screenshot-${Date.now()}.png`);
     const { data } = await http.post("/models/upload-image", formData, {
       withCredentials: false,
     });
-
     return data.imagePath;
   };
 
   const onSubmit = async (data: UploadModelData) => {
     try {
       setIsSubmitting(true);
-      // 1. get file slot /files
       const { data: fileSlot } = await http.get("/files");
 
-      // 2. upload file to that slot
       const formData = new FormData();
       formData.append("file", data.file, data.file.name);
       const { data: uploadResult } = await http.post(fileSlot.uploadUrl, formData, {
         withCredentials: false,
       });
 
-      // 3. delete file slot
-      const { data: deleteResult } = await http.delete("/files", {
-        params: {
-          slot: fileSlot.id,
-        },
+      await http.delete("/files", {
+        params: { slot: fileSlot.id },
         withCredentials: false,
       });
-      console.log(deleteResult, "<<< deleteResult");
 
-      // 4. geometry check by upload id
       const { data: createGeometryCheckResult } = await http({
         method: "POST",
         url: "/geometryCheck",
-        params: {
-          fileUploadId: uploadResult.id,
-        },
+        params: { fileUploadId: uploadResult.id },
       });
-      console.log(createGeometryCheckResult, "<<< createGeometryCheckResult");
-
-      // FYI:
-      // somehow, the legacy code use `GET /geometryCheck` to check the result with polling every 2 seconds
-      // also they call the endpoint `GET /geometryCheck/result?taskId=x` to get the final result
-      // then i check the backend code, seems the process of geomeryCheck is synchronous and no need to polling
-      // so after calling `POST /geometryCheck` we can directly use the result to create the model
 
       const imagePath = await handleUploadModelImage();
 
-      const { data: modelCreateResult } = await http({
+      await http({
         method: "POST",
         url: "/models",
         data: {
@@ -311,7 +301,6 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
           imagePath: imagePath,
         },
       });
-      console.log(modelCreateResult, "<<< modelCreateResult");
 
       setOpen(false);
       onSuccess?.();
@@ -324,10 +313,11 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
   };
 
   useEffect(() => {
-    // reset form when dialog is closed
     if (!open) {
       form.reset();
       setScreenshot(null);
+      setSelectedExampleId(null);
+      setIsCapturingScreenshot(false);
       if (fileInputRef.current?.value) fileInputRef.current.value = "";
     }
   }, [open, form]);
@@ -335,8 +325,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
   return (
     <Dialog
       onOpenChange={(newOpen) => {
-        // Prevent closing while capturing screenshot
-        if (!newOpen && isCapturingScreenshot) {
+        if (!newOpen && (isCapturingScreenshot || isLoadingExample)) {
           return;
         }
         setOpen(newOpen);
@@ -347,8 +336,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
       <DialogContent
         className="max-w-md"
         onInteractOutside={(e) => {
-          // Prevent closing while capturing screenshot
-          if (isCapturingScreenshot) {
+          if (isCapturingScreenshot || isLoadingExample) {
             e.preventDefault();
           }
         }}
@@ -363,6 +351,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
             </DialogHeader>
 
             <div className="space-y-4 my-6">
+              {/* 1. Name Input Field */}
               <FormField
                 control={form.control}
                 name="name"
@@ -370,13 +359,18 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Model Name" {...field} disabled={isSubmitting} />
+                      <Input
+                        placeholder="Model Name"
+                        {...field}
+                        disabled={isSubmitting || isLoadingExample}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* 2. File Dropzone & Preview Field */}
               <FormField
                 control={form.control}
                 name="file"
@@ -387,7 +381,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                       <div>
                         {field.value && (
                           <ModelRenderer
-                            key={field.value.name}
+                            key={`${field.value.name}_${selectedExampleId || "manual"}`} // Fix race condition with unique key string
                             file={field.value}
                             onScreenshotReady={(blob) => {
                               setScreenshot(blob);
@@ -410,7 +404,6 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                             e.stopPropagation();
                           }}
                         >
-                          {/* file icon */}
                           <div className="w-12 h-12 mb-3 flex items-center justify-center bg-muted rounded-md">
                             <AudioLinesIcon />
                           </div>
@@ -439,16 +432,16 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                             type="file"
                             accept=".obj,.dxf"
                             className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
+                            disabled={isLoadingExample || isSubmitting}
                             onChange={(e) => {
                               e.stopPropagation();
                               const f =
                                 e.target.files && e.target.files.length > 0
                                   ? e.target.files[0]
                                   : undefined;
-
                               if (f) {
+                                setSelectedExampleId(null);
                                 setIsCapturingScreenshot(true);
-                                console.log("File selected:", f.name);
                               }
                               field.onChange(f);
                             }}
@@ -459,18 +452,16 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                             className={cn(
                               "p-3 border rounded-md h-64 flex flex-col justify-center items-center gap-3",
                               {
-                                "opacity-50 pointer-events-none": isSubmitting,
+                                "opacity-50 pointer-events-none": isSubmitting || isLoadingExample,
                                 "border-destructive": fieldState.error,
                                 "bg-red-50": fieldState.error,
                               },
                             )}
                           >
-                            {/* file icon */}
                             <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-md">
                               <AudioLinesIcon />
                             </div>
 
-                            {/* metadata */}
                             <div className="text-center">
                               <div
                                 className={cn("font-medium", {
@@ -488,12 +479,14 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                               </div>
                             </div>
 
-                            {/* actions row */}
                             <div className="flex items-center gap-3">
                               <Button
                                 type="button"
                                 variant="secondary"
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={() => {
+                                  setSelectedExampleId(null);
+                                  fileInputRef.current?.click();
+                                }}
                                 size="sm"
                               >
                                 Change
@@ -503,10 +496,8 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => {
-                                  // Reset file input value to allow re-uploading the same file if needed
                                   if (fileInputRef.current?.value) fileInputRef.current.value = "";
-
-                                  // Reset field value
+                                  setSelectedExampleId(null);
                                   field.onChange(undefined);
                                 }}
                               >
@@ -521,16 +512,80 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                   </FormItem>
                 )}
               />
+
+              {/* 3. "OR" Divider */}
+              <div className="relative my-4 flex py-1 items-center text-xs uppercase text-muted-foreground">
+                <div className="flex-grow border-t" />
+                <span className="mx-2 flex-shrink bg-background px-2 font-medium tracking-wider">
+                  Or use quick example
+                </span>
+                <div className="flex-grow border-t" />
+              </div>
+
+              {/* 4. Example Models Grid List */}
+              <div className="grid grid-cols-1 gap-2">
+                {exampleModels?.map((example) => (
+                  <div
+                    key={example.id}
+                    onClick={() =>
+                      !isSubmitting && !isLoadingExample && handleSelectExampleModel(example)
+                    }
+                    className={cn(
+                      "flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-accent",
+                      {
+                        "border-primary bg-primary/5 ring-1 ring-primary":
+                          selectedExampleId === example.id,
+                        "opacity-50 pointer-events-none": isSubmitting || isLoadingExample,
+                      },
+                    )}
+                  >
+                    <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden border flex-shrink-0">
+                      {example.thumbnailUrl ? (
+                        <img
+                          src={`${API_URL}/${example.thumbnailUrl}`}
+                          alt={example.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <AudioLinesIcon className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{example.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {example.description}
+                      </div>
+                    </div>
+                    {selectedExampleId === example.id && (
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 text-primary-foreground" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button disabled={isSubmitting} variant="outline">
+                <Button disabled={isSubmitting || isLoadingExample} variant="outline">
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={isSubmitting || isCapturingScreenshot}>
-                {isSubmitting ? "Uploading..." : isCapturingScreenshot ? "Capturing..." : "Upload"}
+              <Button
+                type="submit"
+                disabled={isSubmitting || isCapturingScreenshot || isLoadingExample}
+              >
+                {isSubmitting
+                  ? "Uploading..."
+                  : isLoadingExample
+                    ? "Loading Example..."
+                    : isCapturingScreenshot
+                      ? "Capturing..."
+                      : "Upload"}
               </Button>
             </DialogFooter>
           </form>

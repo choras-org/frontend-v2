@@ -1,6 +1,5 @@
 import { Play, Square, AlertTriangle, ChartColumn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSimulationRunner } from "@/hooks/useSimulationRunner";
 import { useSimulationValidation } from "@/hooks/useSimulationValidation";
@@ -21,8 +20,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
+import { SimulationSettingsErrorDialog } from "../SimulationSettingsErrorDialog";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import {
+  useGetUserPreferencesQuery,
+  useUpdateUserPreferenceMutation,
+} from "@/store/userPreferenceApi";
+import type { UserPreference } from "@/types/userPreference";
+import { toast } from "sonner";
 
 export function RunSimulationButton() {
   const { isRunning, progress, startSimulation, cancelAndStop } = useSimulationRunner();
@@ -37,8 +43,10 @@ export function RunSimulationButton() {
   const shouldAutoRun = useSelector((state: RootState) => state.simulation.shouldAutoRun);
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const [showSimulationSettingsErrors, setShowSimulationSettingsErrors] = useState(false);
-  const [simulationSettingsErrorsDontShowAgain, setSimulationSettingsErrorsDontShowAgain] =
-    useState(localStorage.getItem("simulationSettingsErrorsDontShowAgain") === "true");
+  const [hideSimulationSettingErrors, setHideSimulationSettingErrors] = useState(false);
+  const { data: userPreferences } = useGetUserPreferencesQuery();
+  const [userPreference, setUserPreference] = useState<UserPreference | null>(null);
+  const [updateUserPreference] = useUpdateUserPreferenceMutation();
 
   const currentSimulation = simulations?.find((sim) => sim.id === Number(simulationId));
 
@@ -63,7 +71,20 @@ export function RunSimulationButton() {
     }
   }, [shouldAutoRun, activeSimulation, isValid, isRunning, dispatch, startSimulation]);
 
-  const handleClick = () => {
+  useEffect(() => {
+    if (userPreferences) {
+      for (let i = 0; i < userPreferences.length; i++) {
+        const userPreference = userPreferences[i];
+        if (userPreferences) {
+          setHideSimulationSettingErrors(userPreference.settings.hideSimulationSettingErrors);
+          setUserPreference(userPreference);
+          break;
+        }
+      }
+    }
+  }, [userPreferences]);
+
+  const handleClick = async () => {
     if (isCompleted) {
       navigate(`/editor/${modelId}/${simulationId}/results`);
     } else if (isRunning) {
@@ -77,12 +98,9 @@ export function RunSimulationButton() {
         }),
       );
     } else {
-      const simulationSettingsErrors = validateSimulationSettings();
+      const simulationSettingsErrors = await validateSimulationSettings();
 
-      if (
-        !simulationSettingsErrorsDontShowAgain &&
-        Object.keys(simulationSettingsErrors).length > 0
-      ) {
+      if (!hideSimulationSettingErrors && Object.keys(simulationSettingsErrors).length > 0) {
         dispatch(
           navigateToTabAndHighlight({
             tab: "settings",
@@ -143,6 +161,22 @@ export function RunSimulationButton() {
       return errors.map((error) => error.message).join(", ");
     }
     return "Run Simulation";
+  };
+
+  const handleHideSimulationSettingErrors = async (checked: boolean) => {
+    try {
+      await updateUserPreference({
+        id: userPreference?.id || "1",
+        settings: {
+          hideSimulationSettingErrors: checked,
+        },
+      }).unwrap();
+      setHideSimulationSettingErrors(!!checked);
+
+      toast.success("Success update user preferences");
+    } catch {
+      toast.error("Failed to delete user preference");
+    }
   };
 
   if (!simulations || simulations.length === 0 || !simulationId) {
@@ -243,59 +277,14 @@ export function RunSimulationButton() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog
+      <SimulationSettingsErrorDialog
         open={showSimulationSettingsErrors}
         onOpenChange={setShowSimulationSettingsErrors}
-      >
-        <AlertDialogContent className="min-w-[550px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Simulation Settings Errors</AlertDialogTitle>
-            <AlertDialogDescription>
-              The following parameters are outside of the defined ranges:
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="px-6">
-            <ul className="list-disc list-inside">
-              {Object.entries(simulationSettingsErrors).map(([param, message]) => (
-                <li key={param}>{message}</li>
-              ))}
-            </ul>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            The simulation method might break. Are you sure you want to continue?
-          </p>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="dontShowAgain"
-                checked={simulationSettingsErrorsDontShowAgain}
-                onCheckedChange={(checked) => {
-                  setSimulationSettingsErrorsDontShowAgain(!!checked);
-                  localStorage.setItem(
-                    "simulationSettingsErrorsDontShowAgain",
-                    (!!checked).toString(),
-                  );
-                }}
-              />
-              <label
-                htmlFor="dontShowAgain"
-                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Don't show this message again
-              </label>
-            </div>
-            <div className="flex gap-2">
-              <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleRunSimulation}
-                className="bg-choras-primary hover:bg-choras-primary/80 cursor-pointer"
-              >
-                Proceed Anyway
-              </AlertDialogAction>
-            </div>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+        simulationSettingsErrors={simulationSettingsErrors}
+        hideSimulationSettingErrors={hideSimulationSettingErrors}
+        onHideChange={handleHideSimulationSettingErrors}
+        onProceed={handleRunSimulation}
+      />
     </>
   );
 }

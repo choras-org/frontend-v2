@@ -2,6 +2,105 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.86](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.85...v0.0.86) (2026-07-09)
+
+### Bug Fixes
+
+- improve toast messages for audio file upload and error handling ([d1b91d6](https://github.com/ajatdarojat45/choras-frontend/commit/d1b91d61782c99682cdd1c7f027158ed598a1c52))
+- update toast messages for audio file deletion ([529affa](https://github.com/ajatdarojat45/choras-frontend/commit/529affa39000ec23677d06075ea1f8e2d3972644))
+
+### [0.0.85](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.84...v0.0.85) (2026-07-09)
+
+### Features
+
+- comment out center line drawing in renderFunction ([22b7481](https://github.com/ajatdarojat45/choras-frontend/commit/22b7481388e5b5e89e8a6d790f6bcd8a26ac7a94))
+
+### [0.0.84](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.83...v0.0.84) (2026-07-01)
+
+### Features
+
+- add categoryId to Material interface ([f9c3cc4](https://github.com/ajatdarojat45/choras-frontend/commit/f9c3cc47504aca97998b52ffca28746df6570866))
+- add MaterialCategory interface ([b197557](https://github.com/ajatdarojat45/choras-frontend/commit/b1975572c2e5d1646d8a2d02d30d3d86c3d03f94))
+- enhance CreateMaterialCategory component with edit functionality and toast notifications ([5fde5ba](https://github.com/ajatdarojat45/choras-frontend/commit/5fde5baee84009a521539941c55266d57debdaf7))
+- implement materialCategoriesApi with CRUD operations ([1dfd66c](https://github.com/ajatdarojat45/choras-frontend/commit/1dfd66ca1aed588d94fc7ab544b26d5a7b837b00))
+- integrate materialCategoriesApi into the Redux store ([629cbe3](https://github.com/ajatdarojat45/choras-frontend/commit/629cbe3c2d30e59f9ff97a0dfc9db09ad86e65ff))
+- refactor SurfaceMaterialList to remove unused dispatch and syncCategoriesFromMaterials ([2855f6b](https://github.com/ajatdarojat45/choras-frontend/commit/2855f6b60c587cd6463c202433faef77cc678b21))
+- remove materialSlice and associated localStorage logic ([3119d12](https://github.com/ajatdarojat45/choras-frontend/commit/3119d120a55dde0d00e178e48495e0fe51437f0e))
+- update createMaterial and updateMaterial mutations to include category in type definitions ([0b08ac0](https://github.com/ajatdarojat45/choras-frontend/commit/0b08ac08803bf14b6bbae553c591bf7b2733cc90))
+- update handleCreateMaterial to exclude category and change category to categoryId in material object ([1fb9716](https://github.com/ajatdarojat45/choras-frontend/commit/1fb9716483a6460437db2004b773b76e9f0129f6))
+- update MaterialFormDialog to use categoryId and integrate materialCategoriesApi ([f5ffaa0](https://github.com/ajatdarojat45/choras-frontend/commit/f5ffaa0cee776c1076016a0c4f198d59ca7c6632))
+
+### [0.0.83](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.82...v0.0.83) (2026-06-24)
+
+### Bug Fixes
+
+- handle long simulaiton name ([a0a5325](https://github.com/ajatdarojat45/choras-frontend/commit/a0a53251f52ad6f33ed03b9c844ba9a531d9a43a))
+
+### [0.0.82](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.81...v0.0.82) (2026-06-23)
+
+### Bug Fixes
+
+- download setting.json ([35148ae](https://github.com/ajatdarojat45/choras-frontend/commit/35148ae292e46c72b625d378896065a18f64f67d))
+
+### [0.0.81](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.80...v0.0.81) (2026-06-19)
+
+### Features
+
+- add fetchExampleModels function ([204ab95](https://github.com/ajatdarojat45/choras-frontend/commit/204ab952d0c53d107b2ccbe34a81138ce8d4bd3e))
+- render example models list ([bde33c7](https://github.com/ajatdarojat45/choras-frontend/commit/bde33c76e4b01c6c1bf5c7c3c75403d5b60f611b))
+
+### [0.0.81](https://github.com/dhimashary/CHORAS/compare/v0.0.80...v0.0.81) (2026-07-14)
+
+### Features
+
+- add support for virtualized rendering and geometry selection enhancements ([728a849](https://github.com/dhimashary/CHORAS/commit/728a849d4b511671063eec86fd93657d0804ead5))
+- enhance geometry selection and material assignment functionality ([da26903](https://github.com/dhimashary/CHORAS/commit/da26903ce449fd1e69dbc20739e62135d814eff4))
+- implement lazy loading for material dropdown and group surface management ([c8960b3](https://github.com/dhimashary/CHORAS/commit/c8960b378dad71e9a3c1a957aea0cbb014f97f7b))
+- integrate mesh registry for improved selection and highlighting of current model meshes ([918f720](https://github.com/dhimashary/CHORAS/commit/918f7203c3060ca0e4177b9f0da9398c055f238e))
+
+### Bug Fixes
+
+- Add correct tab title and logo ([#179](https://github.com/dhimashary/CHORAS/issues/179)) ([3c909d1](https://github.com/dhimashary/CHORAS/commit/3c909d1f8faa7458936d23663b6b16467aed66f1)), closes [#180](https://github.com/dhimashary/CHORAS/issues/180)
+
+### [0.0.80](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.79...v0.0.80) (2026-06-17)
+
+### Features
+
+- add initialization handling for simulation method selection ([f8cc0a8](https://github.com/ajatdarojat45/choras-frontend/commit/f8cc0a8c44536b18e7cad7c4b9e06fcb4655ba9c))
+
+### [0.0.79](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.78...v0.0.79) (2026-06-17)
+
+### Features
+
+- add SimulationSettingsErrorDialog component to handle simulation errors ([3e0d9fc](https://github.com/ajatdarojat45/choras-frontend/commit/3e0d9fc45b1852e9016cf9f86e389d2244d2d76e))
+- add UserPreference interface to define user settings structure ([9293a9f](https://github.com/ajatdarojat45/choras-frontend/commit/9293a9f4ce31d5e86f3c962386591882213f720e))
+- add userPreferencesApi to manage user preferences in the store ([08bdeb1](https://github.com/ajatdarojat45/choras-frontend/commit/08bdeb1304a07d034c68b9508f2a483f1d98b4d8))
+- integrate user preferences for simulation settings error handling ([763a976](https://github.com/ajatdarojat45/choras-frontend/commit/763a97638428c268613df97d9f4ed46dd87284d4))
+
+### [0.0.78](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.77...v0.0.78) (2026-06-17)
+
+### Features
+
+- implement debounce functionality for input changes in CoordinateInput component ([70323a6](https://github.com/ajatdarojat45/choras-frontend/commit/70323a64e2fb4e2464900356740b2f58856807c5))
+
+### [0.0.77](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.76...v0.0.77) (2026-06-15)
+
+### Features
+
+- enhance simulation settings validation with refetch functionality ([f3ed3a4](https://github.com/ajatdarojat45/choras-frontend/commit/f3ed3a444a432f80676faaaf313a54f00d6d122c))
+- optimize simulation method handling and improve loading state management ([cac802a](https://github.com/ajatdarojat45/choras-frontend/commit/cac802af080b532cb97941f23ce0d72cafd22193))
+- update handleClick to support async validation of simulation settings ([da0a846](https://github.com/ajatdarojat45/choras-frontend/commit/da0a84667681c1c13092f97f04f82f0c1f3e20fe))
+
+### [0.0.76](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.75...v0.0.76) (2026-06-02)
+
+### Features
+
+- add category selection dropdown with material category creation functionality ([c0b8cc6](https://github.com/ajatdarojat45/choras-frontend/commit/c0b8cc6934e92a20dcf877f018a7a818a06f0054))
+- add material reducer to the store configuration ([0e570dc](https://github.com/ajatdarojat45/choras-frontend/commit/0e570dc71e8c7df5b6703f346f3692084731e58a))
+- implement CreateMaterialCategory component with form validation and dialog functionality ([27a7340](https://github.com/ajatdarojat45/choras-frontend/commit/27a73405870a3bef3cb3594a4b8b6717daef5eef))
+- implement material categories slice with localStorage persistence ([3161523](https://github.com/ajatdarojat45/choras-frontend/commit/3161523a8cbafacba1d8076d4154fbae763e926e))
+- synchronize material categories on materials update ([e62eb56](https://github.com/ajatdarojat45/choras-frontend/commit/e62eb56551c1509db5b8560bf466dd2d5a924ec6))
+
 ### [0.0.75](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.74...v0.0.75) (2026-05-08)
 
 ### [0.0.74](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.73...v0.0.74) (2026-05-06)

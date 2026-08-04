@@ -31,7 +31,7 @@ const getParameterLabel = (key: keyof Parameters) => {
     spl_t0_freq: "dB",
     t20: "s",
     t30: "s",
-    ts: "s",
+    ts: "ms",
   } as const;
 
   return `${key.toUpperCase()} (${units[key] || ""})`;
@@ -50,7 +50,7 @@ export function ResultParameters({ simulationId }: ResultParametersProps) {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Failed to load impulse response</AlertDescription>
+        <AlertDescription>Failed to load room acoustic parameters</AlertDescription>
       </Alert>
     );
   }

@@ -63,7 +63,9 @@ export function SurfaceMaterialList({
     }
   }, [openCreateMaterialDialog]);
 
-  const handleCreate = async (material: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
+  const handleCreate = async (
+    material: Omit<Material, "id" | "category" | "createdAt" | "updatedAt">,
+  ) => {
     try {
       await createMaterial(material).unwrap();
       toast.success("Material created successfully!");
@@ -75,7 +77,9 @@ export function SurfaceMaterialList({
     }
   };
 
-  const handleUpdate = async (payload: Omit<Material, "createdAt" | "updatedAt" | "id">) => {
+  const handleUpdate = async (
+    payload: Omit<Material, "category" | "createdAt" | "updatedAt" | "id">,
+  ) => {
     try {
       await updateMaterial({ id: material?.id as number, ...payload }).unwrap();
       toast.success("Material edited successfully!");
@@ -86,7 +90,9 @@ export function SurfaceMaterialList({
     }
   };
 
-  const handleCopy = async (payload: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
+  const handleCopy = async (
+    payload: Omit<Material, "id" | "category" | "createdAt" | "updatedAt">,
+  ) => {
     try {
       const newMaterial = await createMaterial(payload).unwrap();
 
@@ -138,7 +144,9 @@ export function SurfaceMaterialList({
     setOpenMaterialForm(true);
   };
 
-  const handleSubmit = async (payload: Omit<Material, "id" | "createdAt" | "updatedAt">) => {
+  const handleSubmit = async (
+    payload: Omit<Material, "id" | "category" | "createdAt" | "updatedAt">,
+  ) => {
     if (materialActionType === "Create") {
       await handleCreate(payload);
     } else if (materialActionType === "Edit") {

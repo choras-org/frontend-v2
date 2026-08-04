@@ -62,8 +62,8 @@ export function ProjectCard(props: ProjectCardProps) {
   };
 
   return (
-    <Card className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 card-container">
-      <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-lg h-full flex flex-col justify-between">
+    <Card className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-2xl card-container">
+      <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-xl h-full flex flex-col justify-between">
         <CardHeader className="overflow-hidden relative px-5">
           <CardTitle className="truncate font-inter font-bold text-sm text-choras-primary">
             {project.name}

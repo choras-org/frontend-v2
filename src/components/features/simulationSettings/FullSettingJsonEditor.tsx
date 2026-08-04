@@ -240,7 +240,7 @@ export function FullSettingJsonEditor() {
   }, [jsonValue, validateJsonData, parseAbsorptionCoefficients, buildPayload, updateSimulation]);
 
   const handleCreateMaterial = async (
-    material: Omit<Material, "id" | "createdAt" | "updatedAt">,
+    material: Omit<Material, "id" | "category" | "createdAt" | "updatedAt">,
   ) => {
     try {
       setIsOpenConfirmCreateMaterials(false);
@@ -370,7 +370,7 @@ export function FullSettingJsonEditor() {
             material={{
               name: "",
               description: "",
-              category: "",
+              categoryId: 0,
               absorptionCoefficients: newMaterialsToCreate[activeCreateMaterialIndex].coefficients,
             }}
             isLoading={isCreatingMaterial}

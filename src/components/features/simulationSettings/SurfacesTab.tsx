@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
 import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
@@ -10,7 +11,9 @@ import * as THREE from "three";
 import type { RootState } from "@/store";
 import {
   assignMaterial,
+  assignMaterials,
   removeMaterialAssignment,
+  removeMaterialAssignments,
   clearAllAssignments,
   setAssignments,
 } from "@/store/materialAssignmentSlice";
@@ -25,24 +28,85 @@ import {
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SurfaceInfo } from "@/types/material";
-import { ChevronRight, Eye, EyeOff, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Eye, EyeOff, Plus } from "lucide-react";
 import { SurfaceMaterialList } from "./SurfaceMaterialList";
 import { AbsorptionCoefficientChart } from "./AbsorptionCoefficientChart";
 import { Button } from "@/components/ui/button";
 import { FullSettingJsonEditor } from "./FullSettingJsonEditor";
+
+/**
+ * A material dropdown that only mounts the (relatively heavy) Radix `Select`
+ * when the user interacts with it. Before that it renders a cheap button that
+ * mimics the trigger. This keeps expanding a large surface list fast, since we
+ * mount N lightweight buttons instead of N Radix Selects up front.
+ */
+function LazyMaterialSelect({
+  value,
+  label,
+  onValueChange,
+  children,
+}: {
+  value: string;
+  label: React.ReactNode;
+  onValueChange: (value: string) => void;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="flex h-8 w-full items-center justify-between gap-2 rounded-md border border-choras-gray bg-choras-dark px-3 py-1 text-sm text-white"
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-choras-gray" />
+      </button>
+    );
+  }
+
+  return (
+    <Select
+      defaultOpen
+      value={value}
+      onValueChange={onValueChange}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) setOpen(false);
+      }}
+    >
+      <SelectTrigger
+        size="sm"
+        className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+      >
+        <span className="truncate">{label}</span>
+      </SelectTrigger>
+      <SelectContent className="bg-choras-dark border-choras-gray">{children}</SelectContent>
+    </Select>
+  );
+}
 
 export function SurfacesTab() {
   const dispatch = useDispatch();
   const surfaces = useSurfaces();
   const [showIndividualAssignments, setShowIndividualAssignments] = useState(false);
   const [hiddenSurfaces, setHiddenSurfaces] = useState<Set<string>>(new Set());
-  const selectedSurfaceRowRef = useRef<HTMLTableRowElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const {
+    selectedGeometry,
+    selectedGeometries,
     selectGeometry,
     addHighlightedMesh,
+    addHighlightedMeshes,
     removeHighlightedMesh,
+    removeHighlightedMeshes,
     addSelectedGeometry,
+    addSelectedGeometries,
     removeSelectedGeometry,
+    removeSelectedGeometries,
     clearSelectedGeometries,
   } = useGeometrySelection();
   const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
@@ -58,9 +122,6 @@ export function SurfacesTab() {
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
   const highlightedElement = useSelector((state: RootState) => state.tab.highlightedElement);
-  const { selectedGeometry, selectedGeometries } = useSelector(
-    (state: RootState) => state.geometrySelection,
-  );
   const { data: simulation, error: simulationError } = useGetSimulationByIdQuery(
     activeSimulation?.id ?? 0,
     {
@@ -71,6 +132,7 @@ export function SurfacesTab() {
   const [openMaterialLibrary, setOpenMaterialLibrary] = useState(false);
   const [openCreateMaterialDialog, setOpenCreateMaterialDialog] = useState(false);
   const [bulkMaterialId, setBulkMaterialId] = useState<string>("");
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (simulation?.layerIdByMaterialId) {
@@ -152,7 +214,7 @@ export function SurfacesTab() {
       return;
     }
 
-    const surface = surfaces.find((s) => s.id === surfaceKey);
+    const surface = surfaceById.get(surfaceKey);
 
     // If multiple surfaces selected and current surface is one of them, use bulk assign
     const isMultipleSelected =
@@ -182,7 +244,7 @@ export function SurfacesTab() {
       updatedAssignments = { ...materialAssignments, [surfaceKey]: numMaterialId };
 
       if (surface?.mesh) {
-        const material = materials.find((m) => m.id === numMaterialId);
+        const material = materialById.get(numMaterialId);
         if (material?.absorptionCoefficients) {
           const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
           const absorptionColor = getAbsorptionColor(avgAbsorption);
@@ -201,7 +263,7 @@ export function SurfacesTab() {
     }
 
     let updatedAssignments: Record<string, number>;
-    const material = materials.find((m) => m.id === parseInt(materialId));
+    const material = materialById.get(parseInt(materialId));
 
     if (materialId === "default") {
       dispatch(clearAllAssignments());
@@ -222,14 +284,52 @@ export function SurfacesTab() {
 
       surfaces.forEach((surface) => {
         const surfaceKey = surface.id;
-        dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
         newAssignments[surfaceKey] = numMaterialId;
 
         if (surface.mesh) {
           setMeshBaseColor(surface.mesh, absorptionColor);
         }
       });
+      dispatch(assignMaterials({ meshIds: surfaces.map((s) => s.id), materialId: numMaterialId }));
       updatedAssignments = { ...materialAssignments, ...newAssignments };
+    }
+
+    updateSimulationData(updatedAssignments);
+  };
+
+  const handleAssignGroupMaterials = async (groupSurfaces: SurfaceInfo[], materialId: string) => {
+    if (materialId === "open-library") {
+      setOpenMaterialLibrary(true);
+      return;
+    }
+
+    const updatedAssignments: Record<string, number> = { ...materialAssignments };
+
+    if (materialId === "default") {
+      groupSurfaces.forEach((surface) => {
+        delete updatedAssignments[surface.id];
+        if (surface.mesh) {
+          setMeshBaseColor(surface.mesh, 0xffffff);
+        }
+      });
+      dispatch(removeMaterialAssignments(groupSurfaces.map((s) => s.id)));
+    } else {
+      const numMaterialId = parseInt(materialId);
+      const material = materialById.get(numMaterialId);
+      const avgAbsorption = material?.absorptionCoefficients
+        ? calculateAverageAbsorption(material.absorptionCoefficients)
+        : 0;
+      const absorptionColor = getAbsorptionColor(avgAbsorption);
+
+      groupSurfaces.forEach((surface) => {
+        updatedAssignments[surface.id] = numMaterialId;
+        if (surface.mesh) {
+          setMeshBaseColor(surface.mesh, absorptionColor);
+        }
+      });
+      dispatch(
+        assignMaterials({ meshIds: groupSurfaces.map((s) => s.id), materialId: numMaterialId }),
+      );
     }
 
     updateSimulationData(updatedAssignments);
@@ -237,22 +337,23 @@ export function SurfacesTab() {
 
   const getMaterialName = (materialId?: number) => {
     if (!materialId) return "Default";
-    const material = materials.find((m) => m.id === materialId);
+    const material = materialById.get(materialId);
     return material?.name || "Unknown Material";
   };
 
-  const isMaterialsMixed = () => {
-    if (surfaces.length === 0) return false;
-
-    const allMaterials = surfaces.map((surface) => {
-      const surfaceKey = surface.id;
-      return materialAssignments[surfaceKey];
-    });
-
-    const uniqueMaterials = new Set(allMaterials);
-
-    return uniqueMaterials.size > 1;
+  // Resolve the label shown on a (lazy) material dropdown for a given value.
+  const materialLabelForValue = (value: string) => {
+    if (value === "mixed") return "Mixed";
+    if (value === "default") return "None";
+    const id = parseInt(value);
+    return Number.isNaN(id) ? "None" : getMaterialName(id);
   };
+
+  const isMaterialsMixed = useMemo(() => {
+    if (surfaces.length === 0) return false;
+    const uniqueMaterials = new Set(surfaces.map((surface) => materialAssignments[surface.id]));
+    return uniqueMaterials.size > 1;
+  }, [surfaces, materialAssignments]);
 
   const getDisplayName = (surface: SurfaceInfo, index: number) => {
     if (surface.name && surface.name !== `Surface ${surface.meshId}`) {
@@ -261,17 +362,14 @@ export function SurfacesTab() {
     return `Surface [${index + 1}]`;
   };
 
-  const getAssignAllValue = () => {
+  const getAssignAllValue = useMemo(() => {
     if (surfaces.length === 0) return "default";
 
-    if (isMaterialsMixed()) {
+    if (isMaterialsMixed) {
       return "mixed";
     }
 
-    const assignedMaterials = surfaces.map((surface) => {
-      const surfaceKey = surface.id;
-      return materialAssignments[surfaceKey];
-    });
+    const assignedMaterials = surfaces.map((surface) => materialAssignments[surface.id]);
 
     const firstMaterial = assignedMaterials[0];
     const allSame = assignedMaterials.every((materialId) => materialId === firstMaterial);
@@ -281,6 +379,165 @@ export function SurfacesTab() {
     }
 
     return "default";
+  }, [surfaces, materialAssignments, isMaterialsMixed]);
+
+  // Map each surface id to its global index so display names stay stable
+  // regardless of how surfaces are grouped in the sidebar.
+  const surfaceIndexById = useMemo(() => {
+    const map = new Map<string, number>();
+    surfaces.forEach((surface, index) => map.set(surface.id, index));
+    return map;
+  }, [surfaces]);
+
+  // Group surfaces by their Rhino material name (from the original `usemtl`).
+  const surfaceGroups = useMemo(() => {
+    const groups = new Map<string, SurfaceInfo[]>();
+    surfaces.forEach((surface) => {
+      const groupName = surface.rhinoMaterialName || "Ungrouped";
+      const existing = groups.get(groupName);
+      if (existing) {
+        existing.push(surface);
+      } else {
+        groups.set(groupName, [surface]);
+      }
+    });
+    return Array.from(groups.entries())
+      .map(([name, groupSurfaces]) => ({ name, surfaces: groupSurfaces }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [surfaces]);
+
+  // O(1) lookup maps to avoid repeated linear scans over materials/surfaces.
+  const materialById = useMemo(() => {
+    const map = new Map<number, (typeof materials)[number]>();
+    materials.forEach((material) => map.set(material.id, material));
+    return map;
+  }, [materials]);
+
+  const surfaceById = useMemo(() => {
+    const map = new Map<string, SurfaceInfo>();
+    surfaces.forEach((surface) => map.set(surface.id, surface));
+    return map;
+  }, [surfaces]);
+
+  const surfaceByUuid = useMemo(() => {
+    const map = new Map<string, SurfaceInfo>();
+    surfaces.forEach((surface) => map.set(surface.mesh.uuid, surface));
+    return map;
+  }, [surfaces]);
+
+  type SurfaceGroup = { name: string; surfaces: SurfaceInfo[] };
+  type FlatRow =
+    | { kind: "assign-all"; key: string }
+    | { kind: "group"; key: string; group: SurfaceGroup }
+    | { kind: "surface"; key: string; group: SurfaceGroup; surface: SurfaceInfo; index: number };
+
+  // Flatten the visible tree (assign-all row + group headers + expanded surface
+  // rows) into a single list so it can be virtualized. Only rows for expanded
+  // groups are included here; highlighting in the 3D viewport is handled
+  // separately in `toggleGroup` and covers every surface regardless of what is
+  // rendered.
+  const flatRows = useMemo(() => {
+    const rows: FlatRow[] = [{ kind: "assign-all", key: "__assign_all__" }];
+    if (showIndividualAssignments) {
+      surfaceGroups.forEach((group) => {
+        rows.push({ kind: "group", key: `group:${group.name}`, group });
+        if (expandedGroups.has(group.name)) {
+          group.surfaces.forEach((surface) => {
+            rows.push({
+              kind: "surface",
+              key: `surface:${surface.id}`,
+              group,
+              surface,
+              index: surfaceIndexById.get(surface.id) ?? 0,
+            });
+          });
+        }
+      });
+    }
+    return rows;
+  }, [surfaceGroups, expandedGroups, showIndividualAssignments, surfaceIndexById]);
+
+  // Estimated starting height per row; the real height of each rendered row is
+  // measured dynamically via `measureElement`, so rows may be taller (e.g. when
+  // content wraps) without clipping or overlapping.
+  const ROW_HEIGHT = 48;
+  const rowVirtualizer = useVirtualizer({
+    count: flatRows.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    measureElement: (element) => element.getBoundingClientRect().height,
+    overscan: 0,
+    getItemKey: (index) => flatRows[index].key,
+  });
+
+  const highlightGroupSurfaces = (groupSurfaces: SurfaceInfo[]) => {
+    // Mutate mesh colors directly (cheap, non-Redux) per surface, but batch the
+    // Redux selection/highlight updates into a single dispatch each so opening a
+    // large group does not fire thousands of store updates.
+    groupSurfaces.forEach((surface) => {
+      highlightMesh(surface.mesh, HIGHLIGHT_COLOR);
+    });
+    addHighlightedMeshes(groupSurfaces.map((surface) => surface.mesh));
+    addSelectedGeometries(
+      groupSurfaces.map((surface) => ({
+        mesh: surface.mesh,
+        faceIndex: 0,
+        point: new THREE.Vector3(),
+        materialId: surface.id,
+      })),
+    );
+  };
+
+  const unhighlightGroupSurfaces = (groupSurfaces: SurfaceInfo[]) => {
+    groupSurfaces.forEach((surface) => {
+      restoreOriginalColor(surface.mesh);
+    });
+    const uuids = groupSurfaces.map((surface) => surface.mesh.uuid);
+    removeHighlightedMeshes(uuids);
+    removeSelectedGeometries(uuids);
+  };
+
+  const toggleGroup = (group: { name: string; surfaces: SurfaceInfo[] }) => {
+    const isExpanded = expandedGroups.has(group.name);
+
+    if (isExpanded) {
+      // Collapsing: remove the group's highlight/selection. If the currently
+      // focused surface belongs to this group, deselect it first so the
+      // auto-expand effect does not immediately re-open the group.
+      unhighlightGroupSurfaces(group.surfaces);
+      if (
+        selectedGeometry?.mesh &&
+        group.surfaces.some((surface) => surface.mesh.uuid === selectedGeometry.mesh.uuid)
+      ) {
+        selectGeometry(null);
+      }
+      setExpandedGroups((prev) => {
+        const next = new Set(prev);
+        next.delete(group.name);
+        return next;
+      });
+    } else {
+      // Expanding: highlight every surface in the group in the viewport.
+      highlightGroupSurfaces(group.surfaces);
+      setExpandedGroups((prev) => {
+        const next = new Set(prev);
+        next.add(group.name);
+        return next;
+      });
+    }
+  };
+
+  const isGroupMaterialsMixed = (groupSurfaces: SurfaceInfo[]) => {
+    if (groupSurfaces.length === 0) return false;
+    const unique = new Set(groupSurfaces.map((surface) => materialAssignments[surface.id]));
+    return unique.size > 1;
+  };
+
+  const getGroupAssignValue = (groupSurfaces: SurfaceInfo[]) => {
+    if (groupSurfaces.length === 0) return "default";
+    if (isGroupMaterialsMixed(groupSurfaces)) return "mixed";
+    const first = materialAssignments[groupSurfaces[0].id];
+    return first !== undefined ? first.toString() : "default";
   };
 
   const toggleSurfaceVisibility = (surfaceId: string) => {
@@ -310,38 +567,56 @@ export function SurfacesTab() {
     }, 500);
   };
 
-  const getSelectedSurfaceId = (): string | null => {
+  const selectedSurfaceId = useMemo(() => {
     if (!selectedGeometry?.mesh) return null;
-
-    const selectedMesh = selectedGeometry.mesh;
-    const matchedSurface = surfaces.find(
-      (surface) => surface.mesh === selectedMesh || surface.mesh.uuid === selectedMesh.uuid,
-    );
-
-    return matchedSurface?.id || null;
-  };
-
-  const selectedSurfaceId = getSelectedSurfaceId();
+    const matched = surfaceByUuid.get(selectedGeometry.mesh.uuid);
+    return matched?.id ?? null;
+  }, [selectedGeometry, surfaceByUuid]);
 
   useEffect(() => {
-    if (selectedSurfaceId && !showIndividualAssignments) {
+    if (!selectedSurfaceId) return;
+
+    if (!showIndividualAssignments) {
       setShowIndividualAssignments(true);
     }
 
-    if (selectedSurfaceId && showIndividualAssignments && selectedSurfaceRowRef.current) {
-      setTimeout(() => {
-        selectedSurfaceRowRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }, 50);
-    }
-  }, [selectedSurfaceId, showIndividualAssignments]);
+    // Ensure the group containing the selected surface is expanded so its row
+    // exists in the flattened list and can be scrolled into view.
+    const selectedSurface = surfaces.find((surface) => surface.id === selectedSurfaceId);
+    const groupName = selectedSurface?.rhinoMaterialName || "Ungrouped";
+    setExpandedGroups((prev) => (prev.has(groupName) ? prev : new Set(prev).add(groupName)));
+  }, [selectedSurfaceId, showIndividualAssignments, surfaces]);
+
+  // Scroll the selected surface into view once it is present in the flattened,
+  // virtualized list.
+  useEffect(() => {
+    if (!selectedSurfaceId) return;
+
+    const flatIndex = flatRows.findIndex(
+      (row) => row.kind === "surface" && row.surface.id === selectedSurfaceId,
+    );
+    if (flatIndex < 0) return;
+
+    const timer = setTimeout(() => {
+      rowVirtualizer.scrollToIndex(flatIndex, { align: "center" });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [selectedSurfaceId, flatRows, rowVirtualizer]);
 
   const handleSelectSurface = useCallback(
     (surface: SurfaceInfo) => {
-      // Restore previous mesh if it exists
+      // Restore/deselect every currently highlighted geometry (e.g. all
+      // surfaces of an expanded group) so a plain click keeps only the clicked
+      // surface highlighted and clears the rest. Restoring mesh colors is a
+      // cheap direct mutation; the Redux highlight removal is batched into a
+      // single dispatch to avoid a store update per surface.
+      const uuidsToClear = new Set(Object.keys(selectedGeometries));
+      Object.values(selectedGeometries).forEach((geo) => restoreOriginalColor(geo.mesh));
       if (selectedGeometry?.mesh) {
-        removeHighlightedMesh(selectedGeometry.mesh);
+        uuidsToClear.add(selectedGeometry.mesh.uuid);
         restoreOriginalColor(selectedGeometry.mesh);
       }
+      removeHighlightedMeshes(Array.from(uuidsToClear));
 
       // Highlight and select new mesh
       const payload = {
@@ -357,13 +632,16 @@ export function SurfacesTab() {
       addSelectedGeometry(payload);
     },
     [
+      selectedGeometries,
       selectedGeometry,
       selectGeometry,
       highlightMesh,
       HIGHLIGHT_COLOR,
       addHighlightedMesh,
-      removeHighlightedMesh,
+      removeHighlightedMeshes,
       restoreOriginalColor,
+      clearSelectedGeometries,
+      addSelectedGeometry,
     ],
   );
 
@@ -415,20 +693,22 @@ export function SurfacesTab() {
 
     setBulkMaterialId(materialId);
     let updatedAssignments: Record<string, number>;
-    const material = materials.find((m) => m.id === parseInt(materialId));
+    const material = materialById.get(parseInt(materialId));
 
     if (materialId === "default") {
       const numMaterialId = parseInt(materialId);
       const newAssignments: Record<string, number> = {};
+      const assignedIds: string[] = [];
 
       surfaces.forEach((surface) => {
         if (selectedGeometries[surface.mesh.uuid]) {
           const surfaceKey = surface.id;
-          dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+          assignedIds.push(surfaceKey);
           newAssignments[surfaceKey] = numMaterialId;
           setMeshBaseColor(surface.mesh, 0xffffff);
         }
       });
+      dispatch(assignMaterials({ meshIds: assignedIds, materialId: numMaterialId }));
 
       updatedAssignments = { ...materialAssignments, ...newAssignments };
     } else {
@@ -439,14 +719,16 @@ export function SurfacesTab() {
         : 0;
       const absorptionColor = getAbsorptionColor(avgAbsorption);
 
+      const assignedIds: string[] = [];
       surfaces.forEach((surface) => {
         if (selectedGeometries[surface.mesh.uuid]) {
           const surfaceKey = surface.id;
-          dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
+          assignedIds.push(surfaceKey);
           newAssignments[surfaceKey] = numMaterialId;
           setMeshBaseColor(surface.mesh, absorptionColor);
         }
       });
+      dispatch(assignMaterials({ meshIds: assignedIds, materialId: numMaterialId }));
 
       updatedAssignments = { ...materialAssignments, ...newAssignments };
     }
@@ -523,7 +805,22 @@ export function SurfacesTab() {
             }`}
           >
             <div className="relative">
+              {/* Fixed column header (kept outside the scroll area so the
+                  virtualized body can start at scroll offset 0). */}
+              <div className="flex items-center border-b border-choras-gray pr-4">
+                <div className="w-36 px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Surface
+                </div>
+                <div className="flex-1 px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Material
+                </div>
+              </div>
+
+              {/* Virtualized, scrollable body. Only rows within the viewport are
+                  mounted; group highlighting in the 3D viewport still covers
+                  every surface in the group (see toggleGroup). */}
               <div
+                ref={scrollContainerRef}
                 className="
                 max-h-120 overflow-y-auto pr-4
                 scrollbar-thin
@@ -532,174 +829,220 @@ export function SurfacesTab() {
                 scrollbar-thumb-rounded-full
               "
               >
-                <table className="w-full table-fixed">
-                  <thead>
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-36">
-                        Surface
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Material
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-choras-gray">
-                      <td className="px-3 py-2 text-sm">
-                        <button
-                          onClick={() => setShowIndividualAssignments(!showIndividualAssignments)}
-                          className="flex items-center gap-2 font-medium text-white hover:text-gray-300 transition-colors"
-                        >
-                          <span
-                            className={`transform transition-transform ${showIndividualAssignments ? "rotate-90" : "rotate-0"}`}
-                          >
-                            <ChevronRight size={16} />
-                          </span>
-                          Assign all
-                        </button>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Select
-                          value={getAssignAllValue()}
-                          onValueChange={handleAssignAllMaterials}
-                        >
-                          <SelectTrigger
-                            size="sm"
-                            className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
-                          >
-                            {isMaterialsMixed() ? (
-                              <div className="flex items-center text-white">Mixed</div>
-                            ) : (
-                              <SelectValue placeholder="Select material for all surfaces" />
-                            )}
-                          </SelectTrigger>
-                          <SelectContent className="bg-choras-dark border-choras-gray">
-                            <SelectItem value="default" className="text-white">
-                              None
-                            </SelectItem>
-                            <SelectItem value="mixed" className="text-gray-400" disabled hidden>
-                              Mixed
-                            </SelectItem>
-                            {materialsLoading ? (
-                              <SelectItem value="loading" disabled className="text-gray-400">
-                                Loading materials...
-                              </SelectItem>
-                            ) : materialsError ? (
-                              <SelectItem value="error" disabled className="text-red-400">
-                                Error loading materials
-                              </SelectItem>
-                            ) : (
-                              <TooltipProvider>
-                                {materials.map((material) => (
-                                  <Tooltip key={material.id} delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                      <SelectItem
-                                        value={material.id.toString()}
-                                        className="text-white"
-                                      >
-                                        <span className="truncate block" title={material.name}>
-                                          {material.name}
-                                        </span>
-                                      </SelectItem>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                      side="right"
-                                      className="p-3 bg-choras-dark border-choras-primary"
-                                    >
-                                      <div className="text-sm mb-2 font-medium text-white">
-                                        {material.name}
-                                      </div>
-                                      <AbsorptionCoefficientChart
-                                        coefficients={material.absorptionCoefficients}
-                                        size="md"
-                                      />
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ))}
-                                <hr className="border-t border-gray-700 my-1" />
-                                <SelectItem value="open-library" className="text-choras-primary">
-                                  Open material library
-                                </SelectItem>
-                              </TooltipProvider>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                    </tr>
+                <TooltipProvider>
+                  <div
+                    style={{
+                      height: `${rowVirtualizer.getTotalSize()}px`,
+                      width: "100%",
+                      position: "relative",
+                    }}
+                  >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const row = flatRows[virtualRow.index];
+                      const rowStyle = {
+                        position: "absolute" as const,
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualRow.start}px)`,
+                      };
 
-                    <TooltipProvider>
-                      {showIndividualAssignments &&
-                        surfaces.map((surface, index) => {
-                          const surfaceKey = surface.id;
-                          const assignedMaterialId = materialAssignments[surfaceKey];
-                          const isSelected = selectedSurfaceId === surface.id;
-
-                          return (
-                            <tr
-                              key={surface.id}
-                              ref={isSelected ? selectedSurfaceRowRef : null}
-                              onClick={(e) => {
-                                if (e.ctrlKey || e.metaKey) {
-                                  handleSelectMultipleSurfaces(surface);
-                                } else {
-                                  handleSelectSurface(surface);
+                      if (row.kind === "assign-all") {
+                        return (
+                          <div
+                            key={virtualRow.key}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
+                            style={rowStyle}
+                            className="flex items-center border-b border-choras-gray"
+                          >
+                            <div className="w-36 px-3 py-2 text-sm">
+                              <button
+                                onClick={() =>
+                                  setShowIndividualAssignments(!showIndividualAssignments)
                                 }
-                              }}
-                              className={`border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
-                                selectedGeometries[surface.mesh.uuid]
-                                  ? "bg-choras-primary/20 hover:bg-choras-primary/30"
-                                  : "hover:bg-choras-dark/90"
-                              }`}
-                            >
-                              <td className="px-3 py-2 text-sm w-1/3">
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleSurfaceVisibility(surfaceKey);
-                                    }}
-                                    className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
-                                  >
-                                    {hiddenSurfaces.has(surfaceKey) ? (
-                                      <EyeOff className="h-4 w-4" />
-                                    ) : (
-                                      <Eye className="h-4 w-4" />
-                                    )}
-                                  </div>
-                                  <div className="font-medium truncate">
-                                    {getDisplayName(surface, index)}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
-                                <Select
-                                  value={assignedMaterialId?.toString() || "default"}
-                                  onValueChange={(value) =>
-                                    handleMaterialAssignment(surfaceKey, value)
-                                  }
+                                className="flex items-center gap-2 font-medium text-white hover:text-gray-300 transition-colors"
+                              >
+                                <span
+                                  className={`transform transition-transform ${showIndividualAssignments ? "rotate-90" : "rotate-0"}`}
                                 >
-                                  <SelectTrigger
-                                    size="sm"
-                                    className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                                  <ChevronRight size={16} />
+                                </span>
+                                Assign all
+                              </button>
+                            </div>
+                            <div
+                              className="flex-1 min-w-0 px-3 py-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Select
+                                value={getAssignAllValue}
+                                onValueChange={handleAssignAllMaterials}
+                              >
+                                <SelectTrigger
+                                  size="sm"
+                                  className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                                >
+                                  {isMaterialsMixed ? (
+                                    <div className="flex items-center text-white">Mixed</div>
+                                  ) : (
+                                    <SelectValue placeholder="Select material for all surfaces" />
+                                  )}
+                                </SelectTrigger>
+                                <SelectContent className="bg-choras-dark border-choras-gray">
+                                  <SelectItem value="default" className="text-white">
+                                    None
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="mixed"
+                                    className="text-gray-400"
+                                    disabled
+                                    hidden
                                   >
-                                    <SelectValue
-                                      placeholder={getMaterialName(assignedMaterialId)}
-                                    />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-choras-dark border-choras-gray">
-                                    <SelectItem value="default" className="text-white">
-                                      None
-                                    </SelectItem>
-                                    {materialSelectOptions}
-                                  </SelectContent>
-                                </Select>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </TooltipProvider>
-                  </tbody>
-                </table>
+                                    Mixed
+                                  </SelectItem>
+                                  {materialSelectOptions}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (row.kind === "group") {
+                        const group = row.group;
+                        const isGroupExpanded = expandedGroups.has(group.name);
+                        return (
+                          <div
+                            key={virtualRow.key}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
+                            style={rowStyle}
+                            className="flex items-center border-t border-gray-700 bg-choras-dark/40"
+                          >
+                            <div className="w-36 min-w-0 px-3 py-2 text-sm">
+                              <button
+                                onClick={() => toggleGroup(group)}
+                                className="flex items-center gap-2 font-medium text-white hover:text-gray-300 transition-colors w-full text-left"
+                              >
+                                <span
+                                  className={`transform transition-transform flex-shrink-0 ${isGroupExpanded ? "rotate-90" : "rotate-0"}`}
+                                >
+                                  <ChevronRight size={16} />
+                                </span>
+                                <span className="truncate" title={group.name}>
+                                  {group.name}
+                                </span>
+                                <span className="text-xs text-gray-400 flex-shrink-0">
+                                  ({group.surfaces.length})
+                                </span>
+                              </button>
+                            </div>
+                            <div
+                              className="flex-1 min-w-0 px-3 py-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Select
+                                value={getGroupAssignValue(group.surfaces)}
+                                onValueChange={(value) =>
+                                  handleAssignGroupMaterials(group.surfaces, value)
+                                }
+                              >
+                                <SelectTrigger
+                                  size="sm"
+                                  className="w-full bg-choras-dark border-choras-gray text-white [&>span]:truncate [&>span]:block [&>span]:max-w-full [&>svg]:text-choras-gray"
+                                >
+                                  {isGroupMaterialsMixed(group.surfaces) ? (
+                                    <div className="flex items-center text-white">Mixed</div>
+                                  ) : (
+                                    <SelectValue placeholder="Select material for group" />
+                                  )}
+                                </SelectTrigger>
+                                <SelectContent className="bg-choras-dark border-choras-gray">
+                                  <SelectItem value="default" className="text-white">
+                                    None
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="mixed"
+                                    className="text-gray-400"
+                                    disabled
+                                    hidden
+                                  >
+                                    Mixed
+                                  </SelectItem>
+                                  {materialSelectOptions}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // row.kind === "surface"
+                      const surface = row.surface;
+                      const surfaceKey = surface.id;
+                      const assignedMaterialId = materialAssignments[surfaceKey];
+                      return (
+                        <div
+                          key={virtualRow.key}
+                          data-index={virtualRow.index}
+                          ref={rowVirtualizer.measureElement}
+                          style={rowStyle}
+                          onClick={(e) => {
+                            if (e.ctrlKey || e.metaKey) {
+                              handleSelectMultipleSurfaces(surface);
+                            } else {
+                              handleSelectSurface(surface);
+                            }
+                          }}
+                          className={`flex items-center border-t border-gray-700 transition-colors duration-200 cursor-pointer ${
+                            selectedGeometries[surface.mesh.uuid]
+                              ? "bg-choras-primary/20 hover:bg-choras-primary/30"
+                              : "hover:bg-choras-dark/90"
+                          }`}
+                        >
+                          <div className="w-36 min-w-0 px-3 py-2 text-sm">
+                            <div className="flex items-center gap-2 pl-6">
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSurfaceVisibility(surfaceKey);
+                                }}
+                                className="cursor-pointer text-white hover:text-gray-300 transition-colors flex-shrink-0"
+                              >
+                                {hiddenSurfaces.has(surfaceKey) ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </div>
+                              <div className="font-medium truncate">
+                                {getDisplayName(surface, row.index)}
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            className="flex-1 min-w-0 px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <LazyMaterialSelect
+                              value={assignedMaterialId?.toString() || "default"}
+                              label={materialLabelForValue(
+                                assignedMaterialId?.toString() || "default",
+                              )}
+                              onValueChange={(value) => handleMaterialAssignment(surfaceKey, value)}
+                            >
+                              <SelectItem value="default" className="text-white">
+                                None
+                              </SelectItem>
+                              {materialSelectOptions}
+                            </LazyMaterialSelect>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </TooltipProvider>
               </div>
             </div>
           </div>

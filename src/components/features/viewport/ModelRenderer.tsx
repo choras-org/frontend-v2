@@ -5,6 +5,7 @@ import { useModelLoader } from "@/hooks/useModelLoader";
 import { useGeometrySelection } from "@/hooks/useGeometrySelection";
 import { useMeshHighlight } from "@/hooks/useMeshHighlight";
 import { createEdgeOutlineForObject3D } from "@/helpers/layerProcessor";
+import { meshRegistry } from "@/helpers/meshRegistry";
 import { selectSource, selectReceiver } from "@/store/sourceReceiverSlice";
 import { setActiveTab } from "@/store/tabSlice";
 import type { RootState } from "@/store";
@@ -35,6 +36,7 @@ export function ModelRenderer({
     highlightedMeshes,
     addHighlightedMesh,
     removeHighlightedMesh,
+    removeHighlightedMeshes,
     selectedGeometries,
     addSelectedGeometry,
     removeSelectedGeometry,
@@ -102,18 +104,27 @@ export function ModelRenderer({
     if (object3D) {
       applyViewMode(object3D);
 
-      object3D.traverse((child) => {
-        if (child instanceof THREE.Mesh && child.material) {
-          const materials = Array.isArray(child.material) ? child.material : [child.material];
-          materials.forEach((material) => {
-            if (
-              material instanceof THREE.MeshStandardMaterial ||
-              material instanceof THREE.MeshBasicMaterial
-            ) {
-              material.color.setHex(0xffffff);
-              material.needsUpdate = true;
-            }
-          });
+      // The mesh registry only needs the current model's meshes; drop any left
+      // over from a previously loaded model, then register this model's meshes
+      // so selection/highlight UUIDs resolve back to live objects.
+      meshRegistry.clear();
+
+      modelData.object3D.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          meshRegistry.register(child);
+
+          if (child.material) {
+            const materials = Array.isArray(child.material) ? child.material : [child.material];
+            materials.forEach((material) => {
+              if (
+                material instanceof THREE.MeshStandardMaterial ||
+                material instanceof THREE.MeshBasicMaterial
+              ) {
+                material.color.setHex(0xffffff);
+                material.needsUpdate = true;
+              }
+            });
+          }
         }
       });
 
@@ -230,11 +241,9 @@ export function ModelRenderer({
         const mesh = intersection.object as THREE.Mesh;
 
         if (mesh.visible === false) {
-          Object.keys(selectedGeometries).forEach((uuid) => {
-            const geo = selectedGeometries[uuid];
-            removeHighlightedMesh(geo.mesh);
-            restoreOriginalColor(geo.mesh);
-          });
+          const uuidsToClear = Object.keys(selectedGeometries);
+          uuidsToClear.forEach((uuid) => restoreOriginalColor(selectedGeometries[uuid].mesh));
+          removeHighlightedMeshes(uuidsToClear);
           clearSelection();
           return;
         }
@@ -272,11 +281,9 @@ export function ModelRenderer({
           }
         } else {
           // Single select mode - clear previous and select new
-          Object.keys(selectedGeometries).forEach((uuid) => {
-            const geo = selectedGeometries[uuid];
-            removeHighlightedMesh(geo.mesh);
-            restoreOriginalColor(geo.mesh);
-          });
+          const uuidsToClear = Object.keys(selectedGeometries);
+          uuidsToClear.forEach((uuid) => restoreOriginalColor(selectedGeometries[uuid].mesh));
+          removeHighlightedMeshes(uuidsToClear);
           clearSelection();
 
           highlightMesh(mesh, HIGHLIGHT_COLOR);
@@ -296,17 +303,16 @@ export function ModelRenderer({
           });
         }
       } else {
-        Object.keys(selectedGeometries).forEach((uuid) => {
-          const geo = selectedGeometries[uuid];
-          removeHighlightedMesh(geo.mesh);
-          restoreOriginalColor(geo.mesh);
-        });
+        const uuidsToClear = Object.keys(selectedGeometries);
+        uuidsToClear.forEach((uuid) => restoreOriginalColor(selectedGeometries[uuid].mesh));
+        removeHighlightedMeshes(uuidsToClear);
         clearSelection();
       }
     },
     [
       selectedGeometries,
       removeHighlightedMesh,
+      removeHighlightedMeshes,
       restoreOriginalColor,
       highlightMesh,
       addHighlightedMesh,

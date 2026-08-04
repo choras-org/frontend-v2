@@ -1,7 +1,7 @@
 {
   "name": "app",
   "private": true,
-  "version": "0.0.75",
+  "version": "0.0.86",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,6 +42,7 @@
     "@react-three/fiber": "^9.3.0",
     "@reduxjs/toolkit": "^2.9.0",
     "@tailwindcss/vite": "^4.1.13",
+    "@tanstack/react-virtual": "^3.14.6",
     "@types/jszip": "^3.4.0",
     "@types/three": "^0.180.0",
     "@wavesurfer/react": "^1.0.11",

@@ -14,12 +14,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Material } from "@/types/material";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CreateMaterialCategory } from "./CreateMaterialCategory";
+import { toast } from "sonner";
+import { useGetMaterialCategoriesQuery } from "@/store/materialCategoryApi";
 
 type IProps = {
   isOpen: boolean;
   onOpen: (open: boolean) => void;
-  onSubmit?: (material: Omit<Material, "id" | "createdAt" | "updatedAt">) => void;
-  material?: Omit<Material, "id" | "createdAt" | "updatedAt"> | null;
+  onSubmit?: (material: Omit<Material, "id" | "category" | "createdAt" | "updatedAt">) => void;
+  material?: Omit<Material, "id" | "category" | "createdAt" | "updatedAt"> | null;
   label?: string;
   triggerLabel?: string;
   description?: string;
@@ -47,16 +57,18 @@ export function MaterialFormDialog({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "",
+    categoryId: 0,
     absorptionCoefficients: [0.01, 0.04, 0.14, 0.47, 0.88, 0.53, 0.26],
   });
+  const [selectOpen, setSelectOpen] = useState(false);
+  const { data: materialCategories } = useGetMaterialCategoriesQuery();
 
   useEffect(() => {
     if (material) {
       setFormData({
         name: material.name,
         description: material.description,
-        category: material.category,
+        categoryId: material.categoryId,
         absorptionCoefficients: material.absorptionCoefficients,
       });
     }
@@ -65,7 +77,7 @@ export function MaterialFormDialog({
       setFormData({
         name: "",
         description: "",
-        category: "",
+        categoryId: 0,
         absorptionCoefficients: [0.01, 0.04, 0.14, 0.47, 0.88, 0.53, 0.26],
       });
     };
@@ -99,6 +111,14 @@ export function MaterialFormDialog({
     }
   };
 
+  const handleCreateMaterialCategory = (categoryId: number) => {
+    setSelectOpen(false);
+    toast.success(`Category "${name}" selected`);
+    setTimeout(() => {
+      setFormData({ ...formData, categoryId: categoryId });
+    }, 500);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpen}>
       {isShownTrigger && (
@@ -125,15 +145,36 @@ export function MaterialFormDialog({
               placeholder="Material name"
             />
           </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              value={formData.category}
-              onChange={(e) => handleInputChange("category", e.target.value)}
-              className="col-span-3"
-              placeholder="Material category"
-            />
+            <Label htmlFor="category-select">Category</Label>
+            <Select
+              value={String(formData.categoryId)}
+              onValueChange={(val) => handleInputChange("categoryId", val)}
+              disabled={isLoading}
+              open={selectOpen}
+              onOpenChange={setSelectOpen}
+            >
+              <SelectTrigger id="category-select" className="col-span-3 w-full">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {materialCategories?.map((category) => (
+                  <div key={category.id} className="group relative flex items-center">
+                    <SelectItem value={String(category.id)} className="flex-1 pr-16">
+                      {category.name}
+                    </SelectItem>
+                    <div
+                      className="absolute right-8 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <CreateMaterialCategory category={category} />
+                    </div>
+                  </div>
+                ))}
+                <CreateMaterialCategory onSubmit={handleCreateMaterialCategory} />
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="description" className="text-right mt-2">
@@ -224,7 +265,7 @@ export function MaterialFormDialog({
           <Button
             type="submit"
             onClick={handleSubmit}
-            disabled={isLoading || !formData.name || !formData.category}
+            disabled={isLoading || !formData.name || !formData.categoryId}
           >
             {isLoading ? "Submitting..." : `${label}`}
           </Button>

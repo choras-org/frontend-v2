@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 
 interface CoordinateInputProps {
@@ -10,6 +10,13 @@ interface CoordinateInputProps {
 
 export function CoordinateInput({ value, axis, onChange, onCommit }: CoordinateInputProps) {
   const [localValue, setLocalValue] = useState<string>(value.toString());
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (parseFloat(localValue) !== value && !isNaN(value)) {
@@ -18,14 +25,20 @@ export function CoordinateInput({ value, axis, onChange, onCommit }: CoordinateI
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalValue(e.target.value);
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      commitValue(newValue);
+    }, 500);
   };
 
-  const handleCommit = () => {
-    const numValue = parseFloat(localValue);
+  const commitValue = (val: string) => {
+    const numValue = parseFloat(val);
 
-    if (localValue === "" || isNaN(numValue)) {
-      setLocalValue(value.toString());
+    if (val === "" || isNaN(numValue)) {
+      setLocalValue(String(0));
       return;
     }
 
@@ -36,6 +49,11 @@ export function CoordinateInput({ value, axis, onChange, onCommit }: CoordinateI
       onChange(roundedValue);
       onCommit?.(roundedValue);
     }
+  };
+
+  const handleCommit = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    commitValue(localValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

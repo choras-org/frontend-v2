@@ -156,9 +156,9 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
         simulationId: Number(simulationId),
         auralizationId: auralization.id,
       }).unwrap();
-      toast.success("Convolved sound deleted successfully");
+      toast.success("Audio file deleted successfully");
     } catch {
-      toast.error("Failed to delete convolved sound");
+      toast.error("Failed to delete audio file");
     }
   };
 

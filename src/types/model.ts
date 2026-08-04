@@ -71,3 +71,13 @@ export interface ModelSimulationCompatibility {
   initialCompatibility: ModelCompatibilityBlock;
   repairedCompatibility: ModelCompatibilityBlock;
 }
+
+export interface ExampleModel {
+  description: string;
+  fileName: string;
+  filePath: string;
+  id: string;
+  modelUrl: string;
+  name: string;
+  thumbnailUrl: string;
+}

@@ -8,6 +8,7 @@ export interface Material {
   id: number;
   origin?: string;
   category: string;
+  categoryId: number;
   updatedAt: string;
 }
 

@@ -71,11 +71,11 @@ export function UploadConvolvedAudio({ simulationId }: UploadConvolvedAudioProps
       formData.append("simulation_id", simulationId.toString());
       formData.append("extension", getFileExt(data.file.name));
       await uploadAudioFile(formData).unwrap();
-      toast.success("Audio uploaded (UI-only)");
+      toast.success("Audio file uploaded successfully");
       setOpen(false);
     } catch (error) {
-      console.error("Failed to upload audio", error);
-      toast.error("Failed to upload audio");
+      console.error("Failed to upload audio file", error);
+      toast.error("Failed to upload audio file");
     }
   };
 

@@ -68,6 +68,20 @@ export function ModelViewer({
 
   const modelUrl = detectionStage ? (stageIssue?.modelFileUrl ?? model.modelUrl) : model.modelUrl;
 
+  // For the plain editor view (no repair stage), wait until geometry processing
+  // has finished; the model file may be missing or partially written otherwise.
+  const isProcessing = model.geometryStatus === "Pending" || model.geometryStatus === "Processing";
+  if (!detectionStage && (isProcessing || !modelUrl)) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center h-full min-h-[300px]"
+        style={{ height: "calc(100vh - 4rem)" }}
+      >
+        <Loading message="Preparing geometry…" />
+      </div>
+    );
+  }
+
   const cacheKey = source ? `${model.id}:${source}` : String(model.id);
 
   return (

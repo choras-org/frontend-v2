@@ -15,6 +15,8 @@ import { simulationSettingsApi } from "./simulationSettingsApi";
 import { simulationSettingsReducer } from "./simulationSettingsSlice";
 import { tabReducer } from "./tabSlice";
 import { geometryIssueReducer } from "./geometryIssueSlice";
+import { userPreferencesApi } from "./userPreferenceApi";
+import { materialCategoriesApi } from "./materialCategoryApi";
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +26,8 @@ export const store = configureStore({
     [materialsApi.reducerPath]: materialsApi.reducer,
     [simulationSettingsApi.reducerPath]: simulationSettingsApi.reducer,
     [auralizationApi.reducerPath]: auralizationApi.reducer,
+    [userPreferencesApi.reducerPath]: userPreferencesApi.reducer,
+    [materialCategoriesApi.reducerPath]: materialCategoriesApi.reducer,
     project: projectReducer,
     simulation: simulationReducer,
     model: modelReducer,
@@ -38,19 +42,8 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [
-          "model/storeRhinoFile",
-          "geometrySelection/selectGeometry",
-          "geometrySelection/addHighlightedMesh",
-          "geometrySelection/removeHighlightedMesh",
-          "auralizationApi/executeQuery/fulfilled",
-        ],
-        ignoredPaths: [
-          "model.rhinoFiles",
-          "geometrySelection.selectedGeometry",
-          "geometrySelection.highlightedMeshes",
-          auralizationApi.reducerPath,
-        ],
+        ignoredActions: ["model/storeRhinoFile", "auralizationApi/executeQuery/fulfilled"],
+        ignoredPaths: ["model.rhinoFiles", auralizationApi.reducerPath],
       },
     }).concat(
       projectApi.middleware,
@@ -59,6 +52,8 @@ export const store = configureStore({
       materialsApi.middleware,
       simulationSettingsApi.middleware,
       auralizationApi.middleware,
+      userPreferencesApi.middleware,
+      materialCategoriesApi.middleware,
     ),
 });
 

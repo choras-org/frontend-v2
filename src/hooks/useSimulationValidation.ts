@@ -24,12 +24,13 @@ export function useSimulationValidation() {
   );
   const dispatch = useDispatch();
   const { data: settingsData } = useGetSimulationSettingsQuery(selectedMethodType);
-  const { data: simulation, isLoading: simulationLoading } = useGetSimulationByIdQuery(
-    activeSimulation?.id ?? 0,
-    {
-      skip: !activeSimulation?.id,
-    },
-  );
+  const {
+    data: simulation,
+    isLoading: simulationLoading,
+    refetch: refetchSimulation,
+  } = useGetSimulationByIdQuery(activeSimulation?.id ?? 0, {
+    skip: !activeSimulation?.id,
+  });
 
   useEffect(() => {
     const { isValid, errors: validationErrors } = validateSimulation();
@@ -155,15 +156,17 @@ export function useSimulationValidation() {
     };
   };
 
-  const validateSimulationSettings = () => {
+  const validateSimulationSettings = async () => {
     setSimulationSettingsErrors({});
     const results: Record<string, string> = {};
 
-    if (simulation?.solverSettings?.simulationSettings && settingsData?.options) {
+    const updatedSimulation = await refetchSimulation();
+
+    if (updatedSimulation.data?.solverSettings.simulationSettings && settingsData?.options) {
       settingsData?.options.forEach((option) => {
-        const value = (simulation.solverSettings?.simulationSettings as Record<string, unknown>)[
-          option.id
-        ];
+        const value = (
+          updatedSimulation.data?.solverSettings.simulationSettings as Record<string, unknown>
+        )[option.id];
         const isValid =
           option.type === "string"
             ? true

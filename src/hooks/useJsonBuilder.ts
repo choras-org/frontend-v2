@@ -1,8 +1,13 @@
-import { useMemo, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useMemo, useCallback, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
-import type { RootState } from "@/store";
+import { useParams } from "react-router";
+import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
+import { useGetModelQuery } from "@/store/modelApi";
+import type { Simulation } from "@/types/simulation";
+import { setCurrentModelId } from "@/store/modelSlice";
+import { useModelLoader } from "./useModelLoader";
 
 const KEY_ORDER = [
   "sim_len_type",
@@ -15,15 +20,35 @@ const KEY_ORDER = [
 
 export function useJsonBuilder() {
   // Pull required data from store/hooks
+  const { modelId, simulationId } = useParams() as { modelId: string; simulationId?: string };
+  const { data: simulations } = useGetSimulationsByModelIdQuery(+modelId);
+  const { data: model } = useGetModelQuery(modelId);
+  const [simulation, setSimulation] = useState<Simulation | undefined>(undefined);
+  const dispatch = useDispatch();
+  const { loadModelFromUrl } = useModelLoader();
+
+  useEffect(() => {
+    if (simulations) {
+      const sim = simulations.find((el) => el.id === Number(simulationId));
+      setSimulation(sim);
+    }
+  }, [simulations]);
+
+  useEffect(() => {
+    if (model) {
+      dispatch(setCurrentModelId(model?.id));
+      // Don't load while geometry is still being generated: the model file
+      // may be missing or only partially written on the backend.
+      const isProcessing =
+        model.geometryStatus === "Pending" || model.geometryStatus === "Processing";
+      if (model.modelUrl && !isProcessing) {
+        loadModelFromUrl(String(modelId), Number(modelId), model.modelUrl).catch(console.error);
+      }
+    }
+  }, [model]);
+
   const surfaces = useSurfaces();
-  const materialAssignments = useSelector(
-    (state: RootState) => state.materialAssignment.assignments,
-  );
-  const sources = useSelector((state: RootState) => state.sourceReceiver.sources);
-  const receivers = useSelector((state: RootState) => state.sourceReceiver.receivers);
-  const { selectedMethodType, values } = useSelector(
-    (state: RootState) => state.simulationSettings,
-  );
+
   const { data: materials = [] } = useGetMaterialsQuery();
 
   // Order simulation settings keys based on keyOrder
@@ -56,7 +81,7 @@ export function useJsonBuilder() {
     const coefficients: Record<string, string> = {};
 
     surfaces.forEach((surface, idx) => {
-      const materialId = materialAssignments[surface.id];
+      const materialId = simulation?.layerIdByMaterialId[surface.id];
       const material = materials.find((m) => m.id === materialId);
 
       if (material?.absorptionCoefficients) {
@@ -65,41 +90,45 @@ export function useJsonBuilder() {
     });
 
     return coefficients;
-  }, [surfaces, materialAssignments, materials]);
+  }, [surfaces, simulation, materials]);
 
   // Build sources map
   const sourcesMap = useMemo(() => {
     const map: Record<string, [number, number, number]> = {};
 
-    sources.forEach((source, idx) => {
+    simulation?.sources.forEach((source, idx) => {
       map[`s${idx + 1}`] = [source.x, source.y, source.z];
     });
 
     return map;
-  }, [sources]);
+  }, [simulation]);
 
   // Build receivers map
   const receiversMap = useMemo(() => {
     const map: Record<string, [number, number, number]> = {};
 
-    receivers.forEach((receiver, idx) => {
+    simulation?.receivers.forEach((receiver, idx) => {
       map[`r${idx + 1}`] = [receiver.x, receiver.y, receiver.z];
     });
 
     return map;
-  }, [receivers]);
+  }, [simulation]);
 
   // Build complete JSON structure
+  const values = simulation?.solverSettings.simulationSettings as Record<
+    string,
+    SimulationSettingValue
+  >;
   const buildJsonStructure = useCallback(() => {
     return {
-      simulation_method: selectedMethodType,
+      simulation_method: simulation?.simulationMethod,
       sources: sourcesMap,
       receivers: receiversMap,
       absorption_coefficients: absorptionCoefficients,
       simulation_settings: orderSimulationSettings(values),
     };
   }, [
-    selectedMethodType,
+    simulation,
     sourcesMap,
     receiversMap,
     absorptionCoefficients,

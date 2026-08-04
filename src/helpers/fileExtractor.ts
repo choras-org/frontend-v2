@@ -1,6 +1,19 @@
 import type { ExtractedFile } from "@/types/file";
 import JSZip from "jszip";
 
+// ZIP archives start with the local file header signature "PK\x03\x04".
+function isZipArchive(data: ArrayBuffer): boolean {
+  if (data.byteLength < 4) return false;
+  const header = new Uint8Array(data, 0, 4);
+  return header[0] === 0x50 && header[1] === 0x4b && header[2] === 0x03 && header[3] === 0x04;
+}
+
+function fileNameFromUrl(url: string, targetExtension: string): string {
+  const path = url.split(/[?#]/)[0];
+  const name = path.substring(path.lastIndexOf("/") + 1);
+  return name || `model${targetExtension}`;
+}
+
 export async function downloadAndExtractFiles(
   url: string,
   targetExtension: string = ".3dm",
@@ -11,9 +24,14 @@ export async function downloadAndExtractFiles(
       throw new Error(`Failed to fetch file: ${response.statusText}`);
     }
 
-    const zipData = await response.arrayBuffer();
+    const fileData = await response.arrayBuffer();
 
-    const zip = await JSZip.loadAsync(zipData);
+    // Repaired/stage models are served as raw .3dm files, not zip archives.
+    if (!isZipArchive(fileData)) {
+      return [{ name: fileNameFromUrl(url, targetExtension), data: fileData }];
+    }
+
+    const zip = await JSZip.loadAsync(fileData);
 
     const extractedFiles: ExtractedFile[] = [];
     const files = Object.values(zip.files);
