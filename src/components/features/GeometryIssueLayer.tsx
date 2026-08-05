@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { Line } from "@react-three/drei";
 import { useSelector } from "react-redux";
 import { useMemo } from "react";
+import cdt2d from "cdt2d";
 import type { RootState } from "@/store";
 
 const ISSUE_COLOR = "red";
@@ -109,6 +110,52 @@ function FaceEdgesIssue({ issue, isSelected }: { issue: GeometryIssue; isSelecte
   );
 }
 
+// Triangulate a planar polygon given in 3D by projecting it onto its best-fit
+// plane and running constrained Delaunay triangulation (cdt2d) in 2D. Handles
+// convex and concave simple polygons and yields better-shaped triangles than a
+// fan/ear-clip. Returns a flat index list; empty when degenerate/collinear.
+function triangulatePlanarPolygon(points: number[][]): number[] {
+  const n = points.length;
+  if (n < 3) return [];
+
+  // Newell's method: robust polygon normal even for non-planar-ish input.
+  let nx = 0;
+  let ny = 0;
+  let nz = 0;
+  for (let i = 0; i < n; i++) {
+    const cur = points[i];
+    const next = points[(i + 1) % n];
+    nx += (cur[1] - next[1]) * (cur[2] + next[2]);
+    ny += (cur[2] - next[2]) * (cur[0] + next[0]);
+    nz += (cur[0] - next[0]) * (cur[1] + next[1]);
+  }
+  const normal = new THREE.Vector3(nx, ny, nz);
+  if (normal.lengthSq() === 0) return [];
+  normal.normalize();
+
+  // Orthonormal basis (u, v) spanning the polygon's plane.
+  const arbitrary =
+    Math.abs(normal.x) < 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+  const u = new THREE.Vector3().crossVectors(arbitrary, normal).normalize();
+  const v = new THREE.Vector3().crossVectors(normal, u);
+
+  const origin = new THREE.Vector3(points[0][0], points[0][1], points[0][2]);
+  const contour2D: number[][] = points.map((p) => {
+    const d = new THREE.Vector3(p[0], p[1], p[2]).sub(origin);
+    return [d.dot(u), d.dot(v)];
+  });
+
+  // Constrain the triangulation to the polygon boundary and drop triangles
+  // outside it, so concave shapes are filled correctly.
+  const edges: number[][] = points.map((_, i) => [i, (i + 1) % n]);
+
+  try {
+    return cdt2d(contour2D, edges, { exterior: false }).flat();
+  } catch {
+    return [];
+  }
+}
+
 function FaceIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: boolean }) {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array(issue.points.flat());
@@ -117,13 +164,8 @@ function FaceIssue({ issue, isSelected }: { issue: GeometryIssue; isSelected: bo
   const opacity = isSelected ? 0.5 : 0.1;
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-  // Fan triangulation: works for any n-gon
-  const numVertices = issue.points.length;
-  const indices: number[] = [];
-
-  for (let i = 1; i < numVertices - 1; i++) {
-    indices.push(0, i, i + 1);
-  }
+  // Constrained Delaunay (cdt2d) on the face's plane: convex & concave n-gons.
+  const indices = triangulatePlanarPolygon(issue.points);
 
   geometry.setIndex(indices);
   if (!isSelected) {
