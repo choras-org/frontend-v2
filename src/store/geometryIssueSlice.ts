@@ -82,6 +82,29 @@ export const flattenIssuePoints = (
   return issue.points;
 };
 
+const pointKey = (point: number[]): string =>
+  point.map((value) => Number(value).toFixed(6)).join(",");
+
+// Two issues refer to the same geometry when their ids match, OR — because the
+// pipeline assigns per-report ids that are NOT stable across the initial and
+// repaired reports for some kinds (e.g. small_face, overlapping_face) — when
+// every point of the candidate is part of the selected issue's points. The
+// geometry fallback is what keeps highlighting in sync across the two pages.
+export const issuesMatch = (
+  selected: GeometryIssue | null | undefined,
+  candidate: GeometryIssue | null | undefined,
+): boolean => {
+  if (!selected || !candidate) return false;
+  if (selected.id && candidate.id && selected.id === candidate.id) return true;
+  if (selected.type !== candidate.type) return false;
+
+  const candidatePoints = candidate.points ?? [];
+  if (candidatePoints.length === 0) return false;
+
+  const selectedPointKeys = new Set((selected.points ?? []).map(pointKey));
+  return candidatePoints.every((point) => selectedPointKeys.has(pointKey(point)));
+};
+
 const geometryIssueSlice = createSlice({
   name: "tab",
   initialState,

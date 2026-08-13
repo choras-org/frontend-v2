@@ -1,4 +1,5 @@
 import type { GeometryIssue } from "@/store/geometryIssueSlice";
+import { issuesMatch } from "@/store/geometryIssueSlice";
 import * as THREE from "three";
 import { Line } from "@react-three/drei";
 import { useSelector } from "react-redux";
@@ -212,11 +213,7 @@ function IssueRenderer({
   kind: string;
   selectedIssue: GeometryIssue | null;
 }) {
-  const isSelected =
-    selectedIssue?.id && issue.id
-      ? selectedIssue.id === issue.id
-      : selectedIssue?.type === issue.type &&
-        JSON.stringify(selectedIssue?.points) === JSON.stringify(issue.points);
+  const isSelected = issuesMatch(selectedIssue, issue);
 
   const override = ISSUE_HIGHLIGHT_OVERRIDES[kind];
   if (override) {

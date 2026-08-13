@@ -1,6 +1,7 @@
 import { ChevronRight, CircleCheck, TriangleAlert, OctagonAlert } from "lucide-react";
 import { Fragment } from "react";
 import type { GeometryIssue, GeometryIssues } from "@/store/geometryIssueSlice";
+import { issuesMatch } from "@/store/geometryIssueSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
@@ -86,15 +87,8 @@ const ISSUE_CATEGORY_INFO: Record<string, { description: string; docsUrl: string
   },
 };
 
-const isSameIssue = (current: GeometryIssue | null, target: GeometryIssue) => {
-  if (current?.id && target.id) {
-    return current.id === target.id;
-  }
-  return (
-    current?.type === target.type &&
-    JSON.stringify(current?.points) === JSON.stringify(target.points)
-  );
-};
+const isSameIssue = (current: GeometryIssue | null, target: GeometryIssue) =>
+  issuesMatch(current, target);
 
 const getIssueRowClassName = (isSelected: boolean) => {
   const selectedClass =
