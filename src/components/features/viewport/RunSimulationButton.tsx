@@ -5,7 +5,6 @@ import { useSimulationRunner } from "@/hooks/useSimulationRunner";
 import { useSimulationValidation } from "@/hooks/useSimulationValidation";
 import { useDuplicateSimulation } from "@/hooks/useDuplicateSimulation";
 import { useDispatch } from "react-redux";
-import { navigateToTabAndHighlight } from "@/store/tabSlice";
 import { setActiveSimulation, setShouldAutoRun } from "@/store/simulationSlice";
 import { useParams, useNavigate } from "react-router";
 import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
@@ -32,8 +31,7 @@ import { toast } from "sonner";
 
 export function RunSimulationButton() {
   const { isRunning, progress, startSimulation, cancelAndStop } = useSimulationRunner();
-  const { isValid, errors, validateSimulationSettings, simulationSettingsErrors } =
-    useSimulationValidation();
+  const { isValid, errors, simulationSettingsErrors } = useSimulationValidation();
   const { duplicateSimulation } = useDuplicateSimulation();
   const { modelId, simulationId } = useParams() as { modelId: string; simulationId?: string };
   const { data: simulations } = useGetSimulationsByModelIdQuery(+modelId);
@@ -89,29 +87,9 @@ export function RunSimulationButton() {
       navigate(`/editor/${modelId}/${simulationId}/results`);
     } else if (isRunning) {
       cancelAndStop();
-    } else if (!isValid) {
-      const firstError = errors[0];
-      dispatch(
-        navigateToTabAndHighlight({
-          tab: firstError.navigationTarget,
-          element: firstError.highlightTarget,
-        }),
-      );
     } else {
-      const simulationSettingsErrors = await validateSimulationSettings();
-
-      if (!hideSimulationSettingErrors && Object.keys(simulationSettingsErrors).length > 0) {
-        dispatch(
-          navigateToTabAndHighlight({
-            tab: "settings",
-            element: "simulation-settings",
-          }),
-        );
-        setShowSimulationSettingsErrors(true);
-        return;
-      }
-
-      handleRunSimulation();
+      toast.error("Running simulation is currently disabled");
+      return;
     }
   };
 

@@ -5,12 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  useDeleteSimulationMutation,
-  useGetSimulationsByModelIdQuery,
-  useLazyGetSimulationsByModelIdQuery,
-  useUpdateSimulationMutation,
-} from "@/store/simulationApi";
+import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
 import { useGetSimulationMethodsQuery } from "@/store/simulationSettingsApi";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -28,11 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SimulationForm } from "../SimulationForm";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { useDuplicateSimulation } from "@/hooks/useDuplicateSimulation";
-import { useInitializeSimulationSettings } from "@/hooks/useInitializeSimulationSettings";
 import {
   addReceiver,
   addSource,
@@ -50,41 +41,24 @@ type SimulationPickerProps = {
 export function SimulationPicker({ modelId, simulationId }: SimulationPickerProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [deleteSimulation] = useDeleteSimulationMutation();
   const { data: simulations, isLoading } = useGetSimulationsByModelIdQuery(modelId);
   const { data: methods, isLoading: methodsLoading } = useGetSimulationMethodsQuery();
-  const [getSimulationsByModelId] = useLazyGetSimulationsByModelIdQuery();
-  const { duplicateSimulation } = useDuplicateSimulation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { isRunning } = useSimulationRunner();
   const [selectedMethodLocal, setSelectedMethodLocal] = useState<string>("DE");
   const latestMethodRef = useRef<string>("DE");
   const prevSimulationIdRef = useRef<number | undefined>(undefined);
-  const isInitializingMethodRef = useRef(false);
 
-  const [updateSimulation] = useUpdateSimulationMutation();
   const selectedMethodType = useSelector(
     (state: RootState) => state.simulationSettings.selectedMethodType,
   );
   const selectedResourceType = useSelector(
     (state: RootState) => state.simulationSettings.selectedResourceType,
   );
-  const { initializeSettings } = useInitializeSimulationSettings();
 
   useEffect(() => {
     dispatch(setSelectedMethodType(selectedMethodLocal));
     latestMethodRef.current = selectedMethodLocal;
-
-    if (isInitializingMethodRef.current) {
-      isInitializingMethodRef.current = false;
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      handleMethodChange(selectedMethodLocal);
-    }, 200);
-
-    return () => clearTimeout(timer);
   }, [selectedMethodLocal]);
 
   useEffect(() => {
@@ -94,7 +68,6 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
         dispatch(setActiveSimulation(currentSimulation));
 
         if (simulationId !== prevSimulationIdRef.current && currentSimulation.simulationMethod) {
-          isInitializingMethodRef.current = true;
           setSelectedMethodLocal(currentSimulation.simulationMethod);
           latestMethodRef.current = currentSimulation.simulationMethod;
         }
@@ -123,68 +96,9 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
     }
   }, [simulationId, simulations, dispatch]);
 
-  const handleMethodChange = async (methodType: string) => {
-    if (simulationId && simulations) {
-      const currentSimulation = simulations.find((sim) => sim.id === simulationId);
-      if (currentSimulation) {
-        try {
-          const updatedSimulation = await updateSimulation({
-            id: simulationId,
-            body: {
-              modelId: currentSimulation.modelId,
-              name: currentSimulation.name,
-              status: currentSimulation.status,
-              hasBeenEdited: currentSimulation.hasBeenEdited,
-              simulationMethod: methodType,
-              solverSettings: currentSimulation.solverSettings,
-              resourceType: currentSimulation.resourceType,
-            },
-          }).unwrap();
-
-          if (latestMethodRef.current !== methodType) return;
-
-          await initializeSettings(updatedSimulation, methodType);
-
-          toast.success("Method updated and settings initialized");
-        } catch (error) {
-          if (latestMethodRef.current !== methodType) return;
-          console.error("Failed to update simulation method:", error);
-          toast.error("Failed to update method");
-        }
-      }
-    }
-  };
-
-  const handleResourceChange = async (resourceType: string) => {
-    console.log("Selected resource type:", resourceType);
-    dispatch(setSelectedResourceType(resourceType));
-
-    if (simulationId && simulations) {
-      const currentSimulation = simulations.find((sim) => sim.id === simulationId);
-      if (currentSimulation) {
-        try {
-          const updatedSimulation = await updateSimulation({
-            id: simulationId,
-            body: {
-              modelId: currentSimulation.modelId,
-              name: currentSimulation.name,
-              status: currentSimulation.status,
-              hasBeenEdited: currentSimulation.hasBeenEdited,
-              simulationMethod: currentSimulation.simulationMethod,
-              solverSettings: currentSimulation.solverSettings,
-              resourceType: resourceType,
-            },
-          }).unwrap();
-
-          console.log("Updated simulation with new resource type:", updatedSimulation);
-
-          toast.success("Method updated and settings initialized");
-        } catch (error) {
-          console.error("Failed to update simulation method:", error);
-          toast.error("Failed to update method");
-        }
-      }
-    }
+  const handleResourceChange = async () => {
+    toast.error("Changing resource is currently disabled");
+    return;
   };
 
   const handleSimulationChange = (simulationId: string) => {
@@ -198,39 +112,6 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const activeSimulation = simulations?.find((sim) => sim.id === simulationId);
 
   const selectedMethod = methods?.find((method) => method.simulationType === selectedMethodType);
-
-  const handleDeleteSimulation = async () => {
-    try {
-      await deleteSimulation({
-        id: activeSimulation!.id,
-        modelId: modelId,
-      }).unwrap();
-
-      if (simulations?.length === 1) {
-        await getSimulationsByModelId(modelId).unwrap();
-        navigate(`/editor/${modelId}`, { replace: true });
-      }
-
-      toast.success("Simulation deleted successfully");
-    } catch {
-      toast.error("Failed to delete simulation");
-    } finally {
-      setMenuOpen(false);
-    }
-  };
-
-  const handleDuplicateSimulation = async () => {
-    if (!activeSimulation || !simulations) {
-      toast.error("No simulation selected");
-      return;
-    }
-
-    try {
-      await duplicateSimulation(activeSimulation, simulations);
-    } finally {
-      setMenuOpen(false);
-    }
-  };
 
   if (!simulations || simulations.length === 0 || isLoading || methodsLoading) {
     return (
@@ -274,65 +155,42 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <SimulationForm
-                modelId={modelId}
-                trigger={
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Create New Simulation
-                  </DropdownMenuItem>
-                }
-                onSuccess={() => setMenuOpen(false)}
-              />
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  toast.error("Creating simulation is currently disabled");
+                }}
+              >
+                Create New Simulation
+              </DropdownMenuItem>
 
-              <SimulationForm
-                modelId={modelId}
-                id={activeSimulation?.id}
-                onSuccess={() => setMenuOpen(false)}
-                defaultValues={
-                  activeSimulation
-                    ? {
-                        name: activeSimulation.name,
-                        description: activeSimulation.description,
-                        status: activeSimulation.status,
-                      }
-                    : undefined
-                }
-                trigger={
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Edit Simulation
-                  </DropdownMenuItem>
-                }
-              />
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  toast.error("Editing simulation is currently disabled");
+                }}
+              >
+                Edit Simulation
+              </DropdownMenuItem>
 
-              <ConfirmDialog
-                title="Duplicate Simulation"
-                description={`Are you sure you want to duplicate "${activeSimulation?.name}"? A new simulation will be created with all the same settings.`}
-                onConfirm={handleDuplicateSimulation}
-                confirmVariant="default"
-                confirmLabel="Duplicate"
-                trigger={
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Duplicate Simulation
-                  </DropdownMenuItem>
-                }
-              />
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  toast.error("Duplicating simulation is currently disabled");
+                }}
+              >
+                Duplicate Simulation
+              </DropdownMenuItem>
 
-              <ConfirmDialog
-                title="Delete Simulation"
-                description="Are you sure you want to delete this simulation? This action cannot be undone."
-                onConfirm={handleDeleteSimulation}
-                confirmVariant="destructive"
-                confirmLabel="Delete Simulation"
-                trigger={
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-red-600"
-                  >
-                    Delete Simulation
-                  </DropdownMenuItem>
-                }
-              />
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  toast.error("Deleting simulation is currently disabled");
+                }}
+                className="text-red-600"
+              >
+                Delete Simulation
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -342,7 +200,9 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
         <div className="col-span-2 flex">
           <Select
             value={selectedMethodLocal}
-            onValueChange={(text) => setSelectedMethodLocal(text)}
+            onValueChange={() => {
+              toast.error("Changing method is currently disabled");
+            }}
           >
             <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray min-w-[calc(100%-36px)]">
               <SelectValue>

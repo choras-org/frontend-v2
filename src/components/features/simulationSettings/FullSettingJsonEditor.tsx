@@ -14,14 +14,11 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useGetSimulationSettingsQuery } from "@/store/simulationSettingsApi";
 import { clearSettings, setOptions } from "@/store/simulationSettingsSlice";
-import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
+import { useGetSimulationByIdQuery } from "@/store/simulationApi";
 import { toast } from "sonner";
-import { useJsonValidation } from "@/hooks/useJsonValidation";
 import { useJsonBuilder } from "@/hooks/useJsonBuilder";
-import { useJsonPayloadBuilder } from "@/hooks/useJsonPayloadBuilder";
 import { setAssignments } from "@/store/materialAssignmentSlice";
 import { updateValue } from "@/store/simulationSettingsSlice";
-import { setSources, setReceivers } from "@/store/sourceReceiverSlice";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MaterialFormDialog } from "./MaterialFormDialog";
 import type { Material } from "@/types/material";
@@ -47,7 +44,6 @@ export function FullSettingJsonEditor() {
   const [isOpenMaterialForm, setIsOpenMaterialForm] = useState(false);
   const [createMaterial, { isLoading: isCreatingMaterial }] = useCreateMaterialMutation();
 
-  const [updateSimulation] = useUpdateSimulationMutation();
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const { data: simulation } = useGetSimulationByIdQuery(activeSimulation?.id ?? 0, {
     skip: !activeSimulation?.id,
@@ -61,15 +57,7 @@ export function FullSettingJsonEditor() {
   const { data: settingsData } = useGetSimulationSettingsQuery(selectedMethodType);
 
   // Initialize custom hooks
-  const {
-    buildJsonStructure,
-    stringifyWithHorizontalArrays,
-    parseAbsorptionCoefficients,
-    exportJson,
-  } = useJsonBuilder();
-  const { validateJsonData } = useJsonValidation();
-
-  const { buildPayload } = useJsonPayloadBuilder();
+  const { buildJsonStructure, stringifyWithHorizontalArrays, exportJson } = useJsonBuilder();
 
   // Initialize settings options from API
   useEffect(() => {
@@ -156,88 +144,9 @@ export function FullSettingJsonEditor() {
 
   // Handle save button
   const handleSave = useCallback(async () => {
-    const validationResult = await validateJsonData(jsonValue);
-
-    if (!validationResult.isValid) {
-      setIsValidJson(false);
-      setValidationError(validationResult.error || "Validation failed");
-      return;
-    }
-
-    if (validationResult?.newMaterials && validationResult.newMaterials.length > 0) {
-      setNewMaterialsToCreate(validationResult.newMaterials);
-      setIsOpenConfirmCreateMaterials(true);
-      return;
-    }
-
-    setIsValidJson(true);
-    setValidationError("");
-
-    try {
-      const parsedData = JSON.parse(jsonValue);
-
-      // Parse absorption coefficients to surface-material mapping
-      const surfaceMaterialMap = parsedData.absorption_coefficients
-        ? parseAbsorptionCoefficients(parsedData.absorption_coefficients)
-        : {};
-
-      const hasBeenEdited = jsonValue !== jsonValueOriginal;
-      const payload = buildPayload(parsedData, surfaceMaterialMap, hasBeenEdited);
-
-      await updateSimulation(payload).unwrap();
-
-      // Update simulation settings in store
-      Object.entries(parsedData.simulation_settings || {}).forEach(([key, val]) => {
-        if (typeof val === "string" || typeof val === "number") {
-          dispatch(updateValue({ id: key, value: val }));
-        } else if (typeof val === "boolean") {
-          dispatch(updateValue({ id: key, value: val ? 1 : 0 }));
-        } else if (val != null) {
-          dispatch(updateValue({ id: key, value: JSON.stringify(val) }));
-        }
-      });
-
-      // Update sources in store
-      if (parsedData.sources && typeof parsedData.sources === "object") {
-        const sourcesArray = Object.entries(parsedData.sources).map(([id, coords], index) => {
-          const [x, y, z] = coords as [number, number, number];
-          return {
-            id,
-            label: id,
-            orderNumber: index,
-            x,
-            y,
-            z,
-            isValid: true,
-          };
-        });
-        dispatch(setSources(sourcesArray));
-      }
-
-      // Update receivers in store
-      if (parsedData.receivers && typeof parsedData.receivers === "object") {
-        const receiversArray = Object.entries(parsedData.receivers).map(([id, coords], index) => {
-          const [x, y, z] = coords as [number, number, number];
-          return {
-            id,
-            label: id,
-            orderNumber: index,
-            x,
-            y,
-            z,
-            isValid: true,
-          };
-        });
-        dispatch(setReceivers(receiversArray));
-      }
-
-      toast.success("Settings saved successfully");
-      setJsonValueOriginal(jsonValue);
-    } catch (error: unknown) {
-      toast.error("Failed to save settings");
-      console.error("Error saving settings:", error);
-    }
-  }, [jsonValue, validateJsonData, parseAbsorptionCoefficients, buildPayload, updateSimulation]);
+    toast.error("Saving simulation settings is currently disabled");
+    return;
+  }, []);
 
   const handleCreateMaterial = async (
     material: Omit<Material, "id" | "category" | "createdAt" | "updatedAt">,

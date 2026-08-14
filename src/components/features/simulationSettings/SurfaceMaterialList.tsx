@@ -134,6 +134,11 @@ export function SurfaceMaterialList({
   ) => {
     e.stopPropagation();
 
+    if (actionType === "Edit") {
+      toast.error("Editing material is currently disabled");
+      return;
+    }
+
     const materialCopy = { ...material };
     if ((actionType === "Edit" && material.origin === "factory") || actionType === "Duplicate") {
       materialCopy.name = "Copy of " + material.name;

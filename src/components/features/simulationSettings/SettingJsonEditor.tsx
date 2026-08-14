@@ -9,11 +9,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Editor } from "@monaco-editor/react";
 import { toast } from "sonner";
-import { updateValue } from "@/store/simulationSettingsSlice";
-import { useSimulationSettingsApi } from "@/hooks/useSimulationSettingsApi";
 import type { RootState } from "@/store";
 import type { SimulationSettingsState } from "@/types/simulationSettings";
 
@@ -22,9 +20,7 @@ export function SettingJsonEditor() {
   const [jsonValue, setJsonValue] = useState<string>("");
   const [isValidJson, setIsValidJson] = useState(true);
 
-  const dispatch = useDispatch();
-  const { options, values } = useSelector((state: RootState) => state.simulationSettings);
-  const { updateSimulationSettings } = useSimulationSettingsApi();
+  const { values } = useSelector((state: RootState) => state.simulationSettings);
 
   const keyOrder = [
     "sim_len_type",
@@ -82,33 +78,8 @@ export function SettingJsonEditor() {
   };
 
   const handleSave = async () => {
-    if (!isValidJson) {
-      toast.error("Invalid JSON format");
-      return;
-    }
-
-    try {
-      const parsedJson = JSON.parse(jsonValue) as SimulationSettingsState["values"];
-
-      const validKeys = options.map((option) => option.id);
-      const invalidKeys = Object.keys(parsedJson).filter((key) => !validKeys.includes(key));
-
-      if (invalidKeys.length > 0) {
-        toast.error(`Invalid setting keys: ${invalidKeys.join(", ")}`);
-        return;
-      }
-
-      Object.entries(parsedJson).forEach(([key, value]) => {
-        dispatch(updateValue({ id: key, value }));
-      });
-
-      await updateSimulationSettings(parsedJson);
-
-      setOpen(false);
-    } catch (error) {
-      console.error("Failed to save JSON settings:", error);
-      toast.error("Failed to save settings");
-    }
+    toast.error("Saving simulation settings is currently disabled");
+    return;
   };
 
   return (

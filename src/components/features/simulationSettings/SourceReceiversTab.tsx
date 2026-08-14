@@ -7,16 +7,6 @@ import { Plus } from "lucide-react";
 import type { Source, Receiver } from "@/types/simulation";
 import type { RootState } from "@/store";
 import {
-  addSource,
-  // removeSource,
-  removeAllSources,
-  updateSource,
-  updateSourceValidation,
-  addReceiver,
-  // removeReceiver,
-  removeAllReceivers,
-  updateReceiver,
-  updateReceiverValidation,
   selectSource,
   selectReceiver,
   setSources,
@@ -43,8 +33,7 @@ export function SourceReceiversTab() {
   );
   const modelObject3D = currentModel?.object3D || null;
 
-  const { simulation, simulationError, updateSimulationData, updateReceiversData } =
-    useSourceReceiverApi();
+  const { simulation, simulationError } = useSourceReceiverApi();
   const surfaces = useSurfaces();
 
   const validateReceiver = (receiver: Receiver): Receiver => {
@@ -150,23 +139,8 @@ export function SourceReceiversTab() {
   }, [receivers, surfaces]);
 
   const handleAddSource = () => {
-    if (sources.length >= 1) return;
-
-    const newSource: Source = {
-      id: crypto.randomUUID(),
-      label: `Source ${sources.length + 1}`,
-      orderNumber: sources.length + 1,
-      x: 1,
-      y: 1,
-      z: 1,
-      isValid: true,
-    };
-
-    const validatedSource = validateSource(newSource);
-    dispatch(addSource(validatedSource));
-
-    const updatedSources = [...sources, validatedSource];
-    updateSimulationData(updatedSources);
+    toast.error("Adding source is currently disabled");
+    return;
   };
 
   // commented out until backend supports multiple sources
@@ -178,50 +152,18 @@ export function SourceReceiversTab() {
   // };
 
   const handleRemoveAllSources = () => {
-    dispatch(removeAllSources());
-
-    updateSimulationData([]);
+    toast.error("Removing sources is currently disabled");
+    return;
   };
 
-  const handleUpdateSource = (id: string, field: "x" | "y" | "z", value: number) => {
-    dispatch(updateSource({ id, field, value }));
-
-    const currentSource = sources.find((s) => s.id === id);
-    if (currentSource) {
-      const updatedSource = { ...currentSource, [field]: value };
-      const validatedSource = validateSource(updatedSource);
-
-      dispatch(
-        updateSourceValidation({
-          id,
-          isValid: validatedSource.isValid || true,
-          validationError: validatedSource.validationError,
-        }),
-      );
-
-      const updatedSources = sources.map((source) => (source.id === id ? validatedSource : source));
-      updateSimulationData(updatedSources);
-    }
+  const handleUpdateSource = (_id: string, _field: "x" | "y" | "z", _value: number) => {
+    toast.error("Updating source is currently disabled");
+    return;
   };
 
   const handleAddReceiver = () => {
-    if (receivers.length >= 1) return;
-
-    const newReceiver: Receiver = {
-      id: crypto.randomUUID(),
-      label: `Receiver ${receivers.length + 1}`,
-      orderNumber: receivers.length + 1,
-      x: 3,
-      y: 3,
-      z: 1,
-      isValid: true,
-    };
-
-    const validatedReceiver = validateReceiver(newReceiver);
-    dispatch(addReceiver(validatedReceiver));
-
-    const updatedReceivers = [...receivers, validatedReceiver];
-    updateReceiversData(updatedReceivers);
+    toast.error("Adding receiver is currently disabled");
+    return;
   };
 
   // commented out until backend supports multiple receivers
@@ -233,32 +175,13 @@ export function SourceReceiversTab() {
   // };
 
   const handleRemoveAllReceivers = () => {
-    dispatch(removeAllReceivers());
-
-    updateReceiversData([]);
+    toast.error("Removing receivers is currently disabled");
+    return;
   };
 
-  const handleUpdateReceiver = (id: string, field: "x" | "y" | "z", value: number) => {
-    dispatch(updateReceiver({ id, field, value }));
-
-    const currentReceiver = receivers.find((r) => r.id === id);
-    if (currentReceiver) {
-      const updatedReceiver = { ...currentReceiver, [field]: value };
-      const validatedReceiver = validateReceiver(updatedReceiver);
-
-      dispatch(
-        updateReceiverValidation({
-          id,
-          isValid: validatedReceiver.isValid,
-          validationError: validatedReceiver.validationError,
-        }),
-      );
-
-      const updatedReceivers = receivers.map((receiver) =>
-        receiver.id === id ? validatedReceiver : receiver,
-      );
-      updateReceiversData(updatedReceivers);
-    }
+  const handleUpdateReceiver = (_id: string, _field: "x" | "y" | "z", _value: number) => {
+    toast.error("Updating receiver is currently disabled");
+    return;
   };
 
   const handleSourceClick = (sourceId: string) => {
@@ -318,16 +241,19 @@ export function SourceReceiversTab() {
                           <CoordinateInput
                             value={source.x}
                             axis="x"
+                            disabled={true}
                             onChange={(value) => handleUpdateSource(source.id, "x", value)}
                           />
                           <CoordinateInput
                             value={source.y}
                             axis="y"
+                            disabled={true}
                             onChange={(value) => handleUpdateSource(source.id, "y", value)}
                           />
                           <CoordinateInput
                             value={source.z}
                             axis="z"
+                            disabled={true}
                             onChange={(value) => handleUpdateSource(source.id, "z", value)}
                           />
                         </div>
@@ -414,16 +340,19 @@ export function SourceReceiversTab() {
                           <CoordinateInput
                             value={receiver.x}
                             axis="x"
+                            disabled={true}
                             onChange={(value) => handleUpdateReceiver(receiver.id, "x", value)}
                           />
                           <CoordinateInput
                             value={receiver.y}
                             axis="y"
+                            disabled={true}
                             onChange={(value) => handleUpdateReceiver(receiver.id, "y", value)}
                           />
                           <CoordinateInput
                             value={receiver.z}
                             axis="z"
+                            disabled={true}
                             onChange={(value) => handleUpdateReceiver(receiver.id, "z", value)}
                           />
                         </div>
