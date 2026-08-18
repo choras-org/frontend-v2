@@ -95,6 +95,12 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
 
   const supportedCount = methods.filter((m) => isSupported(m.compatible)).length;
 
+  const getBadgeColor = () => {
+    if (supportedCount === 0) return "bg-red-100 text-red-700";
+    if (supportedCount === methods.length) return "bg-green-100 text-green-700";
+    return "bg-yellow-100 text-yellow-700";
+  };
+
   return (
     <div className="mb-3">
       <button
@@ -110,7 +116,7 @@ export function PossibleSimulation({ modelId: modelIdProp, stage = "repaired", s
             <span className="font-bold text-red-500">high-severity</span> issue types.
           </p>
           <div className="ml-3 flex shrink-0 items-center gap-1.5">
-            <span className="rounded-full bg-choras-primary/10 px-2 py-0.5 text-[10px] font-bold text-choras-primary">
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getBadgeColor()}`}>
               {supportedCount} of {methods.length}
             </span>
             {isExpanded ? (
