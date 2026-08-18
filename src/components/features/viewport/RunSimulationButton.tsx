@@ -279,7 +279,7 @@ export function RunSimulationButton() {
           <div className="h-20 mr-10 ml-6 flex items-center gap-3 flex-1">
             <span className="text-sm text-white font-bold whitespace-nowrap pl-4">Status:</span>
             <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
-            <span className="text-sm text-red-300 flex-1 line-clamp-2">{errorRunMessage}</span>
+            <span className="text-sm text-red-300 flex-1 line-clamp-2"><strong>Simulation failed:</strong> {errorRunMessage}</span>
           </div>
         ) : null}
       </div>
