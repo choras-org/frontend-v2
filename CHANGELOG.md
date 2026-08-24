@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.91](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.90...v0.0.91) (2026-07-17)
+
+### Features
+
+- ensure absorption coefficients are clamped between 0 and 1 ([8ff29f3](https://github.com/ajatdarojat45/choras-frontend/commit/8ff29f335942ec0186c3cf8676162ff7bf01588f))
+
 ### [0.0.90](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.89...v0.0.90) (2026-07-17)
 
 ### Features
