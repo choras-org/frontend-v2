@@ -322,6 +322,22 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
     }
   }, [open, form]);
 
+  const handleFileInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (...event: unknown[]) => void,
+  ) => {
+    e.stopPropagation();
+    const f = e.target.files && e.target.files.length > 0 ? e.target.files[0] : undefined;
+
+    if (f) {
+      setSelectedExampleId(null);
+      setIsCapturingScreenshot(true);
+      form.setValue("name", f.name.replace(/\.[^/.]+$/, ""), { shouldValidate: true });
+    }
+
+    onChange(f);
+  };
+
   return (
     <Dialog
       onOpenChange={(newOpen) => {
@@ -433,18 +449,7 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
                             accept=".obj,.dxf"
                             className="absolute inset-0 opacity-0 cursor-pointer h-full w-full"
                             disabled={isLoadingExample || isSubmitting}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              const f =
-                                e.target.files && e.target.files.length > 0
-                                  ? e.target.files[0]
-                                  : undefined;
-                              if (f) {
-                                setSelectedExampleId(null);
-                                setIsCapturingScreenshot(true);
-                              }
-                              field.onChange(f);
-                            }}
+                            onChange={(e) => handleFileInputChange(e, field.onChange)}
                           />
                         </label>
                         {field.value && (
