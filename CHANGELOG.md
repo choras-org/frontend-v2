@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.89](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.88...v0.0.89) (2026-07-12)
+
+### Features
+
+- add updateAuralizationAudioFile mutation to auralizationApi ([6d50681](https://github.com/ajatdarojat45/choras-frontend/commit/6d50681a1f36dfe1034aea4091d73e012fa0ba1b))
+- implement audio file upload and update functionality in ConvolvedAudioForm component ([38088cc](https://github.com/ajatdarojat45/choras-frontend/commit/38088cc19cdbf81d7feccc7b5a03e8811d0aee5d))
+- integrate ConvolvedAudioForm for editing audio details and improve simulation ID handling ([2d058e4](https://github.com/ajatdarojat45/choras-frontend/commit/2d058e402be929f7f84b91efe2e316ca7bec8a6f))
+- replace UploadConvolvedAudio with ConvolvedAudioForm in ResultAuralizations component ([b15c114](https://github.com/ajatdarojat45/choras-frontend/commit/b15c114d78f7ba0e0a4a09fd0716a83fd244fd88))
+
 ### [0.0.88](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.87...v0.0.88) (2026-07-10)
 
 ### Features

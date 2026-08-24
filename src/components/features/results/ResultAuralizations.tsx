@@ -1,5 +1,5 @@
 import { ImpulseResponsePlayer } from "./ImpulseResponsePlayer";
-import { UploadConvolvedAudio } from "./UploadConvolvedAudio";
+import { ConvolvedAudioForm } from "./ConvolvedAudioForm";
 import { ConvolvedSoundPlayer } from "./ConvolvedSoundPlayer";
 import { DownloadResult } from "./DownloadResult";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -64,7 +64,7 @@ export function ResultAuralizations({ simulationId }: ResultAuralizationsProps) 
 
       <div className="flex justify-between mt-12">
         <h1 className="text-2xl text-choras-primary font-inter font-bold">Convolved Sound</h1>
-        <UploadConvolvedAudio simulationId={simulationId} />
+        <ConvolvedAudioForm simulationId={simulationId} />
       </div>
       {auralizations.map((auralization) => (
         <ConvolvedSoundPlayer

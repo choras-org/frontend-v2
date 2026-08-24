@@ -51,6 +51,18 @@ export const auralizationApi = createApi({
       }),
       invalidatesTags: (_, __, { simulationId }) => [{ type: "Auralizations", id: simulationId }],
     }),
+
+    updateAuralizationAudioFile: build.mutation<
+      void,
+      { simulationId: number; auralizationId: number; name: string; description: string }
+    >({
+      query: ({ auralizationId, name, description }) => ({
+        url: `/auralizations/audiofiles/${auralizationId}`,
+        method: "PUT",
+        body: { name, description },
+      }),
+      invalidatesTags: (_, __, { simulationId }) => [{ type: "Auralizations", id: simulationId }],
+    }),
   }),
 });
 
@@ -62,4 +74,5 @@ export const {
   useLazyGetImpulseResponseBySimulationIdQuery,
   useUploadAudioFileMutation,
   useDeleteAuralizationAudioFileMutation,
+  useUpdateAuralizationAudioFileMutation,
 } = auralizationApi;
