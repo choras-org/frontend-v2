@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.90](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.89...v0.0.90) (2026-07-17)
+
+### Features
+
+- add support for virtualized rendering and geometry selection enhancements ([728a849](https://github.com/ajatdarojat45/choras-frontend/commit/728a849d4b511671063eec86fd93657d0804ead5))
+- enhance geometry selection and material assignment functionality ([da26903](https://github.com/ajatdarojat45/choras-frontend/commit/da26903ce449fd1e69dbc20739e62135d814eff4))
+- implement lazy loading for material dropdown and group material assignment ([#188](https://github.com/ajatdarojat45/choras-frontend/issues/188)) ([0399230](https://github.com/ajatdarojat45/choras-frontend/commit/039923085fa4d290f23079e4d403339b1bf19c74))
+- implement lazy loading for material dropdown and group surface management ([c8960b3](https://github.com/ajatdarojat45/choras-frontend/commit/c8960b378dad71e9a3c1a957aea0cbb014f97f7b))
+- integrate mesh registry for improved selection and highlighting of current model meshes ([918f720](https://github.com/ajatdarojat45/choras-frontend/commit/918f7203c3060ca0e4177b9f0da9398c055f238e))
+- remove bulk material assignment functionality from SurfacesTab component ([88f8db6](https://github.com/ajatdarojat45/choras-frontend/commit/88f8db6d20279acaa262e73f685f76bba5d33866))
+
+### Bug Fixes
+
+- Add correct tab title and logo ([#179](https://github.com/ajatdarojat45/choras-frontend/issues/179)) ([3c909d1](https://github.com/ajatdarojat45/choras-frontend/commit/3c909d1f8faa7458936d23663b6b16467aed66f1)), closes [#180](https://github.com/ajatdarojat45/choras-frontend/issues/180)
+
 ### [0.0.89](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.88...v0.0.89) (2026-07-12)
 
 ### Features

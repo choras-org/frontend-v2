@@ -131,7 +131,6 @@ export function SurfacesTab() {
   const [updateSimulation] = useUpdateSimulationMutation();
   const [openMaterialLibrary, setOpenMaterialLibrary] = useState(false);
   const [openCreateMaterialDialog, setOpenCreateMaterialDialog] = useState(false);
-  const [bulkMaterialId, setBulkMaterialId] = useState<string>("");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -649,7 +648,6 @@ export function SurfacesTab() {
     (surface: SurfaceInfo) => {
       const selectedGeo = selectedGeometries[surface.mesh.uuid];
       const mesh = surface.mesh;
-      setBulkMaterialId("");
       if (selectedGeo) {
         removeSelectedGeometry(surface.mesh.uuid);
         removeHighlightedMesh(mesh);
@@ -691,7 +689,6 @@ export function SurfacesTab() {
       return;
     }
 
-    setBulkMaterialId(materialId);
     let updatedAssignments: Record<string, number>;
     const material = materialById.get(parseInt(materialId));
 
@@ -1063,42 +1060,6 @@ export function SurfacesTab() {
                     Selected: {Object.keys(selectedGeometries).length}{" "}
                     {Object.keys(selectedGeometries).length === 1 ? "surface" : "surfaces"}
                   </div>
-
-                  <table className="w-full table-fixed">
-                    <tbody>
-                      <tr className="cursor-pointer hover:bg-choras-dark/90">
-                        <td className="py-2 text-sm w-1/3">
-                          <div className="font-medium truncate">Assign to selected</div>
-                        </td>
-
-                        <td className="px-3 py-2 w-1/3" onClick={(e) => e.stopPropagation()}>
-                          <Select value={bulkMaterialId} onValueChange={handleAssignBulkMaterials}>
-                            <SelectTrigger
-                              size="sm"
-                              className="w-full bg-choras-dark border-choras-gray text-white"
-                            >
-                              <SelectValue placeholder="Select material" />
-                            </SelectTrigger>
-
-                            <SelectContent className="bg-choras-dark text-white border-choras-gray">
-                              <SelectItem value="default">None</SelectItem>
-
-                              {materials.map((material) => (
-                                <SelectItem key={material.id} value={material.id.toString()}>
-                                  {material.name}
-                                </SelectItem>
-                              ))}
-
-                              <hr className="border-t border-gray-700 my-1" />
-                              <SelectItem value="open-library" className="text-choras-primary">
-                                Open material library
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
                 </>
               ) : (
                 <div />
