@@ -2,21 +2,13 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
-import { useGetSimulationByIdQuery, useUpdateSimulationMutation } from "@/store/simulationApi";
+import { useGetSimulationByIdQuery } from "@/store/simulationApi";
 import { useDispatch, useSelector } from "react-redux";
 import { useGeometrySelection } from "@/hooks/useGeometrySelection";
 import { useMeshHighlight } from "@/hooks/useMeshHighlight";
-import { getAbsorptionColor, calculateAverageAbsorption } from "@/helpers/colorGradient";
 import * as THREE from "three";
 import type { RootState } from "@/store";
-import {
-  assignMaterial,
-  assignMaterials,
-  removeMaterialAssignment,
-  removeMaterialAssignments,
-  clearAllAssignments,
-  setAssignments,
-} from "@/store/materialAssignmentSlice";
+import { setAssignments } from "@/store/materialAssignmentSlice";
 import { setHighlightedElement } from "@/store/tabSlice";
 import { toast } from "sonner";
 import {
@@ -109,8 +101,7 @@ export function SurfacesTab() {
     removeSelectedGeometries,
     clearSelectedGeometries,
   } = useGeometrySelection();
-  const { highlightMesh, restoreOriginalColor, setMeshBaseColor, HIGHLIGHT_COLOR } =
-    useMeshHighlight();
+  const { highlightMesh, restoreOriginalColor, HIGHLIGHT_COLOR } = useMeshHighlight();
   const {
     data: materials = [],
     isLoading: materialsLoading,
@@ -120,7 +111,6 @@ export function SurfacesTab() {
     (state: RootState) => state.materialAssignment.assignments,
   );
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
-  const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
   const highlightedElement = useSelector((state: RootState) => state.tab.highlightedElement);
   const { data: simulation, error: simulationError } = useGetSimulationByIdQuery(
     activeSimulation?.id ?? 0,
@@ -128,7 +118,6 @@ export function SurfacesTab() {
       skip: !activeSimulation?.id,
     },
   );
-  const [updateSimulation] = useUpdateSimulationMutation();
   const [openMaterialLibrary, setOpenMaterialLibrary] = useState(false);
   const [openCreateMaterialDialog, setOpenCreateMaterialDialog] = useState(false);
   const [bulkMaterialId, setBulkMaterialId] = useState<string>("");
@@ -156,183 +145,19 @@ export function SurfacesTab() {
     }
   }, [highlightedElement, dispatch]);
 
-  const debounceTimeoutRef = useRef<NodeJS.Timeout>(null);
-
-  const updateSimulationData = useCallback(
-    async (assignments?: Record<string, number>) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-
-      debounceTimeoutRef.current = setTimeout(async () => {
-        if (!activeSimulation?.id) {
-          console.warn("Cannot update simulation: No active simulation");
-          toast.error("No active simulation to update");
-          return;
-        }
-
-        if (!simulation) {
-          console.warn("Cannot update simulation: Simulation data not loaded");
-          toast.error("Simulation data not available");
-          return;
-        }
-
-        if (!currentModelId) {
-          console.warn("Cannot update simulation: No current model ID");
-          toast.error("Model data not available");
-          return;
-        }
-
-        const assignmentsToSave = assignments || materialAssignments;
-
-        const updatePayload = {
-          id: activeSimulation.id,
-          body: {
-            modelId: currentModelId,
-            name: simulation.name,
-            status: simulation.status,
-            hasBeenEdited: true,
-            layerIdByMaterialId: assignmentsToSave,
-          },
-        };
-
-        try {
-          await updateSimulation(updatePayload).unwrap();
-          toast.success("Material assignments saved");
-        } catch (error) {
-          console.error("Failed to update simulation:", error);
-          toast.error("Failed to save material assignment");
-        }
-      }, 300);
-    },
-    [activeSimulation?.id, simulation, currentModelId, materialAssignments, updateSimulation],
-  );
-
-  const handleMaterialAssignment = async (surfaceKey: string, materialId: string) => {
-    if (materialId === "open-library") {
-      setOpenMaterialLibrary(true);
-      return;
-    }
-
-    const surface = surfaceById.get(surfaceKey);
-
-    // If multiple surfaces selected and current surface is one of them, use bulk assign
-    const isMultipleSelected =
-      Object.keys(selectedGeometries).length > 1 &&
-      surface?.mesh?.uuid &&
-      selectedGeometries[surface.mesh.uuid];
-
-    if (isMultipleSelected) {
-      handleAssignBulkMaterials(materialId);
-      return;
-    }
-
-    // Single surface assignment
-    let updatedAssignments: Record<string, number>;
-
-    if (materialId === "default") {
-      dispatch(removeMaterialAssignment(surfaceKey));
-      updatedAssignments = { ...materialAssignments };
-      delete updatedAssignments[surfaceKey];
-
-      if (surface?.mesh) {
-        setMeshBaseColor(surface.mesh, 0xffffff);
-      }
-    } else {
-      const numMaterialId = parseInt(materialId);
-      dispatch(assignMaterial({ meshId: surfaceKey, materialId: numMaterialId }));
-      updatedAssignments = { ...materialAssignments, [surfaceKey]: numMaterialId };
-
-      if (surface?.mesh) {
-        const material = materialById.get(numMaterialId);
-        if (material?.absorptionCoefficients) {
-          const avgAbsorption = calculateAverageAbsorption(material.absorptionCoefficients);
-          const absorptionColor = getAbsorptionColor(avgAbsorption);
-          setMeshBaseColor(surface.mesh, absorptionColor);
-        }
-      }
-    }
-
-    updateSimulationData(updatedAssignments);
+  const handleMaterialAssignment = async (_surfaceKey: string, _materialId: string) => {
+    toast.error("Assigning surface material is currently disabled");
+    return;
   };
 
-  const handleAssignAllMaterials = async (materialId: string) => {
-    if (materialId === "open-library") {
-      setOpenMaterialLibrary(true);
-      return;
-    }
-
-    let updatedAssignments: Record<string, number>;
-    const material = materialById.get(parseInt(materialId));
-
-    if (materialId === "default") {
-      dispatch(clearAllAssignments());
-      updatedAssignments = {};
-
-      surfaces.forEach((surface) => {
-        if (surface.mesh) {
-          setMeshBaseColor(surface.mesh, 0xffffff);
-        }
-      });
-    } else {
-      const newAssignments: Record<string, number> = {};
-      const numMaterialId = parseInt(materialId);
-      const avgAbsorption = material?.absorptionCoefficients
-        ? calculateAverageAbsorption(material.absorptionCoefficients)
-        : 0;
-      const absorptionColor = getAbsorptionColor(avgAbsorption);
-
-      surfaces.forEach((surface) => {
-        const surfaceKey = surface.id;
-        newAssignments[surfaceKey] = numMaterialId;
-
-        if (surface.mesh) {
-          setMeshBaseColor(surface.mesh, absorptionColor);
-        }
-      });
-      dispatch(assignMaterials({ meshIds: surfaces.map((s) => s.id), materialId: numMaterialId }));
-      updatedAssignments = { ...materialAssignments, ...newAssignments };
-    }
-
-    updateSimulationData(updatedAssignments);
+  const handleAssignAllMaterials = async (_materialId: string) => {
+    toast.error("Assigning surface material is currently disabled");
+    return;
   };
 
-  const handleAssignGroupMaterials = async (groupSurfaces: SurfaceInfo[], materialId: string) => {
-    if (materialId === "open-library") {
-      setOpenMaterialLibrary(true);
-      return;
-    }
-
-    const updatedAssignments: Record<string, number> = { ...materialAssignments };
-
-    if (materialId === "default") {
-      groupSurfaces.forEach((surface) => {
-        delete updatedAssignments[surface.id];
-        if (surface.mesh) {
-          setMeshBaseColor(surface.mesh, 0xffffff);
-        }
-      });
-      dispatch(removeMaterialAssignments(groupSurfaces.map((s) => s.id)));
-    } else {
-      const numMaterialId = parseInt(materialId);
-      const material = materialById.get(numMaterialId);
-      const avgAbsorption = material?.absorptionCoefficients
-        ? calculateAverageAbsorption(material.absorptionCoefficients)
-        : 0;
-      const absorptionColor = getAbsorptionColor(avgAbsorption);
-
-      groupSurfaces.forEach((surface) => {
-        updatedAssignments[surface.id] = numMaterialId;
-        if (surface.mesh) {
-          setMeshBaseColor(surface.mesh, absorptionColor);
-        }
-      });
-      dispatch(
-        assignMaterials({ meshIds: groupSurfaces.map((s) => s.id), materialId: numMaterialId }),
-      );
-    }
-
-    updateSimulationData(updatedAssignments);
+  const handleAssignGroupMaterials = async (_groupSurfaces: SurfaceInfo[], _materialId: string) => {
+    toast.error("Assigning surface material is currently disabled");
+    return;
   };
 
   const getMaterialName = (materialId?: number) => {
@@ -412,12 +237,6 @@ export function SurfacesTab() {
     materials.forEach((material) => map.set(material.id, material));
     return map;
   }, [materials]);
-
-  const surfaceById = useMemo(() => {
-    const map = new Map<string, SurfaceInfo>();
-    surfaces.forEach((surface) => map.set(surface.id, surface));
-    return map;
-  }, [surfaces]);
 
   const surfaceByUuid = useMemo(() => {
     const map = new Map<string, SurfaceInfo>();
@@ -560,13 +379,6 @@ export function SurfacesTab() {
     });
   }, [surfaces, hiddenSurfaces]);
 
-  const handleOpenCreateMaterialDialog = () => {
-    setOpenMaterialLibrary(true);
-    setTimeout(() => {
-      setOpenCreateMaterialDialog(true);
-    }, 500);
-  };
-
   const selectedSurfaceId = useMemo(() => {
     if (!selectedGeometry?.mesh) return null;
     const matched = surfaceByUuid.get(selectedGeometry.mesh.uuid);
@@ -681,59 +493,9 @@ export function SurfacesTab() {
     [selectedGeometries, addSelectedGeometry, removeSelectedGeometry],
   );
 
-  const handleAssignBulkMaterials = async (materialId: string) => {
-    if (materialId === "") {
-      return;
-    }
-
-    if (materialId === "open-library") {
-      setOpenMaterialLibrary(true);
-      return;
-    }
-
-    setBulkMaterialId(materialId);
-    let updatedAssignments: Record<string, number>;
-    const material = materialById.get(parseInt(materialId));
-
-    if (materialId === "default") {
-      const numMaterialId = parseInt(materialId);
-      const newAssignments: Record<string, number> = {};
-      const assignedIds: string[] = [];
-
-      surfaces.forEach((surface) => {
-        if (selectedGeometries[surface.mesh.uuid]) {
-          const surfaceKey = surface.id;
-          assignedIds.push(surfaceKey);
-          newAssignments[surfaceKey] = numMaterialId;
-          setMeshBaseColor(surface.mesh, 0xffffff);
-        }
-      });
-      dispatch(assignMaterials({ meshIds: assignedIds, materialId: numMaterialId }));
-
-      updatedAssignments = { ...materialAssignments, ...newAssignments };
-    } else {
-      const newAssignments: Record<string, number> = {};
-      const numMaterialId = parseInt(materialId);
-      const avgAbsorption = material?.absorptionCoefficients
-        ? calculateAverageAbsorption(material.absorptionCoefficients)
-        : 0;
-      const absorptionColor = getAbsorptionColor(avgAbsorption);
-
-      const assignedIds: string[] = [];
-      surfaces.forEach((surface) => {
-        if (selectedGeometries[surface.mesh.uuid]) {
-          const surfaceKey = surface.id;
-          assignedIds.push(surfaceKey);
-          newAssignments[surfaceKey] = numMaterialId;
-          setMeshBaseColor(surface.mesh, absorptionColor);
-        }
-      });
-      dispatch(assignMaterials({ meshIds: assignedIds, materialId: numMaterialId }));
-
-      updatedAssignments = { ...materialAssignments, ...newAssignments };
-    }
-
-    updateSimulationData(updatedAssignments);
+  const handleAssignBulkMaterials = async (_materialId: string) => {
+    toast.error("Assigning surface material is currently disabled");
+    return;
   };
 
   const materialSelectOptions = useMemo(() => {
@@ -1120,8 +882,8 @@ export function SurfacesTab() {
           <Button
             variant="outline"
             size="sm"
-            className="text-xs"
-            onClick={handleOpenCreateMaterialDialog}
+            className="text-xs opacity-50 cursor-not-allowed"
+            onClick={() => toast.error("Creating material is currently disabled")}
           >
             <Plus size={14} />
             <span>Create material</span>

@@ -59,7 +59,7 @@ export function SurfaceMaterialList({
       setSearchQuery("");
       setMaterialActionType("Create");
       setMaterial(null);
-      setOpenMaterialForm(true);
+      // setOpenMaterialForm(true);
     }
   }, [openCreateMaterialDialog]);
 
@@ -133,6 +133,11 @@ export function SurfaceMaterialList({
     actionType: "Create" | "Edit" | "Copy" | "Duplicate",
   ) => {
     e.stopPropagation();
+
+    if (actionType === "Edit") {
+      toast.error("Editing material is currently disabled");
+      return;
+    }
 
     const materialCopy = { ...material };
     if ((actionType === "Edit" && material.origin === "factory") || actionType === "Duplicate") {

@@ -8,9 +8,15 @@ interface DynamicSettingFieldProps {
   option: SimulationSettingOption;
   value: string | number;
   onChange: (value: string | number, isValid?: boolean) => void;
+  disabled?: boolean;
 }
 
-export function DynamicSettingField({ option, value, onChange }: DynamicSettingFieldProps) {
+export function DynamicSettingField({
+  option,
+  value,
+  onChange,
+  disabled,
+}: DynamicSettingFieldProps) {
   const {
     id,
     name,
@@ -46,6 +52,7 @@ export function DynamicSettingField({ option, value, onChange }: DynamicSettingF
   };
 
   const handleInputChange = (inputValue: string) => {
+    if (disabled) return;
     setLocalValue(inputValue);
 
     if (type === "string") {
@@ -103,18 +110,19 @@ export function DynamicSettingField({ option, value, onChange }: DynamicSettingF
             <div key={stringValue} className="flex items-center space-x-2">
               <button
                 type="button"
-                onClick={() => onChange(stringValue, true)}
+                disabled={disabled}
+                onClick={() => !disabled && onChange(stringValue, true)}
                 className={`w-4 h-4 rounded-full border-2 transition-all ${
                   isSelected
                     ? "border-white bg-transparent"
                     : "border-gray-400 hover:border-gray-300"
-                }`}
+                } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {isSelected && <div className="w-2 h-2 bg-white rounded-full mx-auto my-auto" />}
               </button>
               <Label
-                className="text-xs text-gray-300 cursor-pointer"
-                onClick={() => onChange(stringValue, true)}
+                className={`text-xs text-gray-300 ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+                onClick={() => !disabled && onChange(stringValue, true)}
               >
                 {label}
               </Label>
@@ -161,6 +169,7 @@ export function DynamicSettingField({ option, value, onChange }: DynamicSettingF
           id={id}
           type={inputType}
           value={localValue}
+          disabled={disabled}
           onChange={(e) => handleInputChange(e.target.value)}
           min={min}
           max={max}

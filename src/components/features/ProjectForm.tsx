@@ -109,7 +109,16 @@ export function ProjectForm({ id, defaultValues, trigger, groupOnly }: ProjectFo
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        if (newOpen && !isEdit) {
+          toast.error("Project creation is currently disabled");
+          return;
+        }
+        setOpen(newOpen);
+      }}
+    >
       <DialogTrigger asChild>{trigger ?? <Button>{label} project</Button>}</DialogTrigger>
       <DialogContent className="max-w-md">
         <Form {...form}>

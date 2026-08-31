@@ -10,6 +10,7 @@ import type { SimulationSettingsState } from "@/types/simulationSettings";
 import { SettingJsonEditor } from "./SettingJsonEditor";
 import { FullSettingJsonEditor } from "./FullSettingJsonEditor";
 import { setHighlightedElement } from "@/store/tabSlice";
+import { toast } from "sonner";
 
 export function SettingTab() {
   const dispatch = useDispatch();
@@ -20,7 +21,7 @@ export function SettingTab() {
   const [showExtendedSettings, setShowExtendedSettings] = useState(true);
   const highlightedElement = useSelector((state: RootState) => state.tab.highlightedElement);
 
-  const { simulation, simulationError, updateSimulationSettings } = useSimulationSettingsApi();
+  const { simulation, simulationError } = useSimulationSettingsApi();
 
   const {
     data: settingsData,
@@ -60,10 +61,9 @@ export function SettingTab() {
     }
   }, [simulation?.id, settingsData?.options, dispatch]);
 
-  const handleValueChange = (id: string, value: string | number, _: boolean = true) => {
-    dispatch(updateValue({ id, value }));
-    const updatedValues = { ...values, [id]: value };
-    updateSimulationSettings(updatedValues);
+  const handleValueChange = (_id: string, _value: string | number, _: boolean = true) => {
+    toast.error("Changing simulation settings is currently disabled");
+    return;
   };
 
   const generalSettingsNames = ["simulation length", "impulse response length", "speed of sound"];
@@ -137,6 +137,7 @@ export function SettingTab() {
                       option={option}
                       value={values[option.id] === undefined ? option.default : values[option.id]}
                       onChange={(value, isValid) => handleValueChange(option.id, value, isValid)}
+                      disabled
                     />
                   ))}
                   {generalSettings.length === 0 && (
@@ -168,6 +169,7 @@ export function SettingTab() {
                       option={option}
                       value={values[option.id] === undefined ? option.default : values[option.id]}
                       onChange={(value, isValid) => handleValueChange(option.id, value, isValid)}
+                      disabled
                     />
                   ))}
                   {extendedSettings.length === 0 && (

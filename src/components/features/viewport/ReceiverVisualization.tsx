@@ -90,6 +90,10 @@ function ReceiverPoint({
           object={scene.getObjectByProperty("uuid", receiver.id) as THREE.Object3D}
           size={0.5}
           mode="translate"
+          enabled={false}
+          showX={false}
+          showY={false}
+          showZ={false}
           matrixAutoUpdate={false}
           onMouseDown={() => {
             dispatch(setIsTransforming(true));

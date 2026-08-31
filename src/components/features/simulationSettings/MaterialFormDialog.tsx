@@ -123,7 +123,7 @@ export function MaterialFormDialog({
     <Dialog open={isOpen} onOpenChange={onOpen}>
       {isShownTrigger && (
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="flex items-center gap-2" disabled>
             <Plus size={16} />
             {triggerLabel}
           </Button>

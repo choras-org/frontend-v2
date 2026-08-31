@@ -328,6 +328,10 @@ export function UploadModel({ projectId, trigger, onSuccess }: UploadModelProps)
         if (!newOpen && (isCapturingScreenshot || isLoadingExample)) {
           return;
         }
+        if (newOpen) {
+          toast.error("Model upload is currently disabled");
+          return;
+        }
         setOpen(newOpen);
       }}
       open={open}

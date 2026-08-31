@@ -82,7 +82,16 @@ export function UploadConvolvedAudio({ simulationId }: UploadConvolvedAudioProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Upload Audio</Button>
+        <Button
+          className="opacity-50 cursor-not-allowed"
+          onClick={(e) => {
+            // Prevent the dialog from opening and surface the disabled message.
+            e.preventDefault();
+            toast.error("Uploading audio is currently disabled");
+          }}
+        >
+          Upload Audio
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-md">

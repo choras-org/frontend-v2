@@ -6,9 +6,16 @@ interface CoordinateInputProps {
   axis: "x" | "y" | "z";
   onChange: (value: number) => void;
   onCommit?: (value: number) => void;
+  disabled?: boolean;
 }
 
-export function CoordinateInput({ value, axis, onChange, onCommit }: CoordinateInputProps) {
+export function CoordinateInput({
+  value,
+  axis,
+  onChange,
+  onCommit,
+  disabled,
+}: CoordinateInputProps) {
   const [localValue, setLocalValue] = useState<string>(value.toString());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -25,6 +32,7 @@ export function CoordinateInput({ value, axis, onChange, onCommit }: CoordinateI
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const newValue = e.target.value;
     setLocalValue(newValue);
 
@@ -75,6 +83,7 @@ export function CoordinateInput({ value, axis, onChange, onCommit }: CoordinateI
         onBlur={handleCommit}
         onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
+        disabled={disabled}
         className="h-6 text-sm bg-choras-dark border-choras-gray text-white pl-5.5 pr-2 py-3"
       />
     </div>

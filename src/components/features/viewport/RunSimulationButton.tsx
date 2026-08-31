@@ -5,7 +5,6 @@ import { useSimulationRunner } from "@/hooks/useSimulationRunner";
 import { useSimulationValidation } from "@/hooks/useSimulationValidation";
 import { useDuplicateSimulation } from "@/hooks/useDuplicateSimulation";
 import { useDispatch } from "react-redux";
-import { navigateToTabAndHighlight } from "@/store/tabSlice";
 import { setActiveSimulation, setShouldAutoRun } from "@/store/simulationSlice";
 import { useParams, useNavigate } from "react-router";
 import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
@@ -32,8 +31,7 @@ import { toast } from "sonner";
 
 export function RunSimulationButton() {
   const { isRunning, progress, startSimulation, cancelAndStop } = useSimulationRunner();
-  const { isValid, errors, validateSimulationSettings, simulationSettingsErrors } =
-    useSimulationValidation();
+  const { isValid, errors, simulationSettingsErrors } = useSimulationValidation();
   const { duplicateSimulation } = useDuplicateSimulation();
   const { modelId, simulationId } = useParams() as { modelId: string; simulationId?: string };
   const { data: simulations } = useGetSimulationsByModelIdQuery(+modelId);
@@ -89,29 +87,9 @@ export function RunSimulationButton() {
       navigate(`/editor/${modelId}/${simulationId}/results`);
     } else if (isRunning) {
       cancelAndStop();
-    } else if (!isValid) {
-      const firstError = errors[0];
-      dispatch(
-        navigateToTabAndHighlight({
-          tab: firstError.navigationTarget,
-          element: firstError.highlightTarget,
-        }),
-      );
     } else {
-      const simulationSettingsErrors = await validateSimulationSettings();
-
-      if (!hideSimulationSettingErrors && Object.keys(simulationSettingsErrors).length > 0) {
-        dispatch(
-          navigateToTabAndHighlight({
-            tab: "settings",
-            element: "simulation-settings",
-          }),
-        );
-        setShowSimulationSettingsErrors(true);
-        return;
-      }
-
-      handleRunSimulation();
+      toast.error("Running simulation is currently disabled");
+      return;
     }
   };
 
@@ -183,6 +161,10 @@ export function RunSimulationButton() {
     return null;
   }
 
+  // The run action is disabled, so grey out the button in its "play" state
+  // (i.e. when it is neither showing results nor stopping a running simulation).
+  const isRunDisabled = !isCompleted && !isRunning;
+
   return (
     <>
       <div
@@ -204,17 +186,21 @@ export function RunSimulationButton() {
                         : "default"
                 }
                 className={
-                  `h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer relative z-10 ` +
-                  (isRunning
-                    ? ""
-                    : "bg-gradient-to-r from-choras-primary from-50% to-choras-secondary")
+                  `h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 relative z-10 ` +
+                  (isRunDisabled
+                    ? "bg-gray-500 opacity-50 cursor-not-allowed"
+                    : isRunning
+                      ? "cursor-pointer"
+                      : "cursor-pointer bg-gradient-to-r from-choras-primary from-50% to-choras-secondary")
                 }
                 style={
-                  isRunning
-                    ? { backgroundColor: "#fff" }
-                    : isCompleted
-                      ? { backgroundColor: "#f093fb" }
-                      : undefined
+                  isRunDisabled
+                    ? { backgroundColor: "#6b7280" }
+                    : isRunning
+                      ? { backgroundColor: "#fff" }
+                      : isCompleted
+                        ? { backgroundColor: "#f093fb" }
+                        : undefined
                 }
               >
                 {isCompleted ? (
