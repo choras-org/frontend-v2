@@ -379,13 +379,6 @@ export function SurfacesTab() {
     });
   }, [surfaces, hiddenSurfaces]);
 
-  const handleOpenCreateMaterialDialog = () => {
-    setOpenMaterialLibrary(true);
-    setTimeout(() => {
-      setOpenCreateMaterialDialog(true);
-    }, 500);
-  };
-
   const selectedSurfaceId = useMemo(() => {
     if (!selectedGeometry?.mesh) return null;
     const matched = surfaceByUuid.get(selectedGeometry.mesh.uuid);
@@ -889,8 +882,8 @@ export function SurfacesTab() {
           <Button
             variant="outline"
             size="sm"
-            className="text-xs"
-            onClick={handleOpenCreateMaterialDialog}
+            className="text-xs opacity-50 cursor-not-allowed"
+            onClick={() => toast.error("Creating material is currently disabled")}
           >
             <Plus size={14} />
             <span>Create material</span>

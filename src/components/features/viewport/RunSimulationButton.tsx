@@ -161,6 +161,10 @@ export function RunSimulationButton() {
     return null;
   }
 
+  // The run action is disabled, so grey out the button in its "play" state
+  // (i.e. when it is neither showing results nor stopping a running simulation).
+  const isRunDisabled = !isCompleted && !isRunning;
+
   return (
     <>
       <div
@@ -182,17 +186,21 @@ export function RunSimulationButton() {
                         : "default"
                 }
                 className={
-                  `h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer relative z-10 ` +
-                  (isRunning
-                    ? ""
-                    : "bg-gradient-to-r from-choras-primary from-50% to-choras-secondary")
+                  `h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 relative z-10 ` +
+                  (isRunDisabled
+                    ? "bg-gray-500 opacity-50 cursor-not-allowed"
+                    : isRunning
+                      ? "cursor-pointer"
+                      : "cursor-pointer bg-gradient-to-r from-choras-primary from-50% to-choras-secondary")
                 }
                 style={
-                  isRunning
-                    ? { backgroundColor: "#fff" }
-                    : isCompleted
-                      ? { backgroundColor: "#f093fb" }
-                      : undefined
+                  isRunDisabled
+                    ? { backgroundColor: "#6b7280" }
+                    : isRunning
+                      ? { backgroundColor: "#fff" }
+                      : isCompleted
+                        ? { backgroundColor: "#f093fb" }
+                        : undefined
                 }
               >
                 {isCompleted ? (

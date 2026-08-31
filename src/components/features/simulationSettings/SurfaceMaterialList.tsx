@@ -59,7 +59,7 @@ export function SurfaceMaterialList({
       setSearchQuery("");
       setMaterialActionType("Create");
       setMaterial(null);
-      setOpenMaterialForm(true);
+      // setOpenMaterialForm(true);
     }
   }, [openCreateMaterialDialog]);
 
