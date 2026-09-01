@@ -2,6 +2,7 @@ export type ModelViewerSource = "InitialIssue" | "RepairedIssue";
 
 export interface ModelViewerProps {
   modelId: string;
+  simulationId?: string;
   useClone?: boolean;
   isRepair?: boolean;
   showGeometrySelectionInfo?: boolean;
@@ -18,6 +19,7 @@ export interface ModelRendererProps {
 export interface ViewportCanvasProps {
   modelUrl?: string;
   modelId?: number;
+  simulationId?: number;
   cacheKey?: string;
   useClone?: boolean;
   isRepair?: boolean;

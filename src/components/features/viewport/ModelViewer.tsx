@@ -7,6 +7,7 @@ import { ViewportCanvas } from "./ViewportCanvas";
 
 export function ModelViewer({
   modelId,
+  simulationId,
   useClone = false,
   isRepair = false,
   showGeometrySelectionInfo = true,
@@ -89,6 +90,7 @@ export function ModelViewer({
       <ViewportCanvas
         modelUrl={modelUrl}
         modelId={model.id}
+        simulationId={Number(simulationId)}
         cacheKey={cacheKey}
         useClone={useClone}
         isRepair={isRepair}

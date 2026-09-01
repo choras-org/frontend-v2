@@ -148,7 +148,7 @@ export function EditorPage() {
         </>
       )}
       <div className="h-full w-full">
-        <ModelViewer modelId={modelId} />
+        <ModelViewer modelId={modelId} simulationId={simulationId as string} />
       </div>
     </AppLayout>
   );

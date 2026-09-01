@@ -37,6 +37,8 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useDeleteAuralizationAudioFileMutation } from "@/store/auralizationApi";
+import { ConvolvedAudioForm } from "./ConvolvedAudioForm";
+import { useParams } from "react-router";
 
 type ConvolvedSoundPlayerProps = {
   auralization: Auralization;
@@ -47,6 +49,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [simulationId, setSimulationId] = useState<string | null>(null);
   const [deleteAuralizationAudioFile] = useDeleteAuralizationAudioFileMutation();
+  const { simulationId: simulationIdParams } = useParams();
 
   // State for non-convolved (dry) audio
   const [nonConvolvedAudioUrl, setNonConvolvedAudioUrl] = useState<string | null>(null);
@@ -153,7 +156,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
   const handleDelete = async () => {
     try {
       await deleteAuralizationAudioFile({
-        simulationId: Number(simulationId),
+        simulationId: Number(simulationId || simulationIdParams),
         auralizationId: auralization.id,
       }).unwrap();
       toast.success("Audio file deleted successfully");
@@ -288,7 +291,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
         </Button>
       </ItemActions>
 
-      {simulationId && auralization.isUserFile && (
+      {auralization.isUserFile && (
         <ItemActions className="justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger className="cursor-pointer">
@@ -299,6 +302,20 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
               sideOffset={8}
               className="bg-white border rounded-md shadow-sm p-3 z-50"
             >
+              <ConvolvedAudioForm
+                simulationId={Number(simulationId || simulationIdParams)}
+                auralizationId={auralization.id}
+                defaultName={auralization.name}
+                defaultDescription={auralization.description}
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer mb-2"
+                  >
+                    Edit details
+                  </DropdownMenuItem>
+                }
+              />
               <ConfirmDialog
                 title="Delete Convolved Sound"
                 description="Are you sure you want to delete this convolved sound? This action cannot be undone."
@@ -310,7 +327,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
                     onSelect={(e) => e.preventDefault()}
                     className="text-red-600 cursor-pointer"
                   >
-                    Delete Sound
+                    Delete sound
                   </DropdownMenuItem>
                 }
               />

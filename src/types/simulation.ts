@@ -42,6 +42,7 @@ export interface SimulationRun {
   solverSettings: SolverSettings;
   sources: Source2[];
   status: string;
+  errorMessage: string;
   simulationMethod: string;
   updatedAt: string;
 }

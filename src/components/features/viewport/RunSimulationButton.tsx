@@ -1,4 +1,4 @@
-import { Play, Square, AlertTriangle, ChartColumn } from "lucide-react";
+import { Play, Square, AlertTriangle, ChartColumn, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSimulationRunner } from "@/hooks/useSimulationRunner";
@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { navigateToTabAndHighlight } from "@/store/tabSlice";
 import { setActiveSimulation, setShouldAutoRun } from "@/store/simulationSlice";
 import { useParams, useNavigate } from "react-router";
-import { useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
+import { useGetSimulationRunsQuery, useGetSimulationsByModelIdQuery } from "@/store/simulationApi";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +29,7 @@ import {
 } from "@/store/userPreferenceApi";
 import type { UserPreference } from "@/types/userPreference";
 import { toast } from "sonner";
+import type { Simulation } from "@/types/simulation";
 
 export function RunSimulationButton() {
   const { isRunning, progress, startSimulation, cancelAndStop } = useSimulationRunner();
@@ -47,8 +48,10 @@ export function RunSimulationButton() {
   const { data: userPreferences } = useGetUserPreferencesQuery();
   const [userPreference, setUserPreference] = useState<UserPreference | null>(null);
   const [updateUserPreference] = useUpdateUserPreferenceMutation();
-
-  const currentSimulation = simulations?.find((sim) => sim.id === Number(simulationId));
+  const [currentSimulation, setCurrentSimulation] = useState<Simulation | null>(null);
+  const [isErrorRun, setIsErrorRun] = useState<boolean>(false);
+  const [errorRunMessage, setErrorRunMessage] = useState<string>("");
+  const { data: simulationsRun } = useGetSimulationRunsQuery();
 
   const isCompletedRun =
     currentSimulation?.simulationRun?.status === "Completed" &&
@@ -60,6 +63,24 @@ export function RunSimulationButton() {
     new Date(currentSimulation.updatedAt) > new Date(currentSimulation.simulationRun.completedAt);
 
   const isCompleted = isCompletedRun && !editedAfterCompletion;
+
+  useEffect(() => {
+    const _currentSimulation = simulations?.find((sim) => sim.id === Number(simulationId));
+    setCurrentSimulation(_currentSimulation || null);
+  }, [simulations]);
+
+  useEffect(() => {
+    const sim = simulationsRun?.find((el) => el.simulation.id === currentSimulation?.id);
+    if (sim?.status === "Error") {
+      setIsErrorRun(true);
+      setErrorRunMessage(
+        sim.errorMessage || "Simulation failed. Please check your settings and try again.",
+      );
+    } else {
+      setIsErrorRun(false);
+      setErrorRunMessage("");
+    }
+  }, [simulationsRun, currentSimulation]);
 
   useEffect(() => {
     if (shouldAutoRun && activeSimulation && isValid && !isRunning) {
@@ -157,6 +178,9 @@ export function RunSimulationButton() {
     if (isRunning) {
       return `Running Simulation (${Math.round(progress)}%)`;
     }
+    if (isErrorRun) {
+      return "Simulation failed — click to re-run";
+    }
     if (!isValid) {
       return errors.map((error) => error.message).join(", ");
     }
@@ -186,7 +210,11 @@ export function RunSimulationButton() {
   return (
     <>
       <div
-        className={isRunning ? "flex items-center gap-0 bg-choras-dark rounded-full p-2" : "p-2"}
+        className={
+          isRunning || isErrorRun
+            ? "flex items-center gap-0 bg-choras-dark rounded-full p-2"
+            : "p-2"
+        }
       >
         <TooltipProvider>
           <Tooltip>
@@ -233,7 +261,7 @@ export function RunSimulationButton() {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        {isRunning && (
+        {isRunning ? (
           <div className="h-20 mr-10 ml-6 flex items-center gap-4 flex-1">
             <span className="text-sm text-white font-bold whitespace-nowrap pl-4">Status:</span>
             <span className="text-sm text-white whitespace-nowrap pr-5">In progress</span>
@@ -247,7 +275,13 @@ export function RunSimulationButton() {
               {Math.round(progress)}%
             </span>
           </div>
-        )}
+        ) : isErrorRun ? (
+          <div className="h-20 mr-10 ml-6 flex items-center gap-3 flex-1">
+            <span className="text-sm text-white font-bold whitespace-nowrap pl-4">Status:</span>
+            <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+            <span className="text-sm text-red-300 flex-1 line-clamp-2">{errorRunMessage}</span>
+          </div>
+        ) : null}
       </div>
 
       <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>

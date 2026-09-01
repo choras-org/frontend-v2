@@ -29,10 +29,12 @@ import {
 } from "@/components/ui/select";
 import { GeometryIssueLayer } from "../GeometryIssueLayer";
 import { useCameraFocusOnIssue } from "@/hooks/useCameraFocusOnIssue";
+import { useGetSimulationRunsQuery } from "@/store/simulationApi";
 
 export function ViewportCanvas({
   modelUrl,
   modelId,
+  simulationId,
   cacheKey,
   useClone = false,
   isRepair = false,
@@ -48,6 +50,10 @@ export function ViewportCanvas({
   const { loadModelFromUrl, getModel, isLoading, error, setActiveModel } = useModelLoader();
   const { isRunning } = useSimulationRunnerContext();
   const orbitControlsRef = useRef<OrbitControlsType | null>(null);
+  const { data: simulationsRun } = useGetSimulationRunsQuery();
+  const currentSimulationRun = simulationsRun?.find(
+    (sim) => sim.simulation.id === Number(simulationId),
+  );
 
   useCameraFocusOnIssue(orbitControlsRef);
 
@@ -229,7 +235,7 @@ export function ViewportCanvas({
       </div>
 
       {/* Selection Info Panel */}
-      {!isRunning && showGeometrySelectionInfo && (
+      {!isRunning && showGeometrySelectionInfo && currentSimulationRun?.status !== "Error" && (
         <div className="absolute bottom-4 right-4 z-10">
           <GeometrySelectionInfo />
         </div>

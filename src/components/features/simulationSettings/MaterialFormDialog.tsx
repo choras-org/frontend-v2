@@ -69,7 +69,9 @@ export function MaterialFormDialog({
         name: material.name,
         description: material.description,
         categoryId: material.categoryId,
-        absorptionCoefficients: material.absorptionCoefficients,
+        absorptionCoefficients: material.absorptionCoefficients.map((c) =>
+          Math.max(0, Math.min(1, c)),
+        ),
       });
     }
 
@@ -89,7 +91,8 @@ export function MaterialFormDialog({
 
   const handleCoeffChange = (index: number, value: string) => {
     const newCoeffs = [...formData.absorptionCoefficients];
-    newCoeffs[index] = parseFloat(value) || 0;
+    const parsed = parseFloat(value);
+    newCoeffs[index] = isNaN(parsed) ? 0 : Math.max(0, Math.min(1, parsed));
     setFormData((prev) => ({ ...prev, absorptionCoefficients: newCoeffs }));
   };
 

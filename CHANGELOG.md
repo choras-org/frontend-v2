@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.91](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.90...v0.0.91) (2026-07-17)
+
+### Features
+
+- ensure absorption coefficients are clamped between 0 and 1 ([8ff29f3](https://github.com/ajatdarojat45/choras-frontend/commit/8ff29f335942ec0186c3cf8676162ff7bf01588f))
+
+### [0.0.90](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.89...v0.0.90) (2026-07-17)
+
+### Features
+
+- add support for virtualized rendering and geometry selection enhancements ([728a849](https://github.com/ajatdarojat45/choras-frontend/commit/728a849d4b511671063eec86fd93657d0804ead5))
+- enhance geometry selection and material assignment functionality ([da26903](https://github.com/ajatdarojat45/choras-frontend/commit/da26903ce449fd1e69dbc20739e62135d814eff4))
+- implement lazy loading for material dropdown and group material assignment ([#188](https://github.com/ajatdarojat45/choras-frontend/issues/188)) ([0399230](https://github.com/ajatdarojat45/choras-frontend/commit/039923085fa4d290f23079e4d403339b1bf19c74))
+- implement lazy loading for material dropdown and group surface management ([c8960b3](https://github.com/ajatdarojat45/choras-frontend/commit/c8960b378dad71e9a3c1a957aea0cbb014f97f7b))
+- integrate mesh registry for improved selection and highlighting of current model meshes ([918f720](https://github.com/ajatdarojat45/choras-frontend/commit/918f7203c3060ca0e4177b9f0da9398c055f238e))
+- remove bulk material assignment functionality from SurfacesTab component ([88f8db6](https://github.com/ajatdarojat45/choras-frontend/commit/88f8db6d20279acaa262e73f685f76bba5d33866))
+
+### Bug Fixes
+
+- Add correct tab title and logo ([#179](https://github.com/ajatdarojat45/choras-frontend/issues/179)) ([3c909d1](https://github.com/ajatdarojat45/choras-frontend/commit/3c909d1f8faa7458936d23663b6b16467aed66f1)), closes [#180](https://github.com/ajatdarojat45/choras-frontend/issues/180)
+
+### [0.0.89](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.88...v0.0.89) (2026-07-12)
+
+### Features
+
+- add updateAuralizationAudioFile mutation to auralizationApi ([6d50681](https://github.com/ajatdarojat45/choras-frontend/commit/6d50681a1f36dfe1034aea4091d73e012fa0ba1b))
+- implement audio file upload and update functionality in ConvolvedAudioForm component ([38088cc](https://github.com/ajatdarojat45/choras-frontend/commit/38088cc19cdbf81d7feccc7b5a03e8811d0aee5d))
+- integrate ConvolvedAudioForm for editing audio details and improve simulation ID handling ([2d058e4](https://github.com/ajatdarojat45/choras-frontend/commit/2d058e402be929f7f84b91efe2e316ca7bec8a6f))
+- replace UploadConvolvedAudio with ConvolvedAudioForm in ResultAuralizations component ([b15c114](https://github.com/ajatdarojat45/choras-frontend/commit/b15c114d78f7ba0e0a4a09fd0716a83fd244fd88))
+
+### [0.0.88](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.87...v0.0.88) (2026-07-10)
+
+### Features
+
+- refactor file input change handling in UploadModel component ([053853c](https://github.com/ajatdarojat45/choras-frontend/commit/053853ca4126407f5c8a47254fc8716ce76531e5))
+
+### [0.0.87](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.86...v0.0.87) (2026-07-10)
+
+### Features
+
+- add errorMessage field to SimulationRun interface ([c15f4b3](https://github.com/ajatdarojat45/choras-frontend/commit/c15f4b358105aed4813e14b296771fa5ce063c7d))
+- add simulationId to ModelViewer component and pass it to ViewportCanvas ([cab7cad](https://github.com/ajatdarojat45/choras-frontend/commit/cab7cade90d2faf5a092d5e948d533c878523d46))
+- add simulationId to ModelViewerProps and ViewportCanvasProps interfaces ([ee81074](https://github.com/ajatdarojat45/choras-frontend/commit/ee81074639392b8bdee72635a5d9d6342e6e5c9a))
+- enhance error handling in RunSimulationButton with error message display ([f61387d](https://github.com/ajatdarojat45/choras-frontend/commit/f61387db7b7b5a16a5b320a7012c9f29016f7ef7))
+- pass simulationId to ModelViewer component in EditorPage ([9ef1f12](https://github.com/ajatdarojat45/choras-frontend/commit/9ef1f1270f2b8a1156df5ab7422cd8ebffb0a9a0))
+- persist simulation error message in the progress bar area ([0d9414f](https://github.com/ajatdarojat45/choras-frontend/commit/0d9414f4aa7e9c53f8bc42970fb4d96cbb183854))
+
 ### [0.0.86](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.85...v0.0.86) (2026-07-09)
 
 ### Bug Fixes
