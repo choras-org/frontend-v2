@@ -40,56 +40,49 @@ const formatIssueCategoryLabel = (category: string) => {
   return category.replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
+const GEOMETRY_DOCS_URL =
+  import.meta.env.VITE_GEOMETRY_DOCS_URL || "https://docs.choras-geometry.space";
+
 const ISSUE_CATEGORY_INFO: Record<string, { description: string; docsUrl: string }> = {
   duplicate_vertex: {
     description: "Multiple vertices share the same position, causing redundant geometry data.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/duplicate_vertices.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/duplicate_vertices.html`,
   },
   non_planar_face: {
     description: "Face vertices do not lie on the same plane, leading to rendering artifacts.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/non_planar_faces.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/non_planar_faces.html`,
   },
   t_junction: {
     description: "A vertex lies on the edge of another face without being connected, causing gaps.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/t_junctions.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/t_junctions.html`,
   },
   possible_hole: {
     description: "Open boundaries detected in the mesh that may indicate missing faces.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/possible_holes.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/possible_holes.html`,
   },
   boundary_edge: {
     description: "Edges shared by only one face, indicating an open or incomplete mesh.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/boundary_edges.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/boundary_edges.html`,
   },
   zero_area_face: {
     description: "Faces with zero area or collinear vertices that cannot be rendered correctly.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/zero_area_faces.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/zero_area_faces.html`,
   },
   intersection: {
     description: "Faces that intersect each other, creating invalid overlapping geometry.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/self_intersections.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/self_intersections.html`,
   },
   overlapping_face: {
     description: "Two or more faces occupy the same space, causing potential simulation issues.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/overlapping_faces.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/overlapping_faces.html`,
   },
   small_face: {
     description: "A face whose area is below the recommended size threshold.",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/small_faces.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/small_faces.html`,
   },
   collinear_face: {
     description: "A face whose vertices are collinear or nearly collinear (collapsed to a line).",
-    docsUrl:
-      "https://docs.choras-geometry.space/includes/geometry_validation/issues/collinear_faces.html",
+    docsUrl: `${GEOMETRY_DOCS_URL}/includes/geometry_validation/issues/collinear_faces.html`,
   },
 };
 
