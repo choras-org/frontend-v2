@@ -5,7 +5,7 @@ import { useGetModelQuery } from "@/store/modelApi";
 import type { ModelViewerProps } from "@/types/modelViewport";
 import { ViewportCanvas } from "./ViewportCanvas";
 
-export function ModelViewer({ modelId }: ModelViewerProps) {
+export function ModelViewer({ modelId, simulationId }: ModelViewerProps) {
   const { data: model, isLoading, error } = useGetModelQuery(modelId);
 
   if (error) {
@@ -37,7 +37,11 @@ export function ModelViewer({ modelId }: ModelViewerProps) {
 
   return (
     <div className="h-full" style={{ height: "calc(100vh - 4rem)" }}>
-      <ViewportCanvas modelUrl={model.modelUrl} modelId={model.id} />
+      <ViewportCanvas
+        modelUrl={model.modelUrl}
+        modelId={model.id}
+        simulationId={Number(simulationId)}
+      />
     </div>
   );
 }

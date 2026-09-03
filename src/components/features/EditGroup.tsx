@@ -37,9 +37,10 @@ type EditGroupData = z.infer<typeof EditGroupSchema>;
 type EditGroupProps = {
   currentGroupName: string;
   trigger?: React.ReactNode;
+  projectIds?: number[];
 };
 
-export function EditGroup({ currentGroupName, trigger }: EditGroupProps) {
+export function EditGroup({ currentGroupName, trigger, projectIds }: EditGroupProps) {
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
   const [updateProjectsByGroup, { isLoading }] = useUpdateProjectsByGroupMutation();
@@ -67,6 +68,7 @@ export function EditGroup({ currentGroupName, trigger }: EditGroupProps) {
       await updateProjectsByGroup({
         group: currentGroupName,
         newGroup: data.name,
+        projectIds,
       }).unwrap();
 
       // Update Redux state

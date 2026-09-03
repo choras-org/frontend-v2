@@ -5,6 +5,7 @@ export interface Model {
   name: string;
   outputFileId: number;
   projectId: number;
+  imagePath?: string;
   sourceFileId: number;
   updatedAt: string;
 }
@@ -19,4 +20,14 @@ export interface ModelDetail {
   projectName: string;
   projectTag: string;
   simulationCount: number;
+}
+
+export interface ExampleModel {
+  description: string;
+  fileName: string;
+  filePath: string;
+  id: string;
+  modelUrl: string;
+  name: string;
+  thumbnailUrl: string;
 }

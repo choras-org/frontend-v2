@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Model, ModelDetail } from "@/types/model";
+import type { ExampleModel, Model, ModelDetail } from "@/types/model";
 
 export const modelApi = createApi({
   reducerPath: "modelApi",
   baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_URL }),
 
-  tagTypes: ["Models"],
+  tagTypes: ["Models", "ExampleModels"],
 
   endpoints: (build) => ({
     deleteModel: build.mutation<void, number>({
@@ -37,6 +37,11 @@ export const modelApi = createApi({
       }),
       providesTags: (_, __, modelUrl) => [{ type: "Models", id: `file-${modelUrl}` }],
     }),
+
+    fetchExampleModels: build.query<ExampleModel[], void>({
+      query: () => "/models/examples",
+      providesTags: [{ type: "ExampleModels", id: "LIST" }],
+    }),
   }),
 });
 
@@ -45,4 +50,5 @@ export const {
   useGetModelQuery,
   useFetchModelFileQuery,
   useUpdateModelMutation,
+  useFetchExampleModelsQuery,
 } = modelApi;

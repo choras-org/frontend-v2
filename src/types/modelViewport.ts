@@ -1,5 +1,6 @@
 export interface ModelViewerProps {
   modelId: string;
+  simulationId: string;
 }
 
 export interface ModelRendererProps {
@@ -10,4 +11,5 @@ export interface ModelRendererProps {
 export interface ViewportCanvasProps {
   modelUrl?: string;
   modelId?: number;
+  simulationId?: number;
 }

@@ -18,9 +18,22 @@ export const materialAssignmentSlice = createSlice({
       state.assignments[meshId] = materialId;
     },
 
+    assignMaterials: (state, action: PayloadAction<{ meshIds: string[]; materialId: number }>) => {
+      const { meshIds, materialId } = action.payload;
+      meshIds.forEach((meshId) => {
+        state.assignments[meshId] = materialId;
+      });
+    },
+
     removeMaterialAssignment: (state, action: PayloadAction<string>) => {
       const meshId = action.payload;
       delete state.assignments[meshId];
+    },
+
+    removeMaterialAssignments: (state, action: PayloadAction<string[]>) => {
+      action.payload.forEach((meshId) => {
+        delete state.assignments[meshId];
+      });
     },
 
     clearAllAssignments: (state) => {
@@ -33,7 +46,13 @@ export const materialAssignmentSlice = createSlice({
   },
 });
 
-export const { assignMaterial, removeMaterialAssignment, clearAllAssignments, setAssignments } =
-  materialAssignmentSlice.actions;
+export const {
+  assignMaterial,
+  assignMaterials,
+  removeMaterialAssignment,
+  removeMaterialAssignments,
+  clearAllAssignments,
+  setAssignments,
+} = materialAssignmentSlice.actions;
 
 export default materialAssignmentSlice.reducer;

@@ -43,9 +43,10 @@
 
   /* Custom Variables */
   --width-sidebar: 332px;
-  --color-choras-primary: #4ecdc4;
-  --color-choras-secondary: #667eea;
-  --color-choras-accent: #f093fb;
+  --color-choras-primary: #ef7305;
+  --color-choras-secondary: #f4b183;
+  --color-choras-tertiary: #fbe5d6;
+  --color-choras-accent: #667eea;
   --color-choras-dark: #1a1d29;
   --color-choras-gray: #64748b;
   --font-choras: "Questrial", sans-serif;

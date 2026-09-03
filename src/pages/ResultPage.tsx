@@ -87,7 +87,7 @@ export function ResultPage() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="h-full overflow-auto">
+          <div className="h-full overflow-auto mt-8">
             <TabsContent value="parameters" className="pl-4">
               <ResultParameters simulationId={+simulationId} />
             </TabsContent>

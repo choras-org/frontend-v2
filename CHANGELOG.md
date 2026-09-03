@@ -2,6 +2,388 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.91](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.90...v0.0.91) (2026-07-17)
+
+### Features
+
+- ensure absorption coefficients are clamped between 0 and 1 ([8ff29f3](https://github.com/ajatdarojat45/choras-frontend/commit/8ff29f335942ec0186c3cf8676162ff7bf01588f))
+
+### [0.0.90](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.89...v0.0.90) (2026-07-17)
+
+### Features
+
+- add support for virtualized rendering and geometry selection enhancements ([728a849](https://github.com/ajatdarojat45/choras-frontend/commit/728a849d4b511671063eec86fd93657d0804ead5))
+- enhance geometry selection and material assignment functionality ([da26903](https://github.com/ajatdarojat45/choras-frontend/commit/da26903ce449fd1e69dbc20739e62135d814eff4))
+- implement lazy loading for material dropdown and group material assignment ([#188](https://github.com/ajatdarojat45/choras-frontend/issues/188)) ([0399230](https://github.com/ajatdarojat45/choras-frontend/commit/039923085fa4d290f23079e4d403339b1bf19c74))
+- implement lazy loading for material dropdown and group surface management ([c8960b3](https://github.com/ajatdarojat45/choras-frontend/commit/c8960b378dad71e9a3c1a957aea0cbb014f97f7b))
+- integrate mesh registry for improved selection and highlighting of current model meshes ([918f720](https://github.com/ajatdarojat45/choras-frontend/commit/918f7203c3060ca0e4177b9f0da9398c055f238e))
+- remove bulk material assignment functionality from SurfacesTab component ([88f8db6](https://github.com/ajatdarojat45/choras-frontend/commit/88f8db6d20279acaa262e73f685f76bba5d33866))
+
+### Bug Fixes
+
+- Add correct tab title and logo ([#179](https://github.com/ajatdarojat45/choras-frontend/issues/179)) ([3c909d1](https://github.com/ajatdarojat45/choras-frontend/commit/3c909d1f8faa7458936d23663b6b16467aed66f1)), closes [#180](https://github.com/ajatdarojat45/choras-frontend/issues/180)
+
+### [0.0.89](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.88...v0.0.89) (2026-07-12)
+
+### Features
+
+- add updateAuralizationAudioFile mutation to auralizationApi ([6d50681](https://github.com/ajatdarojat45/choras-frontend/commit/6d50681a1f36dfe1034aea4091d73e012fa0ba1b))
+- implement audio file upload and update functionality in ConvolvedAudioForm component ([38088cc](https://github.com/ajatdarojat45/choras-frontend/commit/38088cc19cdbf81d7feccc7b5a03e8811d0aee5d))
+- integrate ConvolvedAudioForm for editing audio details and improve simulation ID handling ([2d058e4](https://github.com/ajatdarojat45/choras-frontend/commit/2d058e402be929f7f84b91efe2e316ca7bec8a6f))
+- replace UploadConvolvedAudio with ConvolvedAudioForm in ResultAuralizations component ([b15c114](https://github.com/ajatdarojat45/choras-frontend/commit/b15c114d78f7ba0e0a4a09fd0716a83fd244fd88))
+
+### [0.0.88](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.87...v0.0.88) (2026-07-10)
+
+### Features
+
+- refactor file input change handling in UploadModel component ([053853c](https://github.com/ajatdarojat45/choras-frontend/commit/053853ca4126407f5c8a47254fc8716ce76531e5))
+
+### [0.0.87](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.86...v0.0.87) (2026-07-10)
+
+### Features
+
+- add errorMessage field to SimulationRun interface ([c15f4b3](https://github.com/ajatdarojat45/choras-frontend/commit/c15f4b358105aed4813e14b296771fa5ce063c7d))
+- add simulationId to ModelViewer component and pass it to ViewportCanvas ([cab7cad](https://github.com/ajatdarojat45/choras-frontend/commit/cab7cade90d2faf5a092d5e948d533c878523d46))
+- add simulationId to ModelViewerProps and ViewportCanvasProps interfaces ([ee81074](https://github.com/ajatdarojat45/choras-frontend/commit/ee81074639392b8bdee72635a5d9d6342e6e5c9a))
+- enhance error handling in RunSimulationButton with error message display ([f61387d](https://github.com/ajatdarojat45/choras-frontend/commit/f61387db7b7b5a16a5b320a7012c9f29016f7ef7))
+- pass simulationId to ModelViewer component in EditorPage ([9ef1f12](https://github.com/ajatdarojat45/choras-frontend/commit/9ef1f1270f2b8a1156df5ab7422cd8ebffb0a9a0))
+- persist simulation error message in the progress bar area ([0d9414f](https://github.com/ajatdarojat45/choras-frontend/commit/0d9414f4aa7e9c53f8bc42970fb4d96cbb183854))
+
+### [0.0.86](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.85...v0.0.86) (2026-07-09)
+
+### Bug Fixes
+
+- improve toast messages for audio file upload and error handling ([d1b91d6](https://github.com/ajatdarojat45/choras-frontend/commit/d1b91d61782c99682cdd1c7f027158ed598a1c52))
+- update toast messages for audio file deletion ([529affa](https://github.com/ajatdarojat45/choras-frontend/commit/529affa39000ec23677d06075ea1f8e2d3972644))
+
+### [0.0.85](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.84...v0.0.85) (2026-07-09)
+
+### Features
+
+- comment out center line drawing in renderFunction ([22b7481](https://github.com/ajatdarojat45/choras-frontend/commit/22b7481388e5b5e89e8a6d790f6bcd8a26ac7a94))
+
+### [0.0.84](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.83...v0.0.84) (2026-07-01)
+
+### Features
+
+- add categoryId to Material interface ([f9c3cc4](https://github.com/ajatdarojat45/choras-frontend/commit/f9c3cc47504aca97998b52ffca28746df6570866))
+- add MaterialCategory interface ([b197557](https://github.com/ajatdarojat45/choras-frontend/commit/b1975572c2e5d1646d8a2d02d30d3d86c3d03f94))
+- enhance CreateMaterialCategory component with edit functionality and toast notifications ([5fde5ba](https://github.com/ajatdarojat45/choras-frontend/commit/5fde5baee84009a521539941c55266d57debdaf7))
+- implement materialCategoriesApi with CRUD operations ([1dfd66c](https://github.com/ajatdarojat45/choras-frontend/commit/1dfd66ca1aed588d94fc7ab544b26d5a7b837b00))
+- integrate materialCategoriesApi into the Redux store ([629cbe3](https://github.com/ajatdarojat45/choras-frontend/commit/629cbe3c2d30e59f9ff97a0dfc9db09ad86e65ff))
+- refactor SurfaceMaterialList to remove unused dispatch and syncCategoriesFromMaterials ([2855f6b](https://github.com/ajatdarojat45/choras-frontend/commit/2855f6b60c587cd6463c202433faef77cc678b21))
+- remove materialSlice and associated localStorage logic ([3119d12](https://github.com/ajatdarojat45/choras-frontend/commit/3119d120a55dde0d00e178e48495e0fe51437f0e))
+- update createMaterial and updateMaterial mutations to include category in type definitions ([0b08ac0](https://github.com/ajatdarojat45/choras-frontend/commit/0b08ac08803bf14b6bbae553c591bf7b2733cc90))
+- update handleCreateMaterial to exclude category and change category to categoryId in material object ([1fb9716](https://github.com/ajatdarojat45/choras-frontend/commit/1fb9716483a6460437db2004b773b76e9f0129f6))
+- update MaterialFormDialog to use categoryId and integrate materialCategoriesApi ([f5ffaa0](https://github.com/ajatdarojat45/choras-frontend/commit/f5ffaa0cee776c1076016a0c4f198d59ca7c6632))
+
+### [0.0.83](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.82...v0.0.83) (2026-06-24)
+
+### Bug Fixes
+
+- handle long simulaiton name ([a0a5325](https://github.com/ajatdarojat45/choras-frontend/commit/a0a53251f52ad6f33ed03b9c844ba9a531d9a43a))
+
+### [0.0.82](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.81...v0.0.82) (2026-06-23)
+
+### Bug Fixes
+
+- download setting.json ([35148ae](https://github.com/ajatdarojat45/choras-frontend/commit/35148ae292e46c72b625d378896065a18f64f67d))
+
+### [0.0.81](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.80...v0.0.81) (2026-06-19)
+
+### Features
+
+- add fetchExampleModels function ([204ab95](https://github.com/ajatdarojat45/choras-frontend/commit/204ab952d0c53d107b2ccbe34a81138ce8d4bd3e))
+- render example models list ([bde33c7](https://github.com/ajatdarojat45/choras-frontend/commit/bde33c76e4b01c6c1bf5c7c3c75403d5b60f611b))
+
+### [0.0.81](https://github.com/dhimashary/CHORAS/compare/v0.0.80...v0.0.81) (2026-07-14)
+
+### Features
+
+- add support for virtualized rendering and geometry selection enhancements ([728a849](https://github.com/dhimashary/CHORAS/commit/728a849d4b511671063eec86fd93657d0804ead5))
+- enhance geometry selection and material assignment functionality ([da26903](https://github.com/dhimashary/CHORAS/commit/da26903ce449fd1e69dbc20739e62135d814eff4))
+- implement lazy loading for material dropdown and group surface management ([c8960b3](https://github.com/dhimashary/CHORAS/commit/c8960b378dad71e9a3c1a957aea0cbb014f97f7b))
+- integrate mesh registry for improved selection and highlighting of current model meshes ([918f720](https://github.com/dhimashary/CHORAS/commit/918f7203c3060ca0e4177b9f0da9398c055f238e))
+
+### Bug Fixes
+
+- Add correct tab title and logo ([#179](https://github.com/dhimashary/CHORAS/issues/179)) ([3c909d1](https://github.com/dhimashary/CHORAS/commit/3c909d1f8faa7458936d23663b6b16467aed66f1)), closes [#180](https://github.com/dhimashary/CHORAS/issues/180)
+
+### [0.0.80](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.79...v0.0.80) (2026-06-17)
+
+### Features
+
+- add initialization handling for simulation method selection ([f8cc0a8](https://github.com/ajatdarojat45/choras-frontend/commit/f8cc0a8c44536b18e7cad7c4b9e06fcb4655ba9c))
+
+### [0.0.79](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.78...v0.0.79) (2026-06-17)
+
+### Features
+
+- add SimulationSettingsErrorDialog component to handle simulation errors ([3e0d9fc](https://github.com/ajatdarojat45/choras-frontend/commit/3e0d9fc45b1852e9016cf9f86e389d2244d2d76e))
+- add UserPreference interface to define user settings structure ([9293a9f](https://github.com/ajatdarojat45/choras-frontend/commit/9293a9f4ce31d5e86f3c962386591882213f720e))
+- add userPreferencesApi to manage user preferences in the store ([08bdeb1](https://github.com/ajatdarojat45/choras-frontend/commit/08bdeb1304a07d034c68b9508f2a483f1d98b4d8))
+- integrate user preferences for simulation settings error handling ([763a976](https://github.com/ajatdarojat45/choras-frontend/commit/763a97638428c268613df97d9f4ed46dd87284d4))
+
+### [0.0.78](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.77...v0.0.78) (2026-06-17)
+
+### Features
+
+- implement debounce functionality for input changes in CoordinateInput component ([70323a6](https://github.com/ajatdarojat45/choras-frontend/commit/70323a64e2fb4e2464900356740b2f58856807c5))
+
+### [0.0.77](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.76...v0.0.77) (2026-06-15)
+
+### Features
+
+- enhance simulation settings validation with refetch functionality ([f3ed3a4](https://github.com/ajatdarojat45/choras-frontend/commit/f3ed3a444a432f80676faaaf313a54f00d6d122c))
+- optimize simulation method handling and improve loading state management ([cac802a](https://github.com/ajatdarojat45/choras-frontend/commit/cac802af080b532cb97941f23ce0d72cafd22193))
+- update handleClick to support async validation of simulation settings ([da0a846](https://github.com/ajatdarojat45/choras-frontend/commit/da0a84667681c1c13092f97f04f82f0c1f3e20fe))
+
+### [0.0.76](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.75...v0.0.76) (2026-06-02)
+
+### Features
+
+- add category selection dropdown with material category creation functionality ([c0b8cc6](https://github.com/ajatdarojat45/choras-frontend/commit/c0b8cc6934e92a20dcf877f018a7a818a06f0054))
+- add material reducer to the store configuration ([0e570dc](https://github.com/ajatdarojat45/choras-frontend/commit/0e570dc71e8c7df5b6703f346f3692084731e58a))
+- implement CreateMaterialCategory component with form validation and dialog functionality ([27a7340](https://github.com/ajatdarojat45/choras-frontend/commit/27a73405870a3bef3cb3594a4b8b6717daef5eef))
+- implement material categories slice with localStorage persistence ([3161523](https://github.com/ajatdarojat45/choras-frontend/commit/3161523a8cbafacba1d8076d4154fbae763e926e))
+- synchronize material categories on materials update ([e62eb56](https://github.com/ajatdarojat45/choras-frontend/commit/e62eb56551c1509db5b8560bf466dd2d5a924ec6))
+
+### [0.0.75](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.74...v0.0.75) (2026-05-08)
+
+### [0.0.74](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.73...v0.0.74) (2026-05-06)
+
+### [0.0.73](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.72...v0.0.73) (2026-05-04)
+
+### Features
+
+- add projectIds prop to EditGroup component for project updates ([82e637b](https://github.com/ajatdarojat45/choras-frontend/commit/82e637b91b92dadf3dcecd6fca84ceda821ea874))
+- enhance projectApi to support dynamic invalidation of project queries ([06874f9](https://github.com/ajatdarojat45/choras-frontend/commit/06874f9278f816a54d8aa813a1efd7c7769be24a))
+- pass projectIds to EditGroup and DeleteGroup components for improved functionality ([26699e8](https://github.com/ajatdarojat45/choras-frontend/commit/26699e817612e97f39b47c9555c82818cd7f7200))
+- update Choras color scheme with new primary, secondary, and tertiary colors ([8940358](https://github.com/ajatdarojat45/choras-frontend/commit/8940358eaacae84c8958292253ae32fe059b19b5))
+- update DeleteGroup component to include projectIds in update and delete operations ([120ba3a](https://github.com/ajatdarojat45/choras-frontend/commit/120ba3a1fef984524c5475c8f9dd1c585cf8c934))
+- update ProjectCard image styling for better responsiveness ([6b11e3b](https://github.com/ajatdarojat45/choras-frontend/commit/6b11e3beec7c1990eb233e319ae67ff68966864a))
+
+### Bug Fixes
+
+- add new plus and upload icons to assets ([8483fe9](https://github.com/ajatdarojat45/choras-frontend/commit/8483fe90134e8a06a68a12775b24127fd78c19e1))
+- change background color of project group trigger to solid primary color ([62db3af](https://github.com/ajatdarojat45/choras-frontend/commit/62db3afd285968fb93e7cbec25ab4a3f417340e5))
+- replace GitHub icon image with GithubIcon component in WelcomeSidebar ([05f41c2](https://github.com/ajatdarojat45/choras-frontend/commit/05f41c2600b309f777f60d1edd3729874925e893))
+- revert background gradient and update CardTitle color to primary ([40f467c](https://github.com/ajatdarojat45/choras-frontend/commit/40f467cadf4ac663beaacfd9c2a3eb67ea89560b))
+- update axis colors in GizmoViewport to match design specifications ([739f76d](https://github.com/ajatdarojat45/choras-frontend/commit/739f76da500325be2519d433f55d5111838ebd87))
+- update background color of RunSimulationButton to gradient from primary to secondary ([42db8c8](https://github.com/ajatdarojat45/choras-frontend/commit/42db8c8b279dd56c0dcbdbb8ae7daff7d5c0e8b2))
+- update button variant from outlineSecondary to outline in ConvolvedSoundPlayer ([2f9cd52](https://github.com/ajatdarojat45/choras-frontend/commit/2f9cd52909bfeaf99d9ffc55a13ac057ea82b1eb))
+- update button variant from outlineSecondary to outline in DownloadResult component ([92704e4](https://github.com/ajatdarojat45/choras-frontend/commit/92704e48a8ce66c86faa049ecf6780ef38e1b5a5))
+- update choras logo colors in SVG to match new design specifications ([4d1af78](https://github.com/ajatdarojat45/choras-frontend/commit/4d1af78d11834e7aee24ade19c04bc2b615c3a8b))
+- update COLORS constants to restore original primary, secondary, and accent colors ([2272161](https://github.com/ajatdarojat45/choras-frontend/commit/2272161daa04ba5d0b6f9e07f6dee91a9c95ff3d))
+- update default button variant background to solid primary color ([7c1e6ae](https://github.com/ajatdarojat45/choras-frontend/commit/7c1e6ae54723ac3c32f33ac46aa5311e0c759e05))
+- update header color in ProjectDetailPage to primary color ([ab13fbe](https://github.com/ajatdarojat45/choras-frontend/commit/ab13fbeefdaf11bbd63141ea00d6ea8d7c6db423))
+- update header color in ResultParameters component to primary color ([5ae73a2](https://github.com/ajatdarojat45/choras-frontend/commit/5ae73a27498ceade391b61a53c9a2a35fa89d468))
+- update header color in ResultPlots component to primary color ([aeead9b](https://github.com/ajatdarojat45/choras-frontend/commit/aeead9b6882d95bed7c867e716e6784bbae106d7))
+- update header colors in ResultAuralizations component to primary color ([adfeb4d](https://github.com/ajatdarojat45/choras-frontend/commit/adfeb4db4cab1ed56aee3efcbb56c4b9dede791f))
+- update line colors in CustomAxesHelper to match design specifications ([6113e37](https://github.com/ajatdarojat45/choras-frontend/commit/6113e375c2edf331d6772e013f5f852e8adb17fa))
+- update ProjectCard background color and CardTitle to primary color ([f5a2337](https://github.com/ajatdarojat45/choras-frontend/commit/f5a233775234f9a3b162d4cc3224d0e3cfa57e93))
+
+### [0.0.72](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.71...v0.0.72) (2026-01-18)
+
+### Features
+
+- add support for non-convolved audio playback and download in ConvolvedSoundPlayer ([326f431](https://github.com/ajatdarojat45/choras-frontend/commit/326f431356c4d0416e3bb0ab05139453fd25150b))
+
+### [0.0.71](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.70...v0.0.71) (2026-01-17)
+
+### Features
+
+- add optional imagePath property to Model interface ([4baeabd](https://github.com/ajatdarojat45/choras-frontend/commit/4baeabd75c07c947b33d80757b0fc2137a0865ad))
+- enhance ProjectCard to sort and display models with dynamic image paths ([d5c0073](https://github.com/ajatdarojat45/choras-frontend/commit/d5c0073328f3039718ad4c6f9d932bc895986046))
+- implement 3D model rendering and screenshot capture in UploadModel component ([83325f6](https://github.com/ajatdarojat45/choras-frontend/commit/83325f6b95e3f65b09e19f96068f0f17587df05b))
+- refactor sorting logic and update model image rendering in ProjectDetailPage ([6eae0ac](https://github.com/ajatdarojat45/choras-frontend/commit/6eae0ac505b2977de4051f763a3fe8a509fcb0bc))
+- update ModelCard to use dynamic imagePath for model illustration ([79cb612](https://github.com/ajatdarojat45/choras-frontend/commit/79cb6124f78c41c2d24145da54dbd43f32567b01))
+
+### [0.0.70](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.69...v0.0.70) (2026-01-16)
+
+### Features
+
+- clear existing settings and update with new options from simulation ([1a7abeb](https://github.com/ajatdarojat45/choras-frontend/commit/1a7abeb109514ed25d86c98c9174569b9d2617f2))
+- implement orthographic camera adjustments in ViewportCanvas ([ed893f8](https://github.com/ajatdarojat45/choras-frontend/commit/ed893f81663bf10905d58d1b897c26699d2657cd))
+- simplify validation logic for numeric options in useJsonValidation ([f5dd870](https://github.com/ajatdarojat45/choras-frontend/commit/f5dd870acf831e48cf0b7dc2df100a2742db367f))
+
+### [0.0.69](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.68...v0.0.69) (2026-01-15)
+
+### Features
+
+- enhance material management with tooltip actions and unified form handling ([b038a35](https://github.com/ajatdarojat45/choras-frontend/commit/b038a3593a86880857ed1ef65f71805d27f42090))
+
+### [0.0.68](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.67...v0.0.68) (2026-01-15)
+
+### Features
+
+- add highlighted element handling and improve settings display in SettingTab ([a36bca8](https://github.com/ajatdarojat45/choras-frontend/commit/a36bca8da2179b596e91309c9ef9ef7dc36b3429))
+- enhance simulation settings validation and improve error display in RunSimulationButton ([4199581](https://github.com/ajatdarojat45/choras-frontend/commit/419958189699ce8ef8583ea2115fd3974799930f))
+- refactor simulation settings validation logic and remove unused state management ([6e3bfd2](https://github.com/ajatdarojat45/choras-frontend/commit/6e3bfd2cef38df2d063e825a12984fe8797ce678))
+- remove unnecessary error state reset in clearSettings reducer ([34d5b75](https://github.com/ajatdarojat45/choras-frontend/commit/34d5b757ebe90b7db5c1a6d6a4939f1ed74365b8))
+
+### [0.0.67](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.66...v0.0.67) (2026-01-14)
+
+### Features
+
+- add error handling actions to simulation settings slice ([15d69b4](https://github.com/ajatdarojat45/choras-frontend/commit/15d69b489dde58f364cdf7a7826c1fee599cbbc1))
+- add errors field to SimulationSettingsState interface ([c477f56](https://github.com/ajatdarojat45/choras-frontend/commit/c477f564bd7411dc7fd75e0fbf824fc10346d3ca))
+- add simulation settings error handling and user confirmation dialog in RunSimulationButton ([3a73cff](https://github.com/ajatdarojat45/choras-frontend/commit/3a73cff6818fa91f13b1694a79ccfaa0441d2bbb))
+- enhance simulation validation logic and integrate error handling ([96762d6](https://github.com/ajatdarojat45/choras-frontend/commit/96762d6709ee254ebfcd631dc2cad1381b9bae85))
+- improve validation logic in DynamicSettingField component ([3fe6239](https://github.com/ajatdarojat45/choras-frontend/commit/3fe623931d9daabc7ccaa5cacf038dcdb6585114))
+- simplify value update logic and enhance default value handling in SettingTab ([fed4cdb](https://github.com/ajatdarojat45/choras-frontend/commit/fed4cdb44477f17d0b8fcc2275337025aa8b8524))
+
+### [0.0.66](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.65...v0.0.66) (2026-01-14)
+
+### Features
+
+- add clearSelectedGeometries action to reset selected geometries state ([da21657](https://github.com/ajatdarojat45/choras-frontend/commit/da21657a6b404c60b966c47a663d0daeadbb95ed))
+- add clearSelectedGeometries function to reset selected geometries state ([8e863f4](https://github.com/ajatdarojat45/choras-frontend/commit/8e863f4d3717739808769e446e25790ad25246e3))
+- add customizable notes color in MaterialFormDialog ([4834f73](https://github.com/ajatdarojat45/choras-frontend/commit/4834f73d61f65fb167ab44174a01aa72785cb00d))
+- display summary for multiple selected surfaces in GeometrySelectionInfo ([07febca](https://github.com/ajatdarojat45/choras-frontend/commit/07febca773669dcb4e1ced0d2069b7c9cc000b8c))
+- enhance SurfacesTab layout with improved sticky footer and updated surface count display ([760c4fd](https://github.com/ajatdarojat45/choras-frontend/commit/760c4fd44244a8e16f9e77e82ba0d092f8b2d9b6))
+- implement multi-select functionality for geometry selection ([1dba206](https://github.com/ajatdarojat45/choras-frontend/commit/1dba206d0b82e4aedcaad73a320d6ef2aa25405e))
+- implement surface selection with geometry clearing and multiple selection support ([4d37323](https://github.com/ajatdarojat45/choras-frontend/commit/4d37323778a04b31d18117ff72aba4f3cdae8c03))
+- memoize material options in SurfacesTab to optimize rendering and handle loading/error states ([8efbe5f](https://github.com/ajatdarojat45/choras-frontend/commit/8efbe5f7338e45dc4ec6809ee09eecaa881631b6))
+- support bulk material assignment for multiple selected surfaces ([d2367d7](https://github.com/ajatdarojat45/choras-frontend/commit/d2367d7348759c891ef9da02c9e763c136922878))
+- update material handling messages and improve copy logic in SurfaceMaterialList ([5de18e1](https://github.com/ajatdarojat45/choras-frontend/commit/5de18e175045e1fafa437a590354a00128606887))
+
+### [0.0.65](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.64...v0.0.65) (2026-01-10)
+
+### Features
+
+- add delete audio file mutation to auralizationApi ([03fbd95](https://github.com/ajatdarojat45/choras-frontend/commit/03fbd95bb7d10876e86b655bdb7fb3f9b2f11671))
+- add delete functionality for convolved sound with confirmation dialog ([d80b3bc](https://github.com/ajatdarojat45/choras-frontend/commit/d80b3bce4e1f084b0e7513d021a58270c9eb4e79))
+
+### [0.0.64](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.63...v0.0.64) (2026-01-09)
+
+### Features
+
+- add material creation flow and confirmation dialog in FullSettingJsonEditor ([0190475](https://github.com/ajatdarojat45/choras-frontend/commit/019047513989ed94522fcf49e108d82b5457203c))
+- enhance JSON validation to detect new materials and update absorption coefficient validation ([2549be7](https://github.com/ajatdarojat45/choras-frontend/commit/2549be74b099fa27fea88437241b7a6995b1b5b6))
+- enhance MaterialFormDialog props for improved customization and user experience ([4bab229](https://github.com/ajatdarojat45/choras-frontend/commit/4bab2296e2513ea41472d2ee1ee8d9c6baf31522))
+- simplify JSON initialization and confirm material creation flow ([48cc047](https://github.com/ajatdarojat45/choras-frontend/commit/48cc0473c35bd08ef8308b4908ade01f77d0876e))
+- update MaterialFormDialog titles and labels for clarity ([34eb038](https://github.com/ajatdarojat45/choras-frontend/commit/34eb038e1cb9195957b176bebeec96a0e9198086))
+
+### [0.0.63](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.62...v0.0.63) (2026-01-08)
+
+### Features
+
+- add cleanup effect to clear geometry selection on component unmount ([a0eab60](https://github.com/ajatdarojat45/choras-frontend/commit/a0eab6022b17a79a4db795a2e9e2b269f1749f40))
+- add selected geometries management to geometry selection hook ([2b2f40f](https://github.com/ajatdarojat45/choras-frontend/commit/2b2f40fd996320e480d8ba13a223a8f24b07c3a3))
+- add selected geometry management to geometry selection slice ([2d9cf34](https://github.com/ajatdarojat45/choras-frontend/commit/2d9cf343b178b8b83a629bf251484a520345def8))
+- enhance surface selection logic with geometry management ([84a7161](https://github.com/ajatdarojat45/choras-frontend/commit/84a71617b86f3b91c0603580960be727b5db9aa2))
+- implement bulk material assignment functionality in SurfacesTab ([b18ddbe](https://github.com/ajatdarojat45/choras-frontend/commit/b18ddbe68be55417fdd3ce4e2d9739f9a6aeac3b))
+- improve geometry selection handling and highlight management ([8ad1824](https://github.com/ajatdarojat45/choras-frontend/commit/8ad1824b9a782ef3a51a74845b2684ef58606543))
+
+### Bug Fixes
+
+- reset selected geometries on clear selection ([d17db97](https://github.com/ajatdarojat45/choras-frontend/commit/d17db975c3704dff396dbd9f074fcd48d5aa8525))
+
+### 0.0.62 (2026-01-07)
+
+### Features
+
+- enhance SurfacesTab with scrollable material selection and improved layout ([7970e57](https://github.com/ajatdarojat45/choras-frontend/commit/7970e57f9a493a59549ea206927cde64303e2082))
+
+### 0.0.61 (2026-01-07)
+
+### Features
+
+- enhance SurfaceMaterialList with create, update, and copy functionalities for materials ([08af290](https://github.com/ajatdarojat45/choras-frontend/commit/08af2903458f823b45057095bf7db27fa8e47847))
+- refactor MaterialFormDialog to support editing existing materials and improve submission handling ([6084186](https://github.com/ajatdarojat45/choras-frontend/commit/6084186ab4eb78338ec03ce0e994b08fa41eec6c))
+- add updateMaterial mutation to materialsApi for updating existing materials ([f648a2e](https://github.com/ajatdarojat45/choras-frontend/commit/f648a2e88e130e0dd349ede4b55c00dc3222f674))
+- replace CreateMaterialDialog with MaterialFormDialog in SurfaceMaterialList ([10721e1](https://github.com/ajatdarojat45/choras-frontend/commit/10721e174974b1732dde201a6219768f51fb1ec5))
+- implement MaterialFormDialog for creating new materials ([a1f684c](https://github.com/ajatdarojat45/choras-frontend/commit/a1f684c31e6e476cd98006e94eaba9b1ab34dd8d))
+- display material origin in SurfaceMaterialList component ([0179896](https://github.com/ajatdarojat45/choras-frontend/commit/0179896b786ca0cba6b2b8700dad44c758ded4da))
+- add optional origin field to Material interface ([b6a981d](https://github.com/ajatdarojat45/choras-frontend/commit/b6a981de3f5ad9702b036500011bc047b8b612a8))
+
+### [0.0.60](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.59...v0.0.60) (2025-12-20)
+
+### Features
+
+- add JSZip integration for downloading simulation results and settings as a zip file ([2809f69](https://github.com/ajatdarojat45/frontend-v2/commit/2809f69c6187a9af57ff6a0dbc3fe6fb01159ac1))
+- implement useDownloadPreferences hook for managing download settings and preferences ([36b49d6](https://github.com/ajatdarojat45/frontend-v2/commit/36b49d68c1e18aea949dac6ad9c8a8dac5705eb6))
+
+### Bug Fixes
+
+- remove debug console log from ResultAuralizations component ([ee3a555](https://github.com/ajatdarojat45/frontend-v2/commit/ee3a5559f537caba3ff39c91b2937ab0a2312df0))
+- remove debug console log from ResultPlots component ([34c890f](https://github.com/ajatdarojat45/frontend-v2/commit/34c890f9970a9c22f93794d5c6bb0f503d7a5c3b))
+
+### [0.0.59](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.58...v0.0.59) (2025-12-20)
+
+### Features
+
+- implement useApplySurfaceColors hook for dynamic surface color application ([889455c](https://github.com/ajatdarojat45/frontend-v2/commit/889455ca551cedfc6dd5a1ae7a7a9cbd6ebdfd6a))
+- integrate applySurfaceColors in ModelRenderer for enhanced material handling ([4acacb1](https://github.com/ajatdarojat45/frontend-v2/commit/4acacb1898ccce146e4b6c2a9e1144bb06b2ce99))
+
+### Bug Fixes
+
+- correct SVG attributes to camelCase in MethodInfoDialog component ([91fe723](https://github.com/ajatdarojat45/frontend-v2/commit/91fe723e3f3f9e99fc2b89601a6e81b7991e34f8))
+
+### [0.0.58](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.57...v0.0.58) (2025-11-28)
+
+### Bug Fixes
+
+- tone down viewport lighting so material color pop; reset color if selecting none ([f299ec9](https://github.com/ajatdarojat45/frontend-v2/commit/f299ec9c99434ecad39dbfe9c79895319719da97))
+
+### [0.0.57](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.56...v0.0.57) (2025-11-14)
+
+### Features
+
+- add FullSettingJsonEditor component for editing simulation settings in JSON format ([2f61386](https://github.com/ajatdarojat45/frontend-v2/commit/2f6138634e4b0dd611efded9bd13a243d2ceb9d5))
+- add option to include settings.json in download zip for simulation results ([27cdb36](https://github.com/ajatdarojat45/frontend-v2/commit/27cdb36298896878419a1f5b3ee04e58ce9bf9e5))
+- add tooltip for setting description ([b727fe0](https://github.com/ajatdarojat45/frontend-v2/commit/b727fe09b21f111ccc6b187d760fac7f8df4fe23))
+- add useJsonValidation hook for comprehensive JSON data validation ([e01df3d](https://github.com/ajatdarojat45/frontend-v2/commit/e01df3de99b93bff6ae780f525ac4782eade82ac))
+- implement useJsonBuilder hook for JSON structure generation and export ([9f32a0c](https://github.com/ajatdarojat45/frontend-v2/commit/9f32a0cc049380f1536d77637c3f09f602c51c19))
+- implement usePayloadBuilder hook for managing simulation payloads from JSON data ([e00bbce](https://github.com/ajatdarojat45/frontend-v2/commit/e00bbce46c2942df79c4bfb7396763391a5020bb))
+- integrate FullSettingJsonEditor into SettingTab, SourceReceiversTab, and SurfacesTab for enhanced JSON settings management ([780e58b](https://github.com/ajatdarojat45/frontend-v2/commit/780e58ba35b6c5c3aa9fcfe8426226bd1b08864e))
+- refactor fetch logic in useJsonValidation to use http library for simulation settings ([dd74256](https://github.com/ajatdarojat45/frontend-v2/commit/dd742568003f702a9777bcec67eb578c0a13c681))
+- refactor payload builder to use useJsonPayloadBuilder and remove deprecated usePayloadBuilder ([a972c2b](https://github.com/ajatdarojat45/frontend-v2/commit/a972c2b28d8efa8193712b728b9d66ae1ec52973))
+- restrict validation to a single source and receiver in JSON data ([6f54ab5](https://github.com/ajatdarojat45/frontend-v2/commit/6f54ab51a49990e3f1f2609ce567e0fd53b18046))
+- update simulation settings, sources, and receivers in store after saving JSON data ([dae20f7](https://github.com/ajatdarojat45/frontend-v2/commit/dae20f74d6695e50099e2050c8ae9f9c5a4d1697))
+
+### Bug Fixes
+
+- ensure simulation settings are initialized to an empty object if undefined ([d09539f](https://github.com/ajatdarojat45/frontend-v2/commit/d09539f6ede78202fe4f5fac3295875aeeebe73c))
+
+### [0.0.56](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.55...v0.0.56) (2025-11-09)
+
+### Features
+
+- add color to material assignment ([b641d57](https://github.com/ajatdarojat45/frontend-v2/commit/b641d578b21c0413b5a2538157e58e8c7dfcbd29))
+- add selection to both surface tab and surface in viewport ([ecbd536](https://github.com/ajatdarojat45/frontend-v2/commit/ecbd5367545f8966b79fc6c1e81f6beda01a8ae0))
+- change grid size ([2234fca](https://github.com/ajatdarojat45/frontend-v2/commit/2234fcaa4aaeffad30b2a3fd6268678532f10724))
+- double-clicking surface auto open surface tab ([2424276](https://github.com/ajatdarojat45/frontend-v2/commit/2424276a43f769941846b8f2315ceca3c6164d8a))
+
+### [0.0.55](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.54...v0.0.55) (2025-11-09)
+
+### Bug Fixes
+
+- adjust line width and sample analysis for improved waveform accuracy in ImpulseResponsePlayer ([8717092](https://github.com/ajatdarojat45/frontend-v2/commit/8717092b3194e6ac338e9c7d00e5a8570a08bced))
+- adjust stroke width for polygon in TrapezoidOutlineTab ([c5be6bd](https://github.com/ajatdarojat45/frontend-v2/commit/c5be6bd65e3683fa7e7bc8c28b6aea43a896c4e0))
+- enhance file upload feedback with error indication and size limit display ([496798a](https://github.com/ajatdarojat45/frontend-v2/commit/496798ad87c7f53f8cc13f2f36de7329f36476d2))
+- optimize waveform rendering by plotting every sample for improved accuracy in ImpulseResponsePlayer ([c829eb1](https://github.com/ajatdarojat45/frontend-v2/commit/c829eb1de28b2b1dfc0fda672da0f41bfcc7151d))
+- reduce step size and line width for improved waveform rendering in ImpulseResponsePlayer ([72678a2](https://github.com/ajatdarojat45/frontend-v2/commit/72678a232cc7baceeff527d00c3eb22ff0a654c9))
+- refactor waveform rendering for improved accuracy and clarity in ImpulseResponsePlayer ([9e192ab](https://github.com/ajatdarojat45/frontend-v2/commit/9e192ab37dd7d44b7a71be19935b9bdf5d1495a0))
+
+### [0.0.54](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.53...v0.0.54) (2025-11-06)
+
+### Features
+
+- implement timestamp label for audio playback in ImpulseResponsePlayer ([d96e06f](https://github.com/ajatdarojat45/frontend-v2/commit/d96e06fc38b9c52ad7a767bf39420c4adb0f45c7))
+
+### Bug Fixes
+
+- add compare item using the same color ([0396cf8](https://github.com/ajatdarojat45/frontend-v2/commit/0396cf88c307786b46606d0618660be7a2d9339a))
+- correct polygon points and increase stroke width in TrapezoidOutlineTab ([d60727e](https://github.com/ajatdarojat45/frontend-v2/commit/d60727e89a55352bd235d729924bbc8b4b637d5c))
+- enhance waveform rendering with thicker lines and sharp corners ([3638095](https://github.com/ajatdarojat45/frontend-v2/commit/36380958f88fc4669807a49a87610ec987767781))
+- Hide selected simulation the compare result option ([a0d111e](https://github.com/ajatdarojat45/frontend-v2/commit/a0d111ecd197cc2773cb6ba18ef184b59edb6e8f))
+- increase maximum file size limit to 100MB in UploadModelSchema ([a95415f](https://github.com/ajatdarojat45/frontend-v2/commit/a95415f7538860ba72750c90f9e230ee80fb0ad8))
+- IR visualization sync ([0acebdd](https://github.com/ajatdarojat45/frontend-v2/commit/0acebdde4d5b193a96e1ebae89e9e74c154a6304))
+- refactor waveform rendering to use bezier curves for smoother peaks and separate plugin definitions ([314353c](https://github.com/ajatdarojat45/frontend-v2/commit/314353c9742ac4bc920715cb8ac428a881ac2d71))
+- remove outdated TODO comments from ImpulseResponsePlayer component ([0132fc8](https://github.com/ajatdarojat45/frontend-v2/commit/0132fc82939f1684921fa077e1224e4439b23847))
+
 ### [0.0.53](https://github.com/ajatdarojat45/frontend-v2/compare/v0.0.52...v0.0.53) (2025-11-06)
 
 ### Bug Fixes

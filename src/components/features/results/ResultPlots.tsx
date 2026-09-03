@@ -44,7 +44,7 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Failed to load impulse response</AlertDescription>
+        <AlertDescription>Failed to load plot data</AlertDescription>
       </Alert>
     );
   }
@@ -57,11 +57,9 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
     );
   }
 
-  console.log(seriesData, "<<<");
-
   return (
     <div className="h-full w-full p-8 space-y-4">
-      <h1 className="text-2xl text-choras-secondary font-inter font-bold mb-8">Plots</h1>
+      <h1 className="text-2xl text-choras-primary font-inter font-bold mb-8">Plots</h1>
 
       <div className="flex justify-between">
         <DropdownMenu>

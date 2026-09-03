@@ -11,8 +11,8 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   EllipsisVerticalIcon,
+  Plus,
 } from "lucide-react";
-import plusIcon from "@/assets/plus-icon.png";
 import type React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router";
@@ -194,6 +194,7 @@ export function HomePage() {
                   <DropdownMenuContent className="bg-white border border-gray-200 rounded-md shadow-lg p-1">
                     <EditGroup
                       currentGroupName={groupProject.group}
+                      projectIds={groupProject.projects.map((p) => p.id)}
                       trigger={
                         <DropdownMenuItem
                           onSelect={(e) => e.preventDefault()}
@@ -207,6 +208,7 @@ export function HomePage() {
                     <DeleteGroup
                       projectsCount={groupProject.projects.length}
                       group={groupProject.group}
+                      projectIds={groupProject.projects.map((p) => p.id)}
                     />
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -234,9 +236,9 @@ export function HomePage() {
                     group: groupProject.group === "NONE" ? "" : groupProject.group,
                   }}
                   trigger={
-                    <div className="min-h-[192px] border border-transparent bg-gradient-to-r from-choras-primary from-50% to-choras-secondary bg-clip-border p-0.5 rounded-xl">
-                      <div className="bg-[#e7e7e7] w-full min-h-[190px] py-6 rounded-lg h-full flex-1 flex items-center justify-center">
-                        <img src={plusIcon} alt="Plus" className="w-16 h-16" />
+                    <div className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-2xl card-container">
+                      <div className="bg-[#e7e7e7] w-full min-h-[190px] py-6 rounded-xl h-full flex-1 flex items-center justify-center">
+                        <Plus size={99} strokeWidth={2.1} className="text-choras-primary" />
                       </div>
                     </div>
                   }

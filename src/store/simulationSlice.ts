@@ -1,3 +1,4 @@
+import { COLORS_VARIANTS } from "@/constants";
 import type { Simulation } from "@/types/simulation";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -13,6 +14,15 @@ type SimulationState = {
     color: string;
   }[];
 };
+
+// Helper function to reassign colors based on array index
+const reassignColors = (
+  results: SimulationState["compareResults"],
+): SimulationState["compareResults"] =>
+  results.map((result, index) => ({
+    ...result,
+    color: COLORS_VARIANTS[index % COLORS_VARIANTS.length],
+  }));
 
 const simulationSlice = createSlice({
   name: "simulation",
@@ -30,9 +40,13 @@ const simulationSlice = createSlice({
     },
     addCompareResult: (state, action) => {
       state.compareResults.push(action.payload);
+      // Reassign colors to maintain consistent color ordering
+      state.compareResults = reassignColors(state.compareResults);
     },
     removeCompareResult: (state, action) => {
       state.compareResults = state.compareResults.filter((result) => result.id !== action.payload);
+      // Reassign colors to fill the gap left by the removed item
+      state.compareResults = reassignColors(state.compareResults);
     },
     updateCompareResult: (state, action) => {
       const { id, field, value } = action.payload;
@@ -46,6 +60,8 @@ const simulationSlice = createSlice({
     },
     initializeCompareResults: (state, action) => {
       state.compareResults = action.payload;
+      // Reassign colors to ensure consistent color ordering
+      state.compareResults = reassignColors(state.compareResults);
     },
     clearCompareResults: (state) => {
       state.compareResults = [];

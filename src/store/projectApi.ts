@@ -63,21 +63,30 @@ export const projectApi = createApi({
 
       // Invalidates all Project-type queries providing the `LIST` id - after all, depending of the sort order,
       // that newly created project could show up in any lists.
-      invalidatesTags: [{ type: "Projects", id: "LIST" }],
+      invalidatesTags: (_, __, id) => [
+        { type: "Projects", id: "LIST" },
+        { type: "Projects", id },
+      ],
     }),
 
-    deleteProjectsByGroup: build.mutation<void, string>({
-      query: (group) => ({
+    deleteProjectsByGroup: build.mutation<void, { group: string; projectIds?: number[] }>({
+      query: ({ group }) => ({
         url: `/projects/deleteByGroup`,
         params: { group },
         method: "DELETE",
       }),
 
       // Invalidates all Project-type queries providing the `LIST` id - after all, depending of the sort order,
-      invalidatesTags: [{ type: "Projects", id: "LIST" }],
+      invalidatesTags: (_, __, { projectIds }) => [
+        { type: "Projects" as const, id: "LIST" },
+        ...(projectIds ? projectIds.map((id) => ({ type: "Projects" as const, id })) : []),
+      ],
     }),
 
-    updateProjectsByGroup: build.mutation<void, { group: string; newGroup: string }>({
+    updateProjectsByGroup: build.mutation<
+      void,
+      { group: string; newGroup: string; projectIds?: number[] }
+    >({
       query: ({ group, newGroup }) => ({
         url: `/projects/updateByGroup`,
         params: { group },
@@ -86,7 +95,10 @@ export const projectApi = createApi({
       }),
 
       // Invalidates all Project-type queries providing the `LIST` id - after all, depending of the sort order,
-      invalidatesTags: [{ type: "Projects", id: "LIST" }],
+      invalidatesTags: (_, __, { projectIds }) => [
+        { type: "Projects" as const, id: "LIST" },
+        ...(projectIds ? projectIds.map((id) => ({ type: "Projects" as const, id })) : []),
+      ],
     }),
 
     // Get all simulation runs

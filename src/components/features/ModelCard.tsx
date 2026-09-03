@@ -22,6 +22,8 @@ type ModelCardProps = {
   model: Model;
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
 export function ModelCard({ model }: ModelCardProps) {
   const dispatch: AppDispatch = useDispatch();
   const { data: simulations } = useGetSimulationsByModelIdQuery(model.id);
@@ -40,10 +42,10 @@ export function ModelCard({ model }: ModelCardProps) {
   };
 
   return (
-    <Card className="min-h-[192px] border border-transparent bg-gradient-to-r from-choras-primary from-50% to-choras-secondary bg-clip-border p-0.5 card-container">
-      <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-lg h-full flex flex-col justify-between">
+    <Card className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-2xl card-container">
+      <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-xl h-full flex flex-col justify-between">
         <CardHeader className="overflow-hidden relative px-5">
-          <CardTitle className="truncate font-inter font-bold text-sm text-choras-secondary">
+          <CardTitle className="truncate font-inter font-bold text-sm text-choras-primary">
             {model.name}
           </CardTitle>
           <CardAction onClick={(e) => e.stopPropagation()}>
@@ -89,7 +91,7 @@ export function ModelCard({ model }: ModelCardProps) {
           <div className="card-responsive-visible relative max-w-36 w-full aspect-[3/2] card-responsive-order-2 card-responsive-scale">
             <img
               className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
-              src={modelImg}
+              src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
               alt="Model Illustration"
             />
           </div>

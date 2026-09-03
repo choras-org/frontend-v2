@@ -1,5 +1,5 @@
 import { ImpulseResponsePlayer } from "./ImpulseResponsePlayer";
-import { UploadConvolvedAudio } from "./UploadConvolvedAudio";
+import { ConvolvedAudioForm } from "./ConvolvedAudioForm";
 import { ConvolvedSoundPlayer } from "./ConvolvedSoundPlayer";
 import { DownloadResult } from "./DownloadResult";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -19,8 +19,6 @@ export function ResultAuralizations({ simulationId }: ResultAuralizationsProps) 
   } = useGetAuralizationsBySimulationIdQuery(simulationId);
   const compareResults = useSelector(selectCompareResults);
   const compareResultIds = useSelector(selectCompareSimulationIds);
-
-  console.log(compareResultIds, "<<<");
 
   if (isLoading) {
     return <Loading message="Loading audio files..." className="h-container justify-center" />;
@@ -45,9 +43,7 @@ export function ResultAuralizations({ simulationId }: ResultAuralizationsProps) 
   return (
     <div className="h-full w-full p-8 space-y-4">
       <div className="flex justify-between">
-        <h1 className="text-2xl text-choras-secondary font-inter font-bold mb-8">
-          Impulse Response
-        </h1>
+        <h1 className="text-2xl text-choras-primary font-inter font-bold mb-8">Impulse Response</h1>
 
         <DownloadResult
           triggerLabel="Download Impulse Response"
@@ -67,8 +63,8 @@ export function ResultAuralizations({ simulationId }: ResultAuralizationsProps) 
       )}
 
       <div className="flex justify-between mt-12">
-        <h1 className="text-2xl text-choras-secondary font-inter font-bold">Convolved Sound</h1>
-        <UploadConvolvedAudio simulationId={simulationId} />
+        <h1 className="text-2xl text-choras-primary font-inter font-bold">Convolved Sound</h1>
+        <ConvolvedAudioForm simulationId={simulationId} />
       </div>
       {auralizations.map((auralization) => (
         <ConvolvedSoundPlayer

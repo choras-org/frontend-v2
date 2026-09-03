@@ -9,25 +9,11 @@ import {
 import type { RootState } from "@/store";
 import { useEffect } from "react";
 import { CompareResultItem } from "./CompareResultItem";
-import { COLORS } from "@/constants";
 import { selectCompareResults } from "@/store/simulationSelector";
 
 interface CompareResultProps {
   modelId: number;
 }
-
-const colorVariants = [
-  COLORS.PRIMARY,
-  COLORS.SECONDARY,
-  COLORS.ACCENT,
-  "lightgreen",
-  "silver",
-  "lightpink",
-  "darkorange",
-  "lightyellow",
-  "tomato",
-  "gold",
-];
 
 export function CompareResult({ modelId }: CompareResultProps) {
   const dispatch = useDispatch();
@@ -51,7 +37,6 @@ export function CompareResult({ modelId }: CompareResultProps) {
               activeSimulation.receivers.length > 0
                 ? activeSimulation.receivers[0].id.toString()
                 : null,
-            color: colorVariants[0],
           },
         ]),
       );
@@ -67,7 +52,7 @@ export function CompareResult({ modelId }: CompareResultProps) {
   const handleAddResult = () => {
     const lastId = compareResults.length > 0 ? compareResults[compareResults.length - 1].id : "0";
     const newId = (parseInt(lastId) + 1).toString();
-    const newColor = colorVariants[compareResults.length % colorVariants.length];
+
     dispatch(
       addCompareResult({
         id: newId,
@@ -75,7 +60,6 @@ export function CompareResult({ modelId }: CompareResultProps) {
         simulationId: null,
         sourceId: null,
         receiverId: null,
-        color: newColor,
       }),
     );
   };

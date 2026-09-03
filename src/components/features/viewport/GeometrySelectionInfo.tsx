@@ -7,7 +7,7 @@ import { useGetMaterialsQuery } from "@/store/materialsApi";
 import type { RootState } from "@/store";
 
 export function GeometrySelectionInfo() {
-  const { selectedGeometry } = useGeometrySelection();
+  const { selectedGeometry, selectedGeometries } = useGeometrySelection();
   const surfaces = useSurfaces();
   const materialAssignments = useSelector(
     (state: RootState) => state.materialAssignment.assignments,
@@ -34,6 +34,28 @@ export function GeometrySelectionInfo() {
   const totalSurfaceArea = useMemo(() => {
     return surfaces.reduce((total, surface) => total + (surface.area || 0), 0);
   }, [surfaces]);
+
+  const selectedCount = Object.keys(selectedGeometries).length;
+  const isMultipleSelected = selectedCount > 1;
+
+  // If multiple surfaces selected, show summary
+  if (isMultipleSelected) {
+    return (
+      <Card className="w-80 border border-choras-gray gap-1">
+        <CardHeader>
+          <CardTitle className="text-xs">Geometry information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-xs text-muted-foreground">
+            <p className="font-medium">Multiple surfaces selected ({selectedCount})</p>
+            <p className="text-xs mt-2">
+              Use the Surfaces tab to assign materials to selected surfaces.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!selectedGeometry || selectedGeometry.mesh?.visible === false) {
     return (

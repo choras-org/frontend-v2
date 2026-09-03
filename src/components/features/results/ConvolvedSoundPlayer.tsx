@@ -7,7 +7,13 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { AudioLinesIcon, DownloadIcon, LoaderCircleIcon, PlayIcon } from "lucide-react";
+import {
+  AudioLinesIcon,
+  DownloadIcon,
+  EllipsisVerticalIcon,
+  LoaderCircleIcon,
+  PlayIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { http } from "@/libs/http";
@@ -23,6 +29,16 @@ import {
 } from "@/components/ui/select";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useDeleteAuralizationAudioFileMutation } from "@/store/auralizationApi";
+import { ConvolvedAudioForm } from "./ConvolvedAudioForm";
+import { useParams } from "react-router";
 
 type ConvolvedSoundPlayerProps = {
   auralization: Auralization;
@@ -32,6 +48,13 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
   const [downloadLoading, setDownloadLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [simulationId, setSimulationId] = useState<string | null>(null);
+  const [deleteAuralizationAudioFile] = useDeleteAuralizationAudioFileMutation();
+  const { simulationId: simulationIdParams } = useParams();
+
+  // State for non-convolved (dry) audio
+  const [nonConvolvedAudioUrl, setNonConvolvedAudioUrl] = useState<string | null>(null);
+  const [nonConvolvedLoading, setNonConvolvedLoading] = useState(false);
+  const [nonConvolvedDownloadLoading, setNonConvolvedDownloadLoading] = useState(false);
 
   const compareResults = useSelector((state: RootState) => state.simulation.compareResults);
 
@@ -81,7 +104,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
     return audioData;
   };
 
-  const handlePlay = async () => {
+  const handlePlayConvolved = async () => {
     try {
       setLoading(true);
 
@@ -101,7 +124,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownloadConvolved = async () => {
     try {
       setDownloadLoading(true);
 
@@ -130,8 +153,77 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await deleteAuralizationAudioFile({
+        simulationId: Number(simulationId || simulationIdParams),
+        auralizationId: auralization.id,
+      }).unwrap();
+      toast.success("Audio file deleted successfully");
+    } catch {
+      toast.error("Failed to delete audio file");
+    }
+  };
+
+  const handlePlayNonConvolved = async () => {
+    try {
+      setNonConvolvedLoading(true);
+
+      // Fetch the non-convolved audio file
+      const { data: audioData } = await http({
+        method: "GET",
+        url: `/auralizations/audiofiles/${auralization.id}/wav`,
+        responseType: "arraybuffer",
+      });
+
+      // Create a Blob from the audio data and generate a URL for it
+      const audioBlob = new Blob([audioData], { type: "audio/wav" });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      setNonConvolvedAudioUrl(audioUrl);
+    } catch (error) {
+      toast.error("Failed to play the non-convolved sound.");
+      console.error("Error playing non-convolved sound:", error);
+    } finally {
+      setNonConvolvedLoading(false);
+    }
+  };
+
+  const handleDownloadNonConvolved = async () => {
+    try {
+      setNonConvolvedDownloadLoading(true);
+
+      // Fetch the non-convolved audio file
+      const { data: audioData } = await http({
+        method: "GET",
+        url: `/auralizations/audiofiles/${auralization.id}/wav`,
+        responseType: "arraybuffer",
+      });
+
+      // Create a Blob from the audio data and trigger download
+      const audioBlob = new Blob([audioData], { type: "audio/wav" });
+      const downloadUrl = URL.createObjectURL(audioBlob);
+
+      // Create a temporary link element and trigger download
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = formatFilename(`non-convolved-${auralization.name}.wav`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the object URL
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      toast.error("Failed to download the non-convolved sound.");
+      console.error("Error downloading non-convolved sound:", error);
+    } finally {
+      setNonConvolvedDownloadLoading(false);
+    }
+  };
+
   return (
-    <Item variant="outline" className="bg-white">
+    <Item variant="outline" className="bg-white relative">
       <ItemMedia>
         <AudioLinesIcon />
       </ItemMedia>
@@ -165,6 +257,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
           </SelectContent>
         </Select>
       </ItemActions>
+
       {audioUrl && (
         <ItemActions className="justify-end">
           <AudioPlayer src={audioUrl} className="!p-0 !h-9 !shadow-none w-96" />
@@ -172,7 +265,7 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
       )}
       {!audioUrl && (
         <ItemActions>
-          <Button onClick={handlePlay} disabled={loading || !simulationId}>
+          <Button onClick={handlePlayConvolved} disabled={loading || !simulationId} size={"sm"}>
             {loading ? (
               <LoaderCircleIcon className="size-4 animate-spin" />
             ) : (
@@ -182,14 +275,113 @@ export function ConvolvedSoundPlayer({ auralization }: ConvolvedSoundPlayerProps
           </Button>
         </ItemActions>
       )}
-      <Button onClick={handleDownload} disabled={downloadLoading || !simulationId}>
-        {downloadLoading ? (
-          <LoaderCircleIcon className="size-4 animate-spin" />
-        ) : (
-          <DownloadIcon className="size-4" />
-        )}
-        {downloadLoading ? "Processing..." : "Download"}
-      </Button>
+
+      <ItemActions>
+        <Button
+          onClick={handleDownloadConvolved}
+          disabled={downloadLoading || !simulationId}
+          size={"sm"}
+        >
+          {downloadLoading ? (
+            <LoaderCircleIcon className="size-4 animate-spin" />
+          ) : (
+            <DownloadIcon className="size-4" />
+          )}
+          {downloadLoading ? "Processing..." : "Download"}
+        </Button>
+      </ItemActions>
+
+      {auralization.isUserFile && (
+        <ItemActions className="justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="cursor-pointer">
+              <EllipsisVerticalIcon className="text-black/50" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              className="bg-white border rounded-md shadow-sm p-3 z-50"
+            >
+              <ConvolvedAudioForm
+                simulationId={Number(simulationId || simulationIdParams)}
+                auralizationId={auralization.id}
+                defaultName={auralization.name}
+                defaultDescription={auralization.description}
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer mb-2"
+                  >
+                    Edit details
+                  </DropdownMenuItem>
+                }
+              />
+              <ConfirmDialog
+                title="Delete Convolved Sound"
+                description="Are you sure you want to delete this convolved sound? This action cannot be undone."
+                onConfirm={handleDelete}
+                confirmVariant="destructive"
+                confirmLabel="Delete Sound"
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-red-600 cursor-pointer"
+                  >
+                    Delete sound
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ItemActions>
+      )}
+
+      {simulationId && (
+        <div className="w-full border-t pt-4 bg-gray-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="text-sm font-medium mb-1">DRY SOURCE</h3>
+              <p className="text-xs text-gray-600">Original audio before room simulation</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {nonConvolvedAudioUrl && (
+                <AudioPlayer
+                  src={nonConvolvedAudioUrl}
+                  className="!p-2 !h-9 !shadow-none w-96 !bg-gray-200"
+                />
+              )}
+              {!nonConvolvedAudioUrl && (
+                <Button
+                  onClick={handlePlayNonConvolved}
+                  disabled={nonConvolvedLoading}
+                  variant="outline"
+                  size={"sm"}
+                >
+                  {nonConvolvedLoading ? (
+                    <LoaderCircleIcon className="size-4 animate-spin" />
+                  ) : (
+                    <PlayIcon className="size-4" />
+                  )}
+                  {nonConvolvedLoading ? "Processing..." : "Play"}
+                </Button>
+              )}
+              <Button
+                onClick={handleDownloadNonConvolved}
+                disabled={nonConvolvedDownloadLoading}
+                variant="outline"
+                size={"sm"}
+              >
+                {nonConvolvedDownloadLoading ? (
+                  <LoaderCircleIcon className="size-4 animate-spin" />
+                ) : (
+                  <DownloadIcon className="size-4" />
+                )}
+                {nonConvolvedDownloadLoading ? "Downloading..." : "Download"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Item>
   );
 }
