@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0](https://github.com/choras-org/CHORAS/compare/v0.0.91...v0.1.0) (2026-09-03)
+
+
+### Features
+
+* enhance RunSimulationButton to handle simulation error messages in progress bar ([80bfef5](https://github.com/choras-org/CHORAS/commit/80bfef5a5ea494bd032c62db3ac8391747f2bd51))
+* update ViewportCanvas to use simulation runs query and adjust error handling ([037ce5a](https://github.com/choras-org/CHORAS/commit/037ce5ac47d7424cb81cd0b2e584914fb46290bb))
+
 ### [0.0.91](https://github.com/ajatdarojat45/choras-frontend/compare/v0.0.90...v0.0.91) (2026-07-17)
 
 ### Features
