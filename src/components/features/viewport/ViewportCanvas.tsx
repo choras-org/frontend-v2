@@ -27,9 +27,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { GeometryIssueLayer } from "../GeometryIssueLayer";
+import { useCameraFocusOnIssue } from "@/hooks/useCameraFocusOnIssue";
 import { useGetSimulationRunsQuery } from "@/store/simulationApi";
 
-export function ViewportCanvas({ modelUrl, modelId, simulationId }: ViewportCanvasProps) {
+export function ViewportCanvas({
+  modelUrl,
+  modelId,
+  simulationId,
+  cacheKey,
+  useClone = false,
+  isRepair = false,
+  showGeometrySelectionInfo = true,
+}: ViewportCanvasProps) {
   const [cameraType, setCameraType] = useState<"perspective" | "orthographic">("perspective");
   const [viewMode, setViewMode] = useState<"solid" | "ghosted" | "wireframe">("solid");
   const [gridDialogOpen, setGridDialogOpen] = useState(false);
@@ -37,7 +47,7 @@ export function ViewportCanvas({ modelUrl, modelId, simulationId }: ViewportCanv
   const [minorGridSize, setMinorGridSize] = useState(1);
   const [tempMajorGridSize, setTempMajorGridSize] = useState(5);
   const [tempMinorGridSize, setTempMinorGridSize] = useState(1);
-  const { loadModelFromUrl, isModelLoaded, isLoading, error, setActiveModel } = useModelLoader();
+  const { loadModelFromUrl, getModel, isLoading, error, setActiveModel } = useModelLoader();
   const { isRunning } = useSimulationRunnerContext();
   const orbitControlsRef = useRef<OrbitControlsType | null>(null);
   const { data: simulationsRun } = useGetSimulationRunsQuery();
@@ -45,15 +55,24 @@ export function ViewportCanvas({ modelUrl, modelId, simulationId }: ViewportCanv
     (sim) => sim.simulation.id === Number(simulationId),
   );
 
+  useCameraFocusOnIssue(orbitControlsRef);
+
+  const modelCacheKey = cacheKey ?? (modelId !== undefined ? String(modelId) : undefined);
+
   useEffect(() => {
-    if (modelUrl && modelId) {
-      if (!isModelLoaded(modelId)) {
-        loadModelFromUrl(modelId, modelUrl).catch(console.error);
+    if (modelUrl && modelId && modelCacheKey) {
+      const existing = getModel(modelCacheKey);
+      // Reload when nothing is cached for this key yet, OR when the cached
+      // model was loaded from a different URL (e.g. the repaired file becomes
+      // available after the repair finishes). Keying only on cacheKey would
+      // keep showing the stale (initial) model until a hard refresh.
+      if (!existing || existing.sourceUrl !== modelUrl) {
+        loadModelFromUrl(modelCacheKey, modelId, modelUrl).catch(console.error);
       } else {
         setActiveModel(modelId);
       }
     }
-  }, [modelUrl, modelId, loadModelFromUrl, isModelLoaded, setActiveModel]);
+  }, [modelUrl, modelId, modelCacheKey, loadModelFromUrl, getModel, setActiveModel]);
 
   const toggleCameraType = () => {
     setCameraType((prev) => (prev === "perspective" ? "orthographic" : "perspective"));
@@ -78,7 +97,7 @@ export function ViewportCanvas({ modelUrl, modelId, simulationId }: ViewportCanv
   return (
     <div className="overflow-hidden relative touch-none h-container">
       <div className="h-full w-full relative">
-        {isLoading(modelId) && (
+        {isLoading(modelCacheKey) && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black bg-opacity-50 text-white px-4 py-2 rounded">
             Loading model...
           </div>
@@ -181,7 +200,15 @@ export function ViewportCanvas({ modelUrl, modelId, simulationId }: ViewportCanv
             <GizmoViewport axisColors={["#EF7305", "#F4B183", "#FBE5D6"]} labelColor="black" />
           </GizmoHelper>
 
-          {modelId && <ModelRenderer modelId={modelId} viewMode={viewMode} />}
+          {modelId && (
+            <ModelRenderer
+              modelId={modelId}
+              cacheKey={modelCacheKey}
+              viewMode={viewMode}
+              useClone={useClone}
+            />
+          )}
+          <GeometryIssueLayer isRepair={isRepair} />
           <SourceVisualization orbitControlsRef={orbitControlsRef} />
           <ReceiverVisualization orbitControlsRef={orbitControlsRef} />
         </Canvas>
@@ -208,7 +235,7 @@ export function ViewportCanvas({ modelUrl, modelId, simulationId }: ViewportCanv
       </div>
 
       {/* Selection Info Panel */}
-      {!isRunning && currentSimulationRun?.status !== "Error" && (
+      {!isRunning && showGeometrySelectionInfo && currentSimulationRun?.status !== "Error" && (
         <div className="absolute bottom-4 right-4 z-10">
           <GeometrySelectionInfo />
         </div>

@@ -11,13 +11,15 @@ export function useModelLoader() {
   );
 
   const loadModelFromUrl = useCallback(
-    async (modelId: number, modelUrl: string) => {
+    async (cacheKey: string, modelId: number, modelUrl: string) => {
       dispatch(setLoading(true));
 
       try {
         const rhinoFileData = await processModelFromUrl(modelId, modelUrl);
 
         const optimizedData = optimizeModelForRendering(rhinoFileData);
+        optimizedData.cacheKey = cacheKey;
+        optimizedData.sourceUrl = modelUrl;
 
         dispatch(storeRhinoFile(optimizedData));
         dispatch(setCurrentModelId(modelId));
@@ -46,17 +48,24 @@ export function useModelLoader() {
     return null;
   }, [currentModelId, rhinoFiles]);
 
+  const getModel = useCallback(
+    (cacheKey: string) => {
+      return rhinoFiles[cacheKey] ?? null;
+    },
+    [rhinoFiles],
+  );
+
   const isModelLoaded = useCallback(
-    (modelId: number) => {
-      return !!rhinoFiles[modelId];
+    (cacheKey: string) => {
+      return !!rhinoFiles[cacheKey];
     },
     [rhinoFiles],
   );
 
   const isLoading = useCallback(
-    (modelId?: number) => {
-      if (modelId) {
-        return loading && !rhinoFiles[modelId];
+    (cacheKey?: string) => {
+      if (cacheKey) {
+        return loading && !rhinoFiles[cacheKey];
       }
       return loading;
     },
@@ -71,6 +80,7 @@ export function useModelLoader() {
     loadModelFromUrl,
     setActiveModel,
     getCurrentModel,
+    getModel,
     isModelLoaded,
     isLoading,
   };

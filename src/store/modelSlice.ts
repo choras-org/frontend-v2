@@ -31,7 +31,7 @@ export const modelSlice = createSlice({
 
     storeRhinoFile: (state, action: PayloadAction<RhinoFileData>) => {
       const rhinoFile = action.payload;
-      state.rhinoFiles[rhinoFile.modelId] = rhinoFile;
+      state.rhinoFiles[rhinoFile.cacheKey] = rhinoFile;
       state.loading = false;
       state.error = null;
     },

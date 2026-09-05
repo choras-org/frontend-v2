@@ -4,6 +4,7 @@ import { simulationApi, useGetSimulationsByModelIdQuery } from "@/store/simulati
 import { useDeleteModelMutation } from "@/store/modelApi";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useDispatch } from "react-redux";
+import { Link } from "react-router";
 import type { AppDispatch } from "@/store";
 import { projectApi, useGetProjectQuery } from "@/store/projectApi";
 import { toast } from "sonner";
@@ -41,67 +42,73 @@ export function ModelCard({ model }: ModelCardProps) {
     }
   };
 
+  const goToEditor =
+    (simulations && simulations.length >= 1) ||
+    (model.repairStatus !== "Pending" && model.repairStatus);
+
   return (
-    <Card className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 rounded-2xl card-container">
-      <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-xl h-full flex flex-col justify-between">
-        <CardHeader className="overflow-hidden relative px-5">
-          <CardTitle className="truncate font-inter font-bold text-sm text-choras-primary">
-            {model.name}
-          </CardTitle>
-          <CardAction onClick={(e) => e.stopPropagation()}>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="cursor-pointer absolute right-0 px-4">
-                <EllipsisVerticalIcon className="text-black/50" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <UpdateModel
-                  modelName={model.name}
-                  modelId={model.id.toString()}
-                  onSuccess={() => refetch()}
-                  trigger={
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Edit name
-                    </DropdownMenuItem>
-                  }
-                />
-                <ConfirmDialog
-                  onConfirm={handleDeleteModel}
-                  title="Delete model"
-                  description="This action cannot be undone."
-                  confirmLabel="Delete model"
-                  confirmVariant="destructive"
-                  trigger={
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-red-600"
-                    >
-                      Delete model
-                    </DropdownMenuItem>
-                  }
-                />
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="flex flex-col card-responsive-horizontal gap-4 pt-4">
-          <div className="card-responsive-visible relative max-w-36 w-full aspect-[3/2] card-responsive-order-2 card-responsive-scale">
-            <img
-              className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
-              src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
-              alt="Model Illustration"
-            />
-          </div>
-          <div className="text-black/50 text-xs space-y-1 card-responsive-order-1">
-            <p>{simulations?.length || 0} simulations</p>
-            <p>Created: {formatDateLong(model.createdAt)}</p>
-            <p>Updated: {formatDateLong(model.updatedAt)}</p>
-          </div>
-        </CardContent>
-      </div>
-    </Card>
+    <Link key={model.id} to={goToEditor ? `/editor/${model.id}` : `/repair/${model.id}`}>
+      <Card className="min-h-[192px] border border-transparent bg-choras-primary bg-clip-border p-0.5 card-container">
+        <div className="bg-[#e7e7e7] min-h-[190px] py-6 rounded-lg h-full flex flex-col justify-between">
+          <CardHeader className="overflow-hidden relative px-5">
+            <CardTitle className="truncate font-inter font-bold text-sm text-choras-primary">
+              {model.name}
+            </CardTitle>
+            <CardAction onClick={(e) => e.stopPropagation()}>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="cursor-pointer absolute right-0 px-4">
+                  <EllipsisVerticalIcon className="text-black/50" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <UpdateModel
+                    modelName={model.name}
+                    modelId={model.id.toString()}
+                    onSuccess={() => refetch()}
+                    trigger={
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Edit name
+                      </DropdownMenuItem>
+                    }
+                  />
+                  <ConfirmDialog
+                    onConfirm={handleDeleteModel}
+                    title="Delete model"
+                    description="This action cannot be undone."
+                    confirmLabel="Delete model"
+                    confirmVariant="destructive"
+                    trigger={
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-red-600"
+                      >
+                        Delete model
+                      </DropdownMenuItem>
+                    }
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="flex flex-col card-responsive-horizontal gap-4 pt-4">
+            <div className="card-responsive-visible relative max-w-36 w-full aspect-[3/2] card-responsive-order-2 card-responsive-scale">
+              <img
+                className="absolute w-full h-full max-w-36 max-h-24 object-contain rounded-lg bg-white/80"
+                src={model.imagePath ? `${API_URL}/${model.imagePath}` : modelImg}
+                alt="Model Illustration"
+              />
+            </div>
+            <div className="text-black/50 text-xs space-y-1 card-responsive-order-1">
+              <p>{simulations?.length || 0} simulations</p>
+              <p>Created: {formatDateLong(model.createdAt)}</p>
+              <p>Updated: {formatDateLong(model.updatedAt)}</p>
+            </div>
+          </CardContent>
+        </div>
+      </Card>
+    </Link>
   );
 }
