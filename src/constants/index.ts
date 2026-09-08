@@ -32,6 +32,17 @@ export const COLORS_VARIANTS = [
   "gold",
 ];
 
+export const CHART_COLORS_VARIANTS = [
+  "#EF7305", // orange (Choras primary)
+  "#7B2CBF", // purple
+  "#0072B2", // blue
+  "#009E73", // green
+  "#C026D3", // magenta
+  "#0891B2", // teal
+  "#D97706", // amber
+  "#4F46E5", // indigo
+];
+
 export const RESOURCE_TYPES = [
   {
     label: "Local",

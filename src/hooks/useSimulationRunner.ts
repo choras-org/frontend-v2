@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   useRunSimulationMutation,
   useGetSimulationRunsQuery,
@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import type { RootState } from "@/store";
 import { useLazyGetImpulseResponseBySimulationIdQuery } from "@/store/auralizationApi";
+import { simulationApi } from "@/store/simulationApi";
 import { useSimulationRunnerContext } from "@/contexts/SimulationRunnerContext";
 
 export function useSimulationRunner() {
@@ -20,6 +21,7 @@ export function useSimulationRunner() {
   const hasCheckedForRunningSimulation = useRef(false);
   const lastCheckedSimulationId = useRef<number | null>(null);
 
+  const dispatch = useDispatch();
   const activeSimulation = useSelector((state: RootState) => state.simulation.activeSimulation);
   const currentModelId = useSelector((state: RootState) => state.model.currentModelId);
 
@@ -77,6 +79,7 @@ export function useSimulationRunner() {
             getSimulationResult(activeSimulation.id);
             getSimulationsByModelId(activeSimulation.modelId);
             getImpulseResponseBySimulationId(activeSimulation.id);
+            dispatch(simulationApi.util.invalidateTags([{ type: "SimulationResults", id: activeSimulation.id }]));
             setProgress(0);
           } else if (currentRun.status === "Error" || currentRun.status === "Failed") {
             setIsRunning(false);

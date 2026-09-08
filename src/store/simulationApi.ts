@@ -1,5 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { SimulationResult, Simulation, SimulationRun } from "@/types/simulation";
+import type {
+  SimulationResult,
+  Simulation,
+  SimulationRun,
+  VisualizationData,
+  VisualizationType,
+} from "@/types/simulation";
 
 export const simulationApi = createApi({
   reducerPath: "simulationApi",
@@ -28,6 +34,15 @@ export const simulationApi = createApi({
     getSimulationResult: build.query<SimulationResult[], number>({
       query: (simulationId) => `/simulations/${simulationId}/result`,
       providesTags: (_, __, arg) => [{ type: "SimulationResults", id: arg }],
+    }),
+
+    getVisualizationData: build.query<
+      VisualizationData,
+      { simulationId: number; visualizationType: VisualizationType }
+    >({
+      query: ({ simulationId, visualizationType }) =>
+        `/simulations/${simulationId}/visualization/${visualizationType}`,
+      providesTags: (_, __, arg) => [{ type: "SimulationResults", id: arg.simulationId }],
     }),
 
     // Get simulation by ID
@@ -102,6 +117,8 @@ export const {
   useDeleteSimulationMutation,
   useGetSimulationResultQuery,
   useLazyGetSimulationResultQuery,
+  useGetVisualizationDataQuery,
+  useLazyGetVisualizationDataQuery,
   useRunSimulationMutation,
   useGetSimulationRunsQuery,
   useLazyGetSimulationRunsQuery,

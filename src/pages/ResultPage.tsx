@@ -24,6 +24,9 @@ export function ResultPage() {
   const { data: simulations } = useGetSimulationsByModelIdQuery(+modelId);
   const simulationIds = useSelector(selectCompareSimulationIds);
 
+  // Get the current simulation for error display
+  const currentSimulation = simulations?.find((sim) => sim.id === Number(simulationId));
+
   // If no simulationId is provided, redirect to the first simulation
   // Once the simulations are created, the effect will run again
   useEffect(() => {
