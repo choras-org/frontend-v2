@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Rhino3dmLoader } from "three/examples/jsm/loaders/3DMLoader";
+import { Rhino3dmLoader } from "three/examples/jsm/loaders/3DMLoader.js";
 import rhino3dm from "https://cdn.jsdelivr.net/npm/rhino3dm@8.17.0/rhino3dm.module.js";
 import type { RhinoLayerData, RhinoObjectAttribute } from "@/types/layer";
 import type { RhinoDocument } from "@/types/file";
