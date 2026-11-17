@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:  # PRs come from forks, where push doesn't trigger upstream CI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # a lint failure shouldn't cancel the build, and vice versa
+      matrix:
+        script: [lint, build]  # build is tsc -b && vite build
+    name: ${{ matrix.script }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22  # same as the Dockerfile
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
