@@ -15,7 +15,8 @@
     "release:patch": "standard-version --release-as patch",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "node -e \"require('fs').cpSync('node_modules/three/examples/jsm/libs/rhino3dm', 'public/rhino3dm', { recursive: true })\""
   },
   "lint-staged": {
     "*.{js,ts,tsx,jsx,json,css,md}": [
