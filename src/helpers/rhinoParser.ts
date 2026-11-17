@@ -1,13 +1,15 @@
 import * as THREE from "three";
 import { Rhino3dmLoader } from "three/examples/jsm/loaders/3DMLoader.js";
-import rhino3dm from "https://cdn.jsdelivr.net/npm/rhino3dm@8.17.0/rhino3dm.module.js";
+import rhino3dm from "rhino3dm/rhino3dm.module.js";
+import rhino3dmWasmUrl from "rhino3dm/rhino3dm.wasm?url";
 import type { RhinoLayerData, RhinoObjectAttribute } from "@/types/layer";
 import type { RhinoDocument } from "@/types/file";
 import { RHINO3DM_PATH } from "@/constants";
 
 export async function parseFileAsRhinoDoc(fileData: ArrayBuffer): Promise<RhinoDocument> {
   try {
-    const rhino = await rhino3dm();
+    // Tell rhino3dm where Vite put the .wasm file, in dev mode and in the build.
+    const rhino = await rhino3dm({ locateFile: () => rhino3dmWasmUrl });
     const rhinoDoc = rhino.File3dm.fromByteArray(new Uint8Array(fileData));
 
     if (!rhinoDoc) {
@@ -16,7 +18,9 @@ export async function parseFileAsRhinoDoc(fileData: ArrayBuffer): Promise<RhinoD
 
     rhinoDoc.settings().pageUnitSystem = rhino.UnitSystem.Meters;
 
-    return rhinoDoc;
+    // shortcut: RhinoDocument is our own hand-written type and doesn't match rhino3dm's types
+    // (e.g. delete(), parentLayerIndex); replace it with rhino3dm's File3dm when the type is cleaned up.
+    return rhinoDoc as unknown as RhinoDocument;
   } catch (error) {
     throw new Error(
       `Failed to parse rhino document: ${error instanceof Error ? error.message : "Unknown error"}`,
