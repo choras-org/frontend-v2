@@ -40,7 +40,7 @@ const formatIssueCategoryLabel = (category: string) => {
 };
 
 const GEOMETRY_DOCS_URL =
-  import.meta.env.VITE_GEOMETRY_DOCS_URL || "https://docs.choras-geometry.space";
+  import.meta.env.VITE_GEOMETRY_DOCS_URL || "https://choras.readthedocs.io/en/latest";
 
 const ISSUE_CATEGORY_INFO: Record<string, { description: string; docsUrl: string }> = {
   duplicate_vertex: {
