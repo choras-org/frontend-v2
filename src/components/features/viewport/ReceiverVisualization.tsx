@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { Text, TransformControls, Billboard } from "@react-three/drei";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
 import type { RootState } from "@/store";
@@ -128,34 +128,49 @@ export function ReceiverVisualization({ orbitControlsRef }: ReceiverVisualizatio
   const selectedReceiver = useSelector((state: RootState) => state.sourceReceiver.selectedReceiver);
   const { updateReceiversData } = useSourceReceiverApi();
 
-  const handleReceiverClick = (receiverId: string, event: ThreeEvent<MouseEvent>) => {
-    event.stopPropagation();
-    dispatch(selectReceiver(selectedReceiver === receiverId ? null : receiverId));
-  };
+  const handleReceiverClick = useCallback(
+    (receiverId: string, event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      dispatch(selectReceiver(selectedReceiver === receiverId ? null : receiverId));
+    },
+    [selectedReceiver, dispatch],
+  );
 
-  const handleReceiverDoubleClick = (receiverId: string, event: ThreeEvent<MouseEvent>) => {
-    event.stopPropagation();
-    dispatch(selectReceiver(receiverId));
-    dispatch(setActiveTab("sources"));
-  };
+  const handleReceiverDoubleClick = useCallback(
+    (receiverId: string, event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      dispatch(selectReceiver(receiverId));
+      dispatch(setActiveTab("sources"));
+    },
+    [dispatch],
+  );
 
-  const handleTransformEnd = (receiverId: string, position: THREE.Vector3) => {
-    dispatch(updateReceiver({ id: receiverId, field: "x", value: Number(position.x.toFixed(2)) }));
-    dispatch(updateReceiver({ id: receiverId, field: "y", value: Number(position.y.toFixed(2)) }));
-    dispatch(updateReceiver({ id: receiverId, field: "z", value: Number(position.z.toFixed(2)) }));
+  const handleTransformEnd = useCallback(
+    (receiverId: string, position: THREE.Vector3) => {
+      dispatch(
+        updateReceiver({ id: receiverId, field: "x", value: Number(position.x.toFixed(2)) }),
+      );
+      dispatch(
+        updateReceiver({ id: receiverId, field: "y", value: Number(position.y.toFixed(2)) }),
+      );
+      dispatch(
+        updateReceiver({ id: receiverId, field: "z", value: Number(position.z.toFixed(2)) }),
+      );
 
-    const updatedReceivers = receivers.map((receiver) =>
-      receiver.id === receiverId
-        ? {
-            ...receiver,
-            x: Number(position.x.toFixed(2)),
-            y: Number(position.y.toFixed(2)),
-            z: Number(position.z.toFixed(2)),
-          }
-        : receiver,
-    );
-    updateReceiversData(updatedReceivers);
-  };
+      const updatedReceivers = receivers.map((receiver) =>
+        receiver.id === receiverId
+          ? {
+              ...receiver,
+              x: Number(position.x.toFixed(2)),
+              y: Number(position.y.toFixed(2)),
+              z: Number(position.z.toFixed(2)),
+            }
+          : receiver,
+      );
+      updateReceiversData(updatedReceivers);
+    },
+    [receivers, dispatch, updateReceiversData],
+  );
 
   return (
     <>

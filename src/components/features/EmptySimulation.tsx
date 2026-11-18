@@ -18,7 +18,7 @@ export function EmptySimulation({ modelId }: EmptySimulationProps) {
         </p>
 
         <div className="mt-3">
-          <SimulationForm modelId={modelId} />
+          <SimulationForm modelId={modelId} defaultOpen />
         </div>
       </div>
     </div>

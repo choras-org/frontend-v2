@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { ExampleModel, Model, ModelDetail } from "@/types/model";
+import type { ExampleModel, Model, ModelDetail, ModelSimulationCompatibility } from "@/types/model";
+import type { GeometryIssueInputs } from "@/store/geometryIssueSlice";
 
 export const modelApi = createApi({
   reducerPath: "modelApi",
@@ -38,6 +39,54 @@ export const modelApi = createApi({
       providesTags: (_, __, modelUrl) => [{ type: "Models", id: `file-${modelUrl}` }],
     }),
 
+    fetchModelIssues: build.query<GeometryIssueInputs, string>({
+      query: (fileUrl) => ({
+        url: fileUrl,
+      }),
+      providesTags: (_, __, fileUrl) => [{ type: "Models", id: `issues-${fileUrl}` }],
+    }),
+
+    getModelSimulationCompatibility: build.query<ModelSimulationCompatibility, string | number>({
+      query: (modelId) => `/models/${modelId}/simulation-compatibility`,
+      providesTags: (_, __, modelId) => [{ type: "Models", id: `compatibility-${modelId}` }],
+    }),
+
+    setRepairDecision: build.mutation<
+      ModelDetail,
+      { modelId: string | number; decision: "accept" | "reject" }
+    >({
+      query: ({ modelId, decision }) => ({
+        url: `/models/${modelId}/repair-decision`,
+        method: "POST",
+        body: { decision },
+      }),
+      invalidatesTags: (_, __, { modelId }) => [
+        { type: "Models", id: modelId },
+        { type: "Models", id: `compatibility-${modelId}` },
+      ],
+    }),
+
+    reprocessGeometry: build.mutation<ModelDetail, string | number>({
+      query: (modelId) => ({
+        url: `/models/${modelId}/reprocess-geometry`,
+        method: "POST",
+      }),
+      invalidatesTags: (_, __, modelId) => [
+        { type: "Models", id: modelId },
+        { type: "Models", id: `compatibility-${modelId}` },
+      ],
+    }),
+
+    downloadModel: build.query<
+      Blob,
+      { modelId: string | number; variant?: "repaired" | "initial" }
+    >({
+      query: ({ modelId, variant }) => ({
+        url: `/models/${modelId}/download${variant ? `?variant=${variant}` : ""}`,
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+
     fetchExampleModels: build.query<ExampleModel[], void>({
       query: () => "/models/examples",
       providesTags: [{ type: "ExampleModels", id: "LIST" }],
@@ -49,6 +98,11 @@ export const {
   useDeleteModelMutation,
   useGetModelQuery,
   useFetchModelFileQuery,
+  useFetchModelIssuesQuery,
+  useGetModelSimulationCompatibilityQuery,
+  useSetRepairDecisionMutation,
+  useReprocessGeometryMutation,
+  useLazyDownloadModelQuery,
   useUpdateModelMutation,
   useFetchExampleModelsQuery,
 } = modelApi;
