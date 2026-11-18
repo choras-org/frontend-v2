@@ -1,0 +1,19 @@
+name: PR title
+
+# PRs are squash-merged with the PR title as commit message, which
+# standard-version reads to determine the release bump.
+on:
+  # _target so it also runs for fork PRs; safe because no code is checked out
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

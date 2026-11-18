@@ -13,7 +13,8 @@ export const CHORAS_DOCUMENTATION_URL = {
   documentation: "https://github.com/choras-org",
 } as const;
 
-export const RHINO3DM_PATH = "/node_modules/three/examples/jsm/libs/rhino3dm/";
+// Copied there from three.js by the postinstall script in package.json.
+export const RHINO3DM_PATH = `${import.meta.env.BASE_URL}rhino3dm/`;
 
 export const FREQUENCY_BANDS = [63, 125, 250, 500, 1000, 2000, 4000, 8000] as const;
 

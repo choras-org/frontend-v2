@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Copied from three.js by the postinstall script
+public/rhino3dm
