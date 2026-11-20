@@ -19,10 +19,10 @@ interface ChorasDynamicChartProps {
   chartData: ChartDataProps;
   hiddenChannels?: string[];
   /**
-   * Dipanggil ketika user mengklik entry di legend chart. Karena chart dibuat
-   * fully controlled (handler mengembalikan `false` agar Plotly tidak menjalankan
-   * toggle default-nya), panggilan balik ini harus meng-update state `hiddenChannels`
-   * di parent sehingga dropdown pada tab tetap sinkron dengan legend.
+   * Called when the user clicks an entry in the chart legend. The chart is fully
+   * controlled (the handler returns `false` so Plotly skips its default toggle),
+   * so this callback must update the parent's `hiddenChannels` state to keep the
+   * dropdown in sync with the legend.
    */
   onToggleChannel?: (channelName: string) => void;
 }
@@ -32,24 +32,24 @@ const ChorasDynamicChart = ({
   hiddenChannels,
   onToggleChannel,
 }: ChorasDynamicChartProps) => {
-  // Defensive check jika data dari API belum selesai di-load (loading state)
+  // Defensive check in case the API data has not finished loading yet
   if (!chartData || !chartData.y) {
     return <div className="p-4 text-center text-gray-500">Loading chart data...</div>;
   }
 
-  // 1. Cek apakah format data 'y' berbentuk 2D array (multi-channel) atau 1D array biasa
+  // 1. Check whether 'y' is a 2D array (multi-channel) or a plain 1D array
   const isMultiChannel = Array.isArray(chartData.y[0]);
 
-  // Jika backend tidak mengirimkan property legend, kita buat fallback default array
+  // If the backend sends no legend, fall back to default labels
   const legendLabels =
     chartData.legend ||
     (isMultiChannel ? (chartData.y as number[][]).map((_, i) => `Channel ${i + 1}`) : ["Signal"]);
 
-  // 2. Transformasi data menjadi array traces Plotly secara dinamis
-  // Channel yang di-hide lewat dropdown TIDAK dihapus dari array traces, karena itu akan
-  // menghilangkan entry-nya dari legend. Sebagai gantinya trace tetap dipertahankan dengan
-  // `visible: "legendonly"` sehingga line tidak digambar di plot, namun entry legend tetap
-  // tampil semi-transparan dan tetap bisa di-toggle kembali (klik pada legend).
+  // 2. Convert the data into Plotly traces
+  // Channels hidden via the dropdown are NOT removed from the traces, since that would
+  // also remove their legend entry. Instead the trace is kept with
+  // `visible: "legendonly"`, so the line is not drawn, but the legend entry stays
+  // semi-transparent and can be toggled back on (by clicking the legend).
   const traces = legendLabels
     .map((channelName, originalIndex) => ({ channelName, originalIndex }))
     .map(({ channelName, originalIndex }) => {
@@ -75,7 +75,7 @@ const ChorasDynamicChart = ({
     1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000,
   ];
   const octaveFrequencies = [16, 31.5, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
-  // Spectrum plots should always expose ticks through 20 kHz, even when JSON x_limits stop earlier.
+  // Log frequency axes always extend to 20 kHz, even when the JSON x_limits stop earlier
   const logAxisMaxHz = 20000;
   const logAxisMax =
     chartData.x_scale === "log"
@@ -91,9 +91,9 @@ const ChorasDynamicChart = ({
     (frequency) => !visibleMajorFrequencies.includes(frequency),
   );
 
-  // 3. Konfigurasi layout yang membaca konfigurasi JSON akustik secara dinamis
+  // 3. Layout configuration, read from the plot JSON
   const layout = {
-    // Keep the initial JSON range while preserving user zoom and pan changes.
+    // Keep user zoom and pan across re-renders, reset them when the plot type changes
     uirevision: `${chartData.xlabel}-${chartData.ylabel}-${chartData.x_scale}`,
     xaxis: {
       title: {
@@ -105,7 +105,7 @@ const ChorasDynamicChart = ({
         },
         standoff: 8,
       },
-      type: chartData.x_scale, // Otomatis menyesuaikan 'linear' atau 'log' (misal: log untuk Spectrum)
+      type: chartData.x_scale, // 'linear' or 'log' (e.g. log for the spectrum)
       // Plotly log axis requires range in log10 units
       range:
         chartData.x_scale === "log"
@@ -144,8 +144,8 @@ const ChorasDynamicChart = ({
         },
         standoff: 8,
       },
-      type: "linear", // Sumbu Y tetap linear karena nilai log (dB) sudah dihitung langsung oleh backend
-      range: chartData.y_limits, // Batas sumbu Y dinamis (Pascals [-1, 1] atau dB [-85, 5])
+      type: "linear", // Linear y-axis, the backend already computes dB values
+      range: chartData.y_limits, // Default y-limits from the JSON, user zoom overrides them
       showgrid: true,
       gridcolor: "#90A4AE",
       griddash: "solid",
@@ -184,10 +184,10 @@ const ChorasDynamicChart = ({
         config={config}
         style={{ width: "100%", height: "100%" }}
         onLegendClick={(event: { curveNumber?: number }) => {
-          // Sync legend → dropdown: klik item legend meng-update state hiddenChannels
-          // di parent. Mengembalikan `false` membuat Plotly melewati toggle internalnya
-          // (lihat clickOrDoubleClick di plotly.js), sehingga visibility trace
-          // sepenuhnya dikendalikan oleh React state.
+          // Sync legend → dropdown: clicking a legend item updates the parent's
+          // hiddenChannels state. Returning `false` makes Plotly skip its internal toggle
+          // (see clickOrDoubleClick in plotly.js), so trace visibility is fully
+          // controlled by React state.
           const channelName = legendLabels[event.curveNumber ?? -1];
           if (channelName && onToggleChannel) {
             onToggleChannel(channelName);

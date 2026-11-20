@@ -74,9 +74,8 @@ export function shadeForFrequencyBand(hex: string, index: number, count: number)
   const { h, s } = rgbToHsl(r, g, b);
   const t = count <= 1 ? 1 : index / (count - 1);
 
-  // Maintain rich saturation and vary lightness within an accessible contrast window
-  // t = 0 (lowest frequency) -> lighter, but still fully saturated and high contrast
-  // t = 1 (highest frequency) -> darker/deeper shade
+  // Keep saturation high (≥ 0.85) and vary lightness between 0.36 and 0.62
+  // t = 0 (lowest band) -> lightest, t = 1 (highest band) -> darkest
   const minLightness = 0.36;
   const maxLightness = 0.62;
   const lightness = maxLightness - t * (maxLightness - minLightness);
