@@ -127,3 +127,19 @@ export interface ReceiverResult {
   t: number[];
   type: string;
 }
+
+export type VisualizationType = "rir" | "rir_db" | "spectrum" | "spectrum_db" | "edc";
+
+export interface VisualizationData {
+  x: number[];
+  y: number[][];
+  xlabel: string;
+  ylabel: string;
+  x_limits: [number, number];
+  y_limits: [number, number];
+  x_scale: "linear" | "log";
+  legend: string[];
+  colors?: string[];
+  lineDashes?: string[];
+  x_values?: number[][];
+}

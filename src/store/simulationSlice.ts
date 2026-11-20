@@ -1,4 +1,4 @@
-import { COLORS_VARIANTS } from "@/constants";
+import { CHART_COLORS_VARIANTS } from "@/constants";
 import type { Simulation } from "@/types/simulation";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -21,7 +21,7 @@ const reassignColors = (
 ): SimulationState["compareResults"] =>
   results.map((result, index) => ({
     ...result,
-    color: COLORS_VARIANTS[index % COLORS_VARIANTS.length],
+    color: CHART_COLORS_VARIANTS[index % CHART_COLORS_VARIANTS.length],
   }));
 
 const simulationSlice = createSlice({

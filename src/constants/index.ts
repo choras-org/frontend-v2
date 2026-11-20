@@ -20,17 +20,15 @@ export const FREQUENCY_BANDS = [63, 125, 250, 500, 1000, 2000, 4000, 8000] as co
 
 export const SIDEBAR_WIDTH = 332;
 
-export const COLORS_VARIANTS = [
-  COLORS.PRIMARY,
-  COLORS.SECONDARY,
-  COLORS.ACCENT,
-  "lightgreen",
-  "silver",
-  "lightpink",
-  "darkorange",
-  "lightyellow",
-  "tomato",
-  "gold",
+export const CHART_COLORS_VARIANTS = [
+  "#EF7305", // orange (Choras primary)
+  "#7B2CBF", // purple
+  "#0072B2", // blue
+  "#009E73", // green
+  "#C026D3", // magenta
+  "#0891B2", // teal
+  "#D97706", // amber
+  "#4F46E5", // indigo
 ];
 
 export const RESOURCE_TYPES = [
