@@ -97,7 +97,7 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
     setIsChartDataLoading(true);
     setChartDataError(null);
 
-    Promise.all(
+    Promise.allSettled(
       visualizationSimulationIds.map((visualizationSimulationId) =>
         loadVisualizationData({
           simulationId: visualizationSimulationId,
@@ -105,9 +105,19 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
         }).unwrap(),
       ),
     )
-      .then((visualizationResults) => {
-        if (isCancelled || visualizationResults.length === 0) return;
+      .then((settledResults) => {
+        // Skip simulations without visualization data (e.g. older or failed runs),
+        // keeping each simulation's position so its color and label stay the same
+        const loaded = settledResults.flatMap((settled, index) =>
+          settled.status === "fulfilled" ? [{ result: settled.value, index }] : [],
+        );
+        if (loaded.length === 0) {
+          const firstRejected = settledResults.find((settled) => settled.status === "rejected");
+          throw firstRejected?.reason;
+        }
+        if (isCancelled) return;
 
+        const visualizationResults = loaded.map(({ result }) => result);
         const firstResult = visualizationResults[0];
         const combinedLegend: string[] = [];
         const combinedY: number[][] = [];
@@ -115,7 +125,7 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
         const combinedColors: string[] = [];
         const combinedDashes: string[] = [];
 
-        visualizationResults.forEach((result: VisualizationData, resultIndex: number) => {
+        loaded.forEach(({ result, index: resultIndex }) => {
           const channels = Array.isArray(result.y[0])
             ? result.y
             : [result.y as unknown as number[]];
@@ -132,7 +142,9 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
               simulationNamesRef.current[simulationId] ?? `Simulation ${simulationId}`;
 
             combinedLegend.push(
-              visualizationResults.length > 1 ? `${simulationLabel} - ${channelName}` : channelName,
+              visualizationSimulationIds.length > 1
+                ? `${simulationLabel} - ${channelName}`
+                : channelName,
             );
             combinedY.push(values);
             combinedX.push(result.x);
