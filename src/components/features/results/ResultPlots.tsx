@@ -129,10 +129,8 @@ export function ResultPlots({ simulationId }: ResultParametersProps) {
           const channels = Array.isArray(result.y[0])
             ? result.y
             : [result.y as unknown as number[]];
-          const baseColor =
-            CHART_COLORS_VARIANTS[resultIndex % CHART_COLORS_VARIANTS.length] ??
-            comparisonEntries[resultIndex]?.color ??
-            "#EF7305";
+          // Same color as the result's box in the comparison panel
+          const baseColor = comparisonEntries[resultIndex]?.color ?? CHART_COLORS_VARIANTS[0];
           const shadeFrequencyBands = activeTab === "edc";
 
           channels.forEach((values: number[], channelIndex: number) => {
