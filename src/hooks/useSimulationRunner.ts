@@ -79,7 +79,11 @@ export function useSimulationRunner() {
             getSimulationResult(activeSimulation.id);
             getSimulationsByModelId(activeSimulation.modelId);
             getImpulseResponseBySimulationId(activeSimulation.id);
-            dispatch(simulationApi.util.invalidateTags([{ type: "SimulationResults", id: activeSimulation.id }]));
+            dispatch(
+              simulationApi.util.invalidateTags([
+                { type: "SimulationResults", id: activeSimulation.id },
+              ]),
+            );
             setProgress(0);
           } else if (currentRun.status === "Error" || currentRun.status === "Failed") {
             setIsRunning(false);

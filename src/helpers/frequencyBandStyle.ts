@@ -64,18 +64,6 @@ function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: n
   return { r: r + match, g: g + match, b: b + match };
 }
 
-function mixHexTowardWhite(hex: string, amount: number): string {
-  const color = hex.replace("#", "");
-  const mixChannel = (channel: number) =>
-    Math.round(channel + (255 - channel) * amount)
-      .toString(16)
-      .padStart(2, "0");
-
-  return `#${mixChannel(parseInt(color.substring(0, 2), 16))}${mixChannel(
-    parseInt(color.substring(2, 4), 16),
-  )}${mixChannel(parseInt(color.substring(4, 6), 16))}`;
-}
-
 /**
  * Same simulation = same hue. Frequency bands go from a lighter, high-contrast tint to a deep tone.
  * Different simulations keep distinct hues for comparison (orange vs purple, etc).
