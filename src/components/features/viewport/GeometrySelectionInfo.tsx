@@ -1,9 +1,14 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useGeometrySelection } from "@/hooks/useGeometrySelection";
 import { useSurfaces } from "@/hooks/useSurfaces";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router";
+import { toast } from "sonner";
 import { useGetMaterialsQuery } from "@/store/materialsApi";
+import { useGetModelQuery, useLazyDownloadModelQuery } from "@/store/modelApi";
+import { downloadFile } from "@/helpers/file";
 import type { RootState } from "@/store";
 
 export function GeometrySelectionInfo() {
@@ -13,6 +18,23 @@ export function GeometrySelectionInfo() {
     (state: RootState) => state.materialAssignment.assignments,
   );
   const { data: materials = [] } = useGetMaterialsQuery();
+
+  const { modelId } = useParams() as { modelId?: string };
+  const { data: model } = useGetModelQuery(modelId ?? "", { skip: !modelId });
+  const [downloadModel, { isFetching: isDownloading }] = useLazyDownloadModelQuery();
+
+  const handleDownloadGeometry = async () => {
+    if (!modelId) return;
+    try {
+      const blob = await downloadModel({ modelId }).unwrap();
+      // No variant is sent, so the backend serves the repaired geometry only
+      // when the repair was accepted — reflect that in the filename.
+      const suffix = model?.repairStatus === "Accepted" ? "_repaired" : "";
+      downloadFile(blob, `${model?.modelName ?? "model"}${suffix}.obj`);
+    } catch {
+      toast.error("Failed to download the geometry model");
+    }
+  };
 
   const selectedSurfaceInfo = useMemo(() => {
     if (!selectedGeometry || selectedGeometry.mesh?.visible === false) return null;
@@ -59,26 +81,36 @@ export function GeometrySelectionInfo() {
 
   if (!selectedGeometry || selectedGeometry.mesh?.visible === false) {
     return (
-      <Card className="w-80 border border-choras-gray gap-1">
-        <CardHeader>
-          <CardTitle className="text-xs">Geometry information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <span className="font-medium">Total volume:</span>
+      <>
+        <Card className="w-80 border border-choras-gray gap-1">
+          <CardHeader>
+            <CardTitle className="text-xs">Geometry information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="font-medium">Total volume:</span>
+              </div>
+              <div className="text-muted-foreground">{totalModelVolume.toFixed(2)} m³</div>
+              <div>
+                <span className="font-medium">Total surface area:</span>
+              </div>
+              <div className="text-muted-foreground">{totalSurfaceArea.toFixed(2)} m²</div>
             </div>
-            <div className="text-muted-foreground">{totalModelVolume.toFixed(2)} m³</div>
-            <div>
-              <span className="font-medium">Total surface area:</span>
-            </div>
-            <div className="text-muted-foreground">{totalSurfaceArea.toFixed(2)} m²</div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            Click on a face in the model to select it for material assignment.
-          </p>
-        </CardContent>
-      </Card>
+            <p className="text-xs text-muted-foreground mt-3">
+              Click on a face in the model to select it for material assignment.
+            </p>
+          </CardContent>
+        </Card>
+        <Button
+          variant="outline"
+          onClick={handleDownloadGeometry}
+          disabled={!modelId || isDownloading}
+          className="mt-3 w-full cursor-pointer border-choras-primary bg-white text-choras-primary hover:bg-choras-primary/10"
+        >
+          {isDownloading ? "Downloading…" : "Download Geometry Model"}
+        </Button>
+      </>
     );
   }
 

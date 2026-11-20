@@ -37,7 +37,13 @@ export function useJsonBuilder() {
   useEffect(() => {
     if (model) {
       dispatch(setCurrentModelId(model?.id));
-      loadModelFromUrl(Number(modelId), model.modelUrl).catch(console.error);
+      // Don't load while geometry is still being generated: the model file
+      // may be missing or only partially written on the backend.
+      const isProcessing =
+        model.geometryStatus === "Pending" || model.geometryStatus === "Processing";
+      if (model.modelUrl && !isProcessing) {
+        loadModelFromUrl(String(modelId), Number(modelId), model.modelUrl).catch(console.error);
+      }
     }
   }, [model]);
 

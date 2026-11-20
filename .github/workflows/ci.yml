@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:  # PRs come from forks, where push doesn't trigger upstream CI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # a lint failure shouldn't cancel the build, and vice versa
+      matrix:
+        script: [lint, build]  # build is tsc -b && vite build
+    name: ${{ matrix.script }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22  # same as the Dockerfile
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+
+  docker:
+    runs-on: ubuntu-latest
+    name: docker
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build production image
+        run: docker build -t choras-frontend:test .
+      - name: Build dev image
+        run: docker build --target dev -t choras-frontend:dev-test .
+      - name: Check that Nginx serves the app, deep links and rhino3dm
+        # /editor/1 only works with the try_files fallback in nginx.conf.
+        # /rhino3dm/ is copied into public/ by the postinstall script. If that copy is
+        # missing, the build still succeeds, but the 3D view can't load any model.
+        run: |
+          docker run -d --name frontend -p 8080:80 choras-frontend:test
+          sleep 2
+          curl -fsS -o /dev/null http://localhost:8080/
+          curl -fsS -o /dev/null http://localhost:8080/editor/1
+          curl -fsS -o /dev/null http://localhost:8080/rhino3dm/rhino3dm.js
+          curl -fsS -o /dev/null http://localhost:8080/rhino3dm/rhino3dm.wasm
+      - name: Show Nginx log
+        if: failure()
+        run: docker logs frontend

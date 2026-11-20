@@ -18,13 +18,18 @@ type MaterialWithUuid = THREE.Material & { uuid: string };
 
 const HOVER_COLOR = 0x888888;
 
-export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
+export function ModelRenderer({
+  modelId,
+  cacheKey,
+  viewMode,
+  useClone = false,
+}: ModelRendererProps) {
   const { applySurfaceColors } = useApplySurfaceColors();
   const dispatch = useDispatch();
   const selectedSource = useSelector((state: RootState) => state.sourceReceiver.selectedSource);
   const selectedReceiver = useSelector((state: RootState) => state.sourceReceiver.selectedReceiver);
   const isTransforming = useSelector((state: RootState) => state.sourceReceiver.isTransforming);
-  const { getCurrentModel, currentModelId } = useModelLoader();
+  const { getModel } = useModelLoader();
   const {
     selectGeometry,
     clearSelection,
@@ -43,14 +48,20 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartPosition, setDragStartPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const modelData = getCurrentModel();
+  const modelCacheKey = cacheKey ?? String(modelId);
+  const modelData = getModel(modelCacheKey);
+
+  const object3D = useMemo(() => {
+    if (!modelData?.object3D) return null;
+    return useClone ? modelData.object3D.clone() : modelData.object3D;
+  }, [modelData?.object3D, useClone]);
 
   const edgeOutline = useMemo(() => {
-    if (modelData?.object3D && currentModelId === modelId) {
-      return createEdgeOutlineForObject3D(modelData.object3D, 40);
+    if (object3D) {
+      return createEdgeOutlineForObject3D(object3D, 40);
     }
     return null;
-  }, [modelData?.object3D, currentModelId, modelId]);
+  }, [object3D]);
 
   const applyViewMode = useCallback(
     (object: THREE.Object3D) => {
@@ -90,8 +101,8 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
   );
 
   useEffect(() => {
-    if (modelData?.object3D && currentModelId === modelId) {
-      applyViewMode(modelData.object3D);
+    if (object3D) {
+      applyViewMode(object3D);
 
       // The mesh registry only needs the current model's meshes; drop any left
       // over from a previously loaded model, then register this model's meshes
@@ -119,7 +130,7 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
 
       applySurfaceColors();
     }
-  }, [modelData?.object3D, currentModelId, modelId, applyViewMode]);
+  }, [object3D, applyViewMode]);
 
   const handlePointerDown = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
@@ -338,7 +349,7 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
     }
   }, [dispatch, camera, raycaster, pointer]);
 
-  if (currentModelId !== modelId || !modelData) {
+  if (!modelData || !object3D) {
     return null;
   }
 
@@ -356,7 +367,7 @@ export function ModelRenderer({ modelId, viewMode }: ModelRendererProps) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      <primitive object={modelData.object3D} />
+      <primitive object={object3D} />
       {edgeOutline && <primitive object={edgeOutline} />}
     </group>
   );
