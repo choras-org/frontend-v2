@@ -1,6 +1,14 @@
 import Plot from "react-plotly.js";
 import { CHART_COLORS_VARIANTS } from "@/constants";
 
+// Fall back to SVG rendering when the browser has no WebGL
+const supportsWebGL = (() => {
+  const gl = document.createElement("canvas").getContext("webgl");
+  gl?.getExtension("WEBGL_lose_context")?.loseContext();
+  return gl !== null;
+})();
+const TRACE_TYPE = supportsWebGL ? "scattergl" : "scatter";
+
 interface ChartDataProps {
   x: number[];
   y: number[] | number[][];
@@ -56,7 +64,7 @@ const ChorasDynamicChart = ({
       return {
         x: chartData.x_values?.[originalIndex] ?? chartData.x,
         y: isMultiChannel ? (chartData.y as number[][])[originalIndex] : (chartData.y as number[]),
-        type: "scatter",
+        type: TRACE_TYPE,
         mode: "lines",
         name: channelName,
         visible: hiddenChannels?.includes(channelName) ? ("legendonly" as const) : true,
