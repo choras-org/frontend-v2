@@ -62,7 +62,6 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const [selectedMethodLocal, setSelectedMethodLocal] = useState<string>("DE");
   const latestMethodRef = useRef<string>("DE");
   const prevSimulationIdRef = useRef<number | undefined>(undefined);
-  const isInitializingMethodRef = useRef(false);
 
   const [updateSimulation] = useUpdateSimulationMutation();
   const selectedMethodType = useSelector(
@@ -110,21 +109,16 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
     [model?.repairStatus, applicableCompatibilityData],
   );
 
-  useEffect(() => {
-    dispatch(setSelectedMethodType(selectedMethodLocal));
-    latestMethodRef.current = selectedMethodLocal;
-
-    if (isInitializingMethodRef.current) {
-      isInitializingMethodRef.current = false;
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      handleMethodChange(selectedMethodLocal);
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [selectedMethodLocal]);
+  // Only shows the method; saving happens in the dropdown's onValueChange, so
+  // loading a simulation never overwrites its stored method or settings.
+  const showMethod = useCallback(
+    (methodType: string) => {
+      setSelectedMethodLocal(methodType);
+      dispatch(setSelectedMethodType(methodType));
+      latestMethodRef.current = methodType;
+    },
+    [dispatch],
+  );
 
   useEffect(() => {
     if (simulationId && simulations) {
@@ -133,9 +127,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
         dispatch(setActiveSimulation(currentSimulation));
 
         if (simulationId !== prevSimulationIdRef.current && currentSimulation.simulationMethod) {
-          isInitializingMethodRef.current = true;
-          setSelectedMethodLocal(currentSimulation.simulationMethod);
-          latestMethodRef.current = currentSimulation.simulationMethod;
+          showMethod(currentSimulation.simulationMethod);
         }
         prevSimulationIdRef.current = simulationId;
 
@@ -160,7 +152,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
         }
       }
     }
-  }, [simulationId, simulations, dispatch]);
+  }, [simulationId, simulations, dispatch, showMethod]);
 
   const handleMethodChange = async (methodType: string) => {
     if (simulationId && simulations) {
@@ -234,20 +226,11 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
     navigate(`/editor/${modelId}/${simulationId}`);
   };
 
-  // Auto-select first available method based on compatibility
-  useEffect(() => {
-    if (methods && methods.length > 0 && model) {
-      const firstAvailableMethod = methods.find(
-        (method) => !isMethodDisabled(method.simulationType),
-      );
-
-      if (firstAvailableMethod && (!selectedMethodLocal || isMethodDisabled(selectedMethodLocal))) {
-        // Update redux without persisting to backend during auto-select
-        isInitializingMethodRef.current = true;
-        setSelectedMethodLocal(firstAvailableMethod.simulationType);
-      }
-    }
-  }, [methods, model, isMethodDisabled, selectedMethodLocal]);
+  // The stored method is never switched automatically; an incompatible one is
+  // shown with a hint so the user picks another method.
+  const isSelectedMethodIncompatible =
+    (model?.repairStatus === "Accepted" || model?.repairStatus === "Rejected") &&
+    isMethodDisabled(selectedMethodLocal);
 
   const activeSimulation = simulations?.find((sim) => sim.id === simulationId);
 
@@ -396,7 +379,10 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
         <div className="col-span-2 flex">
           <Select
             value={selectedMethodLocal}
-            onValueChange={(text) => setSelectedMethodLocal(text)}
+            onValueChange={(text) => {
+              showMethod(text);
+              handleMethodChange(text);
+            }}
           >
             <SelectTrigger className="bg-choras-dark text-white border-choras-gray [&>svg]:text-choras-gray min-w-[calc(100%-36px)]">
               <SelectValue>
@@ -418,6 +404,11 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
           </Select>
           <MethodInfoDialog method={selectedMethod} />
         </div>
+        {isSelectedMethodIncompatible && (
+          <p className="col-span-2 col-start-2 text-xs text-red-400">
+            This method is not compatible with the current geometry. Choose another method.
+          </p>
+        )}
         <label htmlFor="method" className="font-medium text-white">
           Resource
         </label>
