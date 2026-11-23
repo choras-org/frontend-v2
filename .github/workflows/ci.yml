@@ -9,9 +9,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false  # a lint failure shouldn't cancel the build, and vice versa
+      fail-fast: false  # one failing check shouldn't cancel the others
       matrix:
-        script: [lint, build]  # build is tsc -b && vite build
+        script: [lint, build, test]  # build is tsc -b && vite build
     name: ${{ matrix.script }}
     steps:
       - uses: actions/checkout@v5
