@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/choras-org/frontend-v2/compare/v0.1.1...v0.2.0) (2026-11-24)
+
+### Features
+
+- Add Multistage Docker build for production images ([#207](https://github.com/choras-org/frontend-v2/issues/207)) ([6d9db0d](https://github.com/choras-org/frontend-v2/commit/6d9db0deb28481b1c37cc3d4321352baed092232)), closes [#205](https://github.com/choras-org/frontend-v2/issues/205)
+- geometry repair pipeline UI (issue inspection, repair flow, simulation compatibility) ([#209](https://github.com/choras-org/frontend-v2/issues/209)) ([c12e9ff](https://github.com/choras-org/frontend-v2/commit/c12e9ffc2dfd625b0d4969c5df451455293f85f7)), closes [#197](https://github.com/choras-org/frontend-v2/issues/197) [choras-org/backend#143](https://github.com/choras-org/backend/issues/143) [choras-org/CHORAS#80](https://github.com/choras-org/CHORAS/issues/80)
+- result visualization with Plotly ([#192](https://github.com/choras-org/frontend-v2/issues/192)) ([c813b2e](https://github.com/choras-org/frontend-v2/commit/c813b2e9b4ce779764d335fb4d51dc623f5e8b3f)), closes [choras-org/backend#138](https://github.com/choras-org/backend/issues/138) [#16](https://github.com/choras-org/frontend-v2/issues/16) [choras-org/backend#138](https://github.com/choras-org/backend/issues/138)
+
+### Bug Fixes
+
+- stop overwriting the stored simulation method on load ([#210](https://github.com/choras-org/frontend-v2/issues/210)) ([840fcef](https://github.com/choras-org/frontend-v2/commit/840fcefb513c0e8c0d6c842db7bf99365239277c)), closes [choras-org/CHORAS#89](https://github.com/choras-org/CHORAS/issues/89)
+
 ### [0.1.1](https://github.com/choras-org/frontend-v2/compare/v0.1.0...v0.1.1) (2026-11-17)
 
 ### Bug Fixes
