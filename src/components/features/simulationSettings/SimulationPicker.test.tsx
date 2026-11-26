@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   repairedCompatibilityData: null as object[] | null,
   updateSimulation: vi.fn(),
   initializeSettings: vi.fn(),
+  duplicateSimulation: vi.fn(),
 }));
 
 // A native select instead of Radix, so the tests can pick a method with one change event
@@ -75,7 +76,7 @@ vi.mock("react-redux", () => ({
     }),
 }));
 vi.mock("@/hooks/useDuplicateSimulation", () => ({
-  useDuplicateSimulation: () => ({ duplicateSimulation: vi.fn() }),
+  useDuplicateSimulation: () => ({ duplicateSimulation: mocks.duplicateSimulation }),
 }));
 vi.mock("@/hooks/useInitializeSimulationSettings", () => ({
   useInitializeSimulationSettings: () => ({ initializeSettings: mocks.initializeSettings }),
@@ -83,8 +84,34 @@ vi.mock("@/hooks/useInitializeSimulationSettings", () => ({
 vi.mock("@/hooks/useSimulationRunner", () => ({
   useSimulationRunner: () => ({ isRunning: false }),
 }));
-vi.mock("../SimulationForm", () => ({ SimulationForm: () => null }));
-vi.mock("@/components/ui/confirm-dialog", () => ({ ConfirmDialog: () => null }));
+// Only the rename dialog opened after a duplicate renders; the menu's forms stay hidden
+vi.mock("../SimulationForm", () => ({
+  SimulationForm: ({
+    trigger,
+    defaultValues,
+    id,
+  }: {
+    trigger?: ReactNode;
+    defaultValues?: { name: string };
+    id?: number;
+  }) =>
+    trigger === null ? (
+      <div role="dialog">
+        Rename {id}: {defaultValues?.name}
+      </div>
+    ) : null,
+}));
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenu: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DropdownMenuTrigger: () => null,
+  DropdownMenuContent: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DropdownMenuItem: () => null,
+}));
+vi.mock("@/components/ui/confirm-dialog", () => ({
+  ConfirmDialog: ({ confirmLabel, onConfirm }: { confirmLabel: string; onConfirm: () => void }) => (
+    <button onClick={onConfirm}>{confirmLabel}</button>
+  ),
+}));
 vi.mock("./MethodInfoDialog", () => ({ MethodInfoDialog: () => null }));
 
 const simulation = (id: number, simulationMethod: string) => ({
@@ -116,6 +143,7 @@ beforeEach(() => {
     unwrap: () => Promise.resolve({ id: 1, ...body }),
   }));
   mocks.initializeSettings.mockReset();
+  mocks.duplicateSimulation.mockReset();
 });
 
 afterEach(cleanup);
@@ -203,4 +231,14 @@ test("no hint is shown while the repair is pending", () => {
   mocks.model = { id: 1, repairStatus: "Pending" };
   render(<SimulationPicker modelId={1} simulationId={2} />);
   expect(hint()).toBeNull();
+});
+
+test("duplicating opens the rename dialog for the new simulation", async () => {
+  mocks.duplicateSimulation.mockResolvedValue({ ...simulation(3, "DE"), name: "sim 1 (1)" });
+  render(<SimulationPicker modelId={1} simulationId={1} />);
+  expect(screen.queryByRole("dialog")).toBeNull();
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Duplicate" }));
+  });
+  expect(screen.getByRole("dialog").textContent).toBe("Rename 3: sim 1 (1)");
 });

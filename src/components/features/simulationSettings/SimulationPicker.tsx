@@ -58,6 +58,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
   const [getSimulationsByModelId] = useLazyGetSimulationsByModelIdQuery();
   const { duplicateSimulation } = useDuplicateSimulation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<Simulation | null>(null);
   const { isRunning } = useSimulationRunner();
   const [selectedMethodLocal, setSelectedMethodLocal] = useState<string>("DE");
   const latestMethodRef = useRef<string>("DE");
@@ -263,7 +264,7 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
     }
 
     try {
-      await duplicateSimulation(activeSimulation, simulations);
+      setRenameTarget(await duplicateSimulation(activeSimulation, simulations));
     } finally {
       setMenuOpen(false);
     }
@@ -279,6 +280,21 @@ export function SimulationPicker({ modelId, simulationId }: SimulationPickerProp
 
   return (
     <div className="space-y-4">
+      {renameTarget && (
+        <SimulationForm
+          key={renameTarget.id}
+          modelId={modelId}
+          id={renameTarget.id}
+          defaultOpen
+          trigger={null}
+          defaultValues={{
+            name: renameTarget.name,
+            description: renameTarget.description,
+            status: "Created",
+          }}
+          onOpenChange={(open) => !open && setRenameTarget(null)}
+        />
+      )}
       <div className="grid grid-cols-3 gap-3 w-full items-center">
         <label htmlFor="simulation" className="font-medium text-white">
           Simulation
