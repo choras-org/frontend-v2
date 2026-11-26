@@ -46,11 +46,13 @@ type SimulationFormProps = {
   modelId: number;
   id?: number;
   defaultValues?: Partial<SimulationFormData>;
+  // null renders no trigger (dialog opened via defaultOpen only)
   trigger?: React.ReactNode;
   onSuccess?: () => void;
   className?: string;
   disabled?: boolean;
   defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 export function SimulationForm({
   modelId,
@@ -61,9 +63,14 @@ export function SimulationForm({
   className,
   disabled,
   defaultOpen = false,
+  onOpenChange,
 }: SimulationFormProps) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpenState] = useState(defaultOpen);
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    onOpenChange?.(next);
+  };
   const form = useForm<SimulationFormData>({
     resolver: zodResolver(SimulationFormSchema),
     defaultValues: defaultValues ?? {
@@ -133,20 +140,22 @@ export function SimulationForm({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button
-            variant="secondary"
-            disabled={disabled}
-            className={cn(
-              "bg-choras-dark border border-choras-primary text-choras-primary hover:bg-white hover:text-choras-dark cursor-pointer",
-              className,
-            )}
-          >
-            {label} Simulation
-          </Button>
-        )}
-      </DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button
+              variant="secondary"
+              disabled={disabled}
+              className={cn(
+                "bg-choras-dark border border-choras-primary text-choras-primary hover:bg-white hover:text-choras-dark cursor-pointer",
+                className,
+              )}
+            >
+              {label} Simulation
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)}>
